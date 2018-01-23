@@ -6,8 +6,11 @@ type Account struct {
 	Balance float64
 }
 
-func initializeAccount() Account {
-	return Account{}
+func initializeAccount(value string) Account {
+	return Account{
+		AccountNumber: value,
+		Balance: 0.0,
+	}
 }
 
 func getMoney(account *Account) float64{
