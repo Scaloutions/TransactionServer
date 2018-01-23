@@ -5,6 +5,7 @@ import (
 	"html"
 	"log"
 	"net/http"
+	"github.com/gorilla/mux"
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
@@ -13,12 +14,13 @@ func echoString(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-	})
+	router := mux.NewRouter()
 
-	http.HandleFunc("/getQuote", echoString)
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))}).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":9090", nil))
+	router.HandleFunc("/getQuote", echoString).Methods("GET")
+
+	log.Fatal(http.ListenAndServe(":9090", router))
 
 }
