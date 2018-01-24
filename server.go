@@ -13,7 +13,6 @@ func echoString(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

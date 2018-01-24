@@ -13,10 +13,10 @@ func initializeAccount(value string) Account {
 	}
 }
 
-func getMoney(account *Account) float64{
+func (account *Account) getMoney() float64{
 	return account.Balance
 }
 
-func addMoney(account *Account, amount float64){
+func (account *Account) addMoney( amount float64){
 	account.Balance += amount
 }
