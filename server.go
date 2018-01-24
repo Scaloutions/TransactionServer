@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/golang/glog"
 	"fmt"
 	"html"
 	"log"
@@ -10,6 +11,16 @@ import (
 
 func echoString(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hi, there!")
+	testLogic()
+}
+
+func testLogic(){
+	account := initializeAccount("123")
+	add(&account, 100)
+	glog.Info("Account balance after adding: ", account.getBalance())
+	buy(&account, "Apple", 10)
+	glog.Info("Available account balance after buying: ", account.getBalance())
+	glog.Info("Account balance after buying: ", account.Balance)
 }
 
 func main() {

@@ -3,19 +3,31 @@ package main
 import "github.com/golang/glog"
 //below are all the functions that need to be implemented in the system
 
-func add(account Account, amount float64) {
+func add(account *Account, amount float64) {
 	if amount > 0{
 		account.addMoney(amount)
+		glog.Info("Added ", amount)
 	} else {
         glog.Error("Cannot add negative amount to balance ", amount)
 	}
 }
 
 func quote(stock string) float64 { 
-	return 0
+	return 1
 }
 
-func buy(account Account, stock string, amount float64) {}
+func buy(account *Account, stock string, amount float64) {
+	//get qoute
+	total := quote(stock) * amount
+	//check balance
+	if account.getBalance() < total {
+		//TODO: improve logging
+		glog.Info("Not enough money for account ",account, "to buy ", stock)
+	} else {
+		//hold the money
+		account.holdMoney(total)
+	}
+}
 
 func sell(account Account, stock string, amount float64) {}
 func commitBuy(account Account) {} 
