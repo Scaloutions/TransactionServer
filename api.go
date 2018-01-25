@@ -108,7 +108,18 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 	}
 }
 
-func cancelSetBuy(accont Account, stock string) {}
+/* Cancels SET BUY associated with a particular stock
+   TODO: verify what happens if the user set multiple SET BUY on one stock
+   ?????
+*/
+func cancelSetBuy(account *Account, stock string) {
+	//put money back
+	account.Available += account.SetBuyMap[stock] 
+	//cancel SET BUYs
+	delete(account.SetBuyMap, stock)
+	//cancel the trigger
+	delete(account.BuyTriggers, stock)
+}
 
 func setBuyTrigger(account *Account, stock string, price float64) {
 	//check for set buy on that stock
