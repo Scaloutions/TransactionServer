@@ -38,12 +38,12 @@ func buy(account *Account, stock string, amount float64) {
 
 func sell(account *Account, stock string, amount float64) {
 	//check if have that # of stocks
-	if account.hasStock(stock, amount){
-		//get quote
-		total := quote(stock) * amount
+	stockNum := amount / quote(stock)
+	if account.hasStock(stock, stockNum){
 		transaction := Sell {
 			Stock: stock,
-			Amount: total,
+			MoneyAmount: amount,
+			StockAmount: stockNum, 
 		}
 		account.SellStack.Push(transaction)
 
@@ -62,21 +62,31 @@ func commitBuy(account *Account) {
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
 		//TODO: refactor this line
-		account.StockPortfolio[transaction.Stock] = account.StockPortfolio[transaction.Stock] + transaction.StockAmount 
+		account.StockPortfolio[transaction.Stock] += transaction.StockAmount 
 
 	} else {
-		glog.Error("No buy transactions frebiously set for account: ", account.AccountNumber)
+		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
 	}
 } 
 
-func cancelBuy(account Account) {
+func cancelBuy(account *Account) {
 	//TODO: log this
 	account.BuyStack.Pop()
 } 
 
-func commitSell(account Account) {} 
+func commitSell(account *Account) {
+	if account.SellStack.size > 0{
+		i := account.SellStack.Pop()
+		transaction := i.(Sell)
+		account.Balance += transaction.MoneyAmount
+		account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
 
-func cancelSell(account Account) {
+	} else {
+		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
+	}
+} 
+
+func cancelSell(account *Account) {
 	//TODO: log this
 	account.SellStack.Pop()
 } 

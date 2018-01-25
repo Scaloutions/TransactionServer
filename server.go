@@ -24,6 +24,17 @@ func testLogic(){
 	commitBuy(&account)
 	glog.Info("Available account balance after COMMIT BUY: ", account.getBalance())
 	glog.Info("Account balance after COMMIT BUY: ", account.Balance)
+	glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
+	sell(&account, "Apple", 5)
+	commitSell(&account)
+	glog.Info("Available account balance after COMMIT SELL: ", account.getBalance())
+	glog.Info("Account balance after COMMIT SELL: ", account.Balance)
+	glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
+	//this should fail
+	sell(&account, "Apple", 100)
+	commitSell(&account)
+	glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
+
 }
 
 func main() {

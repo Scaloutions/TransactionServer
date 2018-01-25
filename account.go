@@ -21,7 +21,8 @@ type Buy struct {
 
 type Sell struct {
 	Stock string
-	Amount float64
+	StockAmount float64
+	MoneyAmount float64
 }
 
 func initializeAccount(value string) Account {
