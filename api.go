@@ -51,7 +51,19 @@ func sell(account Account, stock string, amount float64) {
 		glog.Info("Not enough stock ", stock, "to sell.")
 	}
 }
-func commitBuy(account Account) {} 
+func commitBuy(account Account) {
+	if account.BuyStack.size >0 {
+		//weird go casting
+		i := account.BuyStack.Pop()
+		transaction := i.(Buy)
+		//should we check balance here insted? TODO: clarify
+		account.Balance -= transaction.Amount
+		//add number of stocks to user
+
+	} else {
+		glog.Error("No buy transactions frebiously set for account: ", account.AccountNumber)
+	}
+} 
 
 func cancelBuy(account Account) {
 	//TODO: log this
