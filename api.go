@@ -121,7 +121,7 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 */
 func cancelSetBuy(account *Account, stock string) {
 	//put money back
-	account.Available += account.SetBuyMap[stock] 
+	account.unholdMoney(account.SetBuyMap[stock])
 	//cancel SET BUYs
 	delete(account.SetBuyMap, stock)
 	//cancel the trigger
@@ -158,9 +158,16 @@ func setSellTrigger(account *Account, stock string, price float64) {
 
 }
 
-func cancelSetSell(account Account, stock string, amount float64) {}
+func cancelSetSell(account *Account, stock string, amount float64) {
+	//put stock back
+	account.unholdStock(stock, account.SetSellMap[stock])
+	//cancel SET SELLs
+	delete(account.SetSellMap, stock)
+	//cancel the trigger
+	delete(account.SellTriggers, stock)
+}
 
-func dumplog(account Account, filename string) {}
+func dumplog(account *Account, filename string) {}
 
 func dumplogAll(filename string) {}
 
