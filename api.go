@@ -106,7 +106,7 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 	//check if there is enough money in the account
 	if account.Available >= amount {
 		//hold money
-		account.Available -= amount
+		account.holdMoney(amount)
 		account.SetBuyMap[stock] += amount
 		glog.Info("SetBut for $", amount, " and stock ", stock)
 		glog.Info("Total SET BUY on stock ", stock, " is now ", account.SetBuyMap[stock])
@@ -138,9 +138,25 @@ func setBuyTrigger(account *Account, stock string, price float64) {
 	}
 }
 
-func setSellAmount(account Account, stock string, amount float64) {}
+func setSellAmount(account *Account, stock string, amount float64) {
+	if account.StockPortfolio[stock] > amount {
+		account.SetSellMap[stock] += amount
+		//hold stock
+		account.holdStock(stock, amount)
+	} else {
+		glog.Error("User does not have enough stock to sell ", stock)
+	}
+}
 
-func setSellTrigger(account Account, stock string, amount float64) {}
+func setSellTrigger(account *Account, stock string, price float64) {
+	if _, ok := account.SetSellMap[stock]; ok {
+		account.SellTriggers[stock] = price
+		glog.Info("Set SELL trigger for ", stock, "at price ", price)
+	} else {
+		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
+	}
+
+}
 
 func cancelSetSell(account Account, stock string, amount float64) {}
 
