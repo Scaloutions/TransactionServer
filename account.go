@@ -37,7 +37,7 @@ func initializeAccount(value string) Account {
 
 func (account *Account) hasStock(stock string, amount float64) bool {
 	//check if the user holds the amount of stock he/she is trying to sell
-	return true
+	return account.StockPortfolio[stock] >= amount
 }
 
 // returns the amount that is available to the user (i.e not on hold for any transactions)
