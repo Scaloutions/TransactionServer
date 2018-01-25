@@ -91,11 +91,34 @@ func cancelSell(account *Account) {
 	account.SellStack.Pop()
 } 
 
-func setBuyAmount(account Account, stock string, amount float64) {}
+/*
+Sets a defined amount of the given stock to buy when the current stock price 
+is less than or equal to the BUY_TRIGGER
+*/
+func setBuyAmount(account *Account, stock string, amount float64) {
+	//check if there is enough money in the account
+	if account.Available >= amount {
+		//hold money
+		account.Available -= amount
+		account.SetBuyMap[stock] += amount
+		glog.Info("SetBut for $", amount, " and stock ", stock)
+		glog.Info("Total SET BUY on stock ", stock, " is now ", account.SetBuyMap[stock])
+	} else {
+		glog.Error("Account does not have enough money to buy stock ", stock)
+	}
+}
 
-func cancelSetBuy(accont Account, storck string) {}
+func cancelSetBuy(accont Account, stock string) {}
 
-func setBuyTrigger(account Account, stock string, amount float64) {}
+func setBuyTrigger(account *Account, stock string, price float64) {
+	//check for set buy on that stock
+	if _, ok := account.SetBuyMap[stock]; ok {
+		account.BuyTriggers[stock] = price
+		glog.Info("Set BUY trigger for ", stock, "at price ", price)
+	} else {
+		glog.Error("You have to SET BUY AMOUNT on stock ", stock, " first.")
+	}
+}
 
 func setSellAmount(account Account, stock string, amount float64) {}
 
