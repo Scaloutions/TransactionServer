@@ -8,6 +8,18 @@ type Account struct {
 	AccountNumber string
 	Balance float64
 	Available float64
+	SellStack Stack
+	BuyStack Stack
+}
+
+type Buy struct {
+	Stock string
+	Amount float64
+}
+
+type Sell struct {
+	Stock string
+	Amount float64
 }
 
 func initializeAccount(value string) Account {
@@ -15,7 +27,14 @@ func initializeAccount(value string) Account {
 		AccountNumber: value,
 		Balance: 0.0,
 		Available: 0.0,
+		SellStack: Stack{},
+		BuyStack: Stack{},
 	}
+}
+
+func (account *Account) hasStock(stock string, amount float64) bool {
+	//check if the user holds the amount of stock he/she is trying to sell
+	return true
 }
 
 // returns the amount that is available to the user (i.e not on hold for any transactions)
