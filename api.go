@@ -22,7 +22,7 @@ func buy(account *Account, stock string, amount float64) {
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
-		glog.Info("Not enough money for account ",account, "to buy ", stock)
+		glog.Info("Not enough money for account ",account.AccountNumber, " to buy ", stock)
 	} else {
 		transaction := Buy{
 			Stock: stock,
@@ -45,12 +45,14 @@ func sell(account *Account, stock string, amount float64) {
 			MoneyAmount: amount,
 			StockAmount: stockNum, 
 		}
+		//this is fine becasue commit transaction has to be executed within 60sec 
+		//which means that the qoute does not change
 		account.SellStack.Push(transaction)
 		account.holdStock(stock, stockNum)
 
 	} else {
 		//TODO: improve logging
-		glog.Info("Not enough stock ", stock, "to sell.")
+		glog.Info("Not enough stock ", stock, " to sell.")
 	}
 }
 
@@ -82,10 +84,9 @@ func commitSell(account *Account) {
 	if account.SellStack.size > 0{
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
-		//this is fine becasue commit transaction has to be executed within 60sec 
-		//which means that the qoute does not change
-		account.Balance += transaction.MoneyAmount
-		account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
+		account.addMoney(transaction.MoneyAmount)
+		//we already holded those stocks before
+		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
 	} else {
 		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
 	}
