@@ -53,11 +53,17 @@ func sell(account Account, stock string, amount float64) {
 }
 func commitBuy(account Account) {} 
 
-func cancelBuy(account Account) {} 
+func cancelBuy(account Account) {
+	//TODO: log this
+	account.BuyStack.Pop()
+} 
 
 func commitSell(account Account) {} 
 
-func cancelSell(account Account) {} 
+func cancelSell(account Account) {
+	//TODO: log this
+	account.SellStack.Pop()
+} 
 
 func setBuyAmount(account Account, stock string, amount float64) {}
 
