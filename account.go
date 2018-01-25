@@ -10,12 +10,13 @@ type Account struct {
 	Available float64
 	SellStack Stack
 	BuyStack Stack
-	StockPortfolio map[string]int
+	StockPortfolio map[string]float64
 }
 
 type Buy struct {
 	Stock string
-	Amount float64
+	StockAmount float64
+	MoneyAmount float64
 }
 
 type Sell struct {
@@ -30,7 +31,7 @@ func initializeAccount(value string) Account {
 		Available: 0.0,
 		SellStack: Stack{},
 		BuyStack: Stack{},
-		StockPortfolio: make(map[string]int),
+		StockPortfolio: make(map[string]float64),
 	}
 }
 

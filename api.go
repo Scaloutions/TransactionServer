@@ -18,20 +18,21 @@ func quote(stock string) float64 {
 
 func buy(account *Account, stock string, amount float64) {
 	//get qoute
-	total := quote(stock) * amount
+	stockNum := amount / quote(stock)
 	//check balance
-	if account.getBalance() < total {
+	if account.getBalance() < amount {
 		//TODO: improve logging
 		glog.Info("Not enough money for account ",account, "to buy ", stock)
 	} else {
 		transaction := Buy{
 			Stock: stock,
-			Amount: amount,
+			MoneyAmount: amount,
+			StockAmount: stockNum,
 		}
 		//add buy transcation to the stack
 		account.BuyStack.Push(transaction)
 		//hold the money
-		account.holdMoney(total)
+		account.holdMoney(amount)
 	}
 }
 
@@ -51,14 +52,17 @@ func sell(account Account, stock string, amount float64) {
 		glog.Info("Not enough stock ", stock, "to sell.")
 	}
 }
+
 func commitBuy(account Account) {
 	if account.BuyStack.size >0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
 		//should we check balance here insted? TODO: clarify
-		account.Balance -= transaction.Amount
+		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
+		//TODO: refactor this line
+		account.StockPortfolio[transaction.Stock] = account.StockPortfolio[transaction.Stock] + transaction.StockAmount 
 
 	} else {
 		glog.Error("No buy transactions frebiously set for account: ", account.AccountNumber)
