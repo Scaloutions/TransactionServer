@@ -19,8 +19,11 @@ func testLogic(){
 	add(&account, 100)
 	glog.Info("Account balance after adding: ", account.getBalance())
 	buy(&account, "Apple", 10)
-	glog.Info("Available account balance after buying: ", account.getBalance())
-	glog.Info("Account balance after buying: ", account.Balance)
+	glog.Info("Available account balance after BUY: ", account.getBalance())
+	glog.Info("Account balance after BUY: ", account.Balance)
+	commitBuy(&account)
+	glog.Info("Available account balance after COMMIT BUY: ", account.getBalance())
+	glog.Info("Account balance after COMMIT BUY: ", account.Balance)
 }
 
 func main() {

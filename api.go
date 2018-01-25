@@ -36,7 +36,7 @@ func buy(account *Account, stock string, amount float64) {
 	}
 }
 
-func sell(account Account, stock string, amount float64) {
+func sell(account *Account, stock string, amount float64) {
 	//check if have that # of stocks
 	if account.hasStock(stock, amount){
 		//get quote
@@ -53,7 +53,7 @@ func sell(account Account, stock string, amount float64) {
 	}
 }
 
-func commitBuy(account Account) {
+func commitBuy(account *Account) {
 	if account.BuyStack.size >0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
