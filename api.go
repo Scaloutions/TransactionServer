@@ -46,6 +46,7 @@ func sell(account *Account, stock string, amount float64) {
 			StockAmount: stockNum, 
 		}
 		account.SellStack.Push(transaction)
+		account.holdStock(stock, stockNum)
 
 	} else {
 		//TODO: improve logging
@@ -71,16 +72,20 @@ func commitBuy(account *Account) {
 
 func cancelBuy(account *Account) {
 	//TODO: log this
-	account.BuyStack.Pop()
+	 i := account.BuyStack.Pop()
+	 transaction := i.(Buy)
+	 //add money back to Available Balance
+	 account.unholdMoney(transaction.MoneyAmount)
 } 
 
 func commitSell(account *Account) {
 	if account.SellStack.size > 0{
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
+		//this is fine becasue commit transaction has to be executed within 60sec 
+		//which means that the qoute does not change
 		account.Balance += transaction.MoneyAmount
 		account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
-
 	} else {
 		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
 	}
@@ -88,7 +93,9 @@ func commitSell(account *Account) {
 
 func cancelSell(account *Account) {
 	//TODO: log this
-	account.SellStack.Pop()
+	i := account.SellStack.Pop()
+	transaction := i.(Sell)
+	account.unholdStock(transaction.Stock, transaction.StockAmount)
 } 
 
 /*

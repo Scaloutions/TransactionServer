@@ -61,6 +61,26 @@ func (account *Account) holdMoney(amount float64) {
 	}
 }
 
+func (account *Account) unholdMoney(amount float64) {
+	if amount > 0 {
+		account.Available += amount
+	}
+}
+
+
+/*
+	TODO: we probably need to store hold stocks separately
+	i.e. the same way we're dealing with the account balance
+	to be able to display accurate stock numbers per account at any given time
+*/
+func (account *Account) holdStock(stock string, amount float64) {
+	account.StockPortfolio[stock] -= amount
+}
+
+func (account *Account) unholdStock(stock string, amount float64) {
+	account.StockPortfolio[stock] -= amount
+}
+
 func (account *Account) addMoney(amount float64) {
 	account.Balance += amount
 	account.Available += amount
