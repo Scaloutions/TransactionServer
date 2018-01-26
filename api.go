@@ -359,6 +359,8 @@ func cancelSetBuy(account *Account, stock string, file *os.File) {
 	command := "CANCEL_SET_BUY"
 	username := account.AccountNumber
 
+	//put money back
+	funds := account.SetBuyMap[stock]
 	userCommand := getUserCommand(
 		server,
 		transactionNum,
@@ -368,8 +370,6 @@ func cancelSetBuy(account *Account, stock string, file *os.File) {
 		funds)
 	logging(userCommand, file)
 
-	//put money back
-	funds := account.SetBuyMap[stock]
 	account.unholdMoney(funds)
 	//cancel SET BUYs
 	delete(account.SetBuyMap, stock)
