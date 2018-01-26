@@ -4,10 +4,17 @@ import (
 	"github.com/golang/glog"
 	"fmt"
 	"log"
+	"flag"
 	"net/http"
 	"github.com/gorilla/mux"
 	"encoding/json"
 )
+
+func usage() {
+	fmt.Println("usage: example -logtostderr=true -stderrthreshold=[INFO|WARN|FATAL|ERROR] -log_dir=[string]\n")
+	flag.PrintDefaults()
+}
+
 
 func echoString(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hi, there! Running test function..")
@@ -26,35 +33,25 @@ func authenticateUser(userId string) {
 func testLogic(){
 	account := initializeAccount("123")
 	add(&account, 100)
-	// glog.Info("Account balance after adding: ", account.getBalance())
 	glog.Info(account.Balance==100)
 	buy(&account, "Apple", 10)
-	// glog.Info("Available account balance after BUY: ", account.getBalance())
 	glog.Info(account.Balance==100)
 	glog.Info(account.Available==90)
-	// glog.Info("Account balance after BUY: ", account.Balance)
 	commitBuy(&account)
 	glog.Info(account.Balance==90)
 	glog.Info(account.Available==90)
 	glog.Info(account.StockPortfolio["Apple"]==10)
-	// glog.Info("Available account balance after COMMIT BUY: ", account.getBalance())
-	// glog.Info("Account balance after COMMIT BUY: ", account.Balance)
-	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
-	// glog.Info("Selling 5 shares of Apple")
 	sell(&account, "Apple", 5)
 	glog.Info(account.StockPortfolio["Apple"]==5)
 	glog.Info(account.Balance==90)
+	glog.Info(account.Available==90)
 	commitSell(&account)
 	glog.Info(account.StockPortfolio["Apple"]==5)
 	glog.Info(account.Balance==95)
 	glog.Info(account.Available==95)
-	// glog.Info("Available account balance after COMMIT SELL: ", account.getBalance())
-	// glog.Info("Account balance after COMMIT SELL: ", account.Balance)
-	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
 	//this should fail
 	sell(&account, "Apple", 100)
 	commitSell(&account)
-	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
 	glog.Info(account.StockPortfolio["Apple"]==5)
 	glog.Info(account.Balance==95)
 	glog.Info(account.Available==95)
@@ -65,13 +62,12 @@ func testLogic(){
 	glog.Info(account.Available==95)
 	buy(&account, "Apple", 10)
 	glog.Info(account.Balance==95)
-	glog.Info(account.Available==94)
+	glog.Info(account.Available==85)
 	cancelBuy(&account)
 	glog.Info(account.Balance==95)
 	glog.Info(account.Available==95)
 	glog.Info(account.StockPortfolio["Apple"]==5)
-	glog.Info("BEFORE TRIGGERS:", account.Balance)
-	glog.Info(account.Available)
+	glog.Info("BEFORE TRIGGERS:", account.Balance, " Available: ", account.Available)
 	glog.Info(account.StockPortfolio["Apple"])
 	setBuyAmount(&account, "Apple", 10)
 	setBuyTrigger(&account,"Apple", 0.5)
@@ -83,6 +79,7 @@ func testLogic(){
 	glog.Info("Balance: ", account.Balance)
 	glog.Info(account.Available)
 	glog.Info(account.StockPortfolio["Apple"])
+	setBuyAmount(&account, "Apple", 5)
 	setBuyTrigger(&account,"Apple", 5)
 	glog.Info("AFTER TRIGGERS:", account.Balance)
 	glog.Info(account.Available)
@@ -120,12 +117,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 	// 	panic(err)
 	// }
 
-	// glog.Info("USERID: ", msg.UserId)
-	// glog.Info("PRICE: ", msg.PriceDollars)
-	// glog.Info("Command: ", msg.Command)
-	// glog.Info("CommandNo: ", msg.CommandNumber)
-	// glog.Info("Stock: ", msg.Stock)
-
 
 	var account *Account
 	if msg.Command != "authenticate" {
@@ -133,12 +124,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		// glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
 	
-	// if msg.Command == "add" {
-	// 	glog.Info("YAAY adding money!!!")
-	// 	add(&account, msg.PriceDollars)
-	// 	glog.Info("Account balance after adding: ", account.getBalance())
-	// }
-
 	//TODO: rewrite this!!
 	switch(msg.Command) {
 	case "authenticate":
@@ -211,6 +196,8 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
+	flag.Usage = usage
+	flag.Parse()
 
 	router.HandleFunc("/api/test", echoString).Methods("GET")
 	// router.HandleFunc("/getQuote", echoString).Methods("GET")

@@ -107,10 +107,9 @@ func (account *Account) startBuyTrigger(stock string) {
 	//limit := trigger.MoneyAmount
 	limit := account.BuyTriggers[stock]
 
-	glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER CHECK")
 	//if there is still trigger in the map
 	if(limit>0){
-		glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER SET TO: >>>>>> ", limit, " current: ", price)
+		glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER CHECK: >>>>>> limit: ", limit, " current: ", price)
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Millisecond)
@@ -121,7 +120,11 @@ func (account *Account) startBuyTrigger(stock string) {
 		stockNum := account.SetBuyMap[stock]
 		buy(account, stock, stockNum)
 		commitBuy(account)
+		//hacky:
+		//put money back
+		account.Available = account.Balance
 		glog.Info("!!! Just bought stocks for trigger #: ", stockNum)
+		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
 		//remove st buy
 		delete(account.SetBuyMap, stock)	
 	}
