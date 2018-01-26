@@ -162,7 +162,7 @@ func setSellTrigger(account *Account, stock string, price float64) {
 
 }
 
-func cancelSetSell(account *Account, stock string, amount float64) {
+func cancelSetSell(account *Account, stock string) {
 	//put stock back
 	account.unholdStock(stock, account.SetSellMap[stock])
 	//cancel SET SELLs

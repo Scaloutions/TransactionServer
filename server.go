@@ -10,11 +10,18 @@ import (
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi, there!")
+	fmt.Fprintf(w, "Hi, there! Running test function..")
 	testLogic()
 }
 
+// User map
+var UserMap = make(map[string]*Account)
 
+func authenticateUser(userId string) {
+	account := initializeAccount(userId)
+	UserMap[userId] = &account
+	glog.Info("Retrieving user from the db..")
+}
 
 func testLogic(){
 	account := initializeAccount("123")
@@ -75,8 +82,12 @@ type Response struct {
 	Stock string
 }
 
+func getUser(userId string) *Account {
+	return UserMap[userId]
+}
+
 //Parse request and return Response Object
-func parseRequest(w http.ResponseWriter, r *http.Request){
+func parseRequest(w http.ResponseWriter, r *http.Request) {
 	msg := Response{} //initialize empty user
 
 	//Parse json request body and use it to set fields on user
@@ -92,43 +103,92 @@ func parseRequest(w http.ResponseWriter, r *http.Request){
 	// 	panic(err)
 	// }
 
-	glog.Info("USERID: ", msg.UserId)
-	glog.Info("PRICE: ", msg.PriceDollars)
-	glog.Info("Command: ", msg.Command)
-	glog.Info("CommandNo: ", msg.CommandNumber)
-	glog.Info("Stock: ", msg.Stock)
+	// glog.Info("USERID: ", msg.UserId)
+	// glog.Info("PRICE: ", msg.PriceDollars)
+	// glog.Info("Command: ", msg.Command)
+	// glog.Info("CommandNo: ", msg.CommandNumber)
+	// glog.Info("Stock: ", msg.Stock)
 
-	account := initializeAccount(msg.UserId)
-	add(&account, msg.PriceDollars)
-	glog.Info("Account balance after adding: ", account.getBalance())
+
+	var account *Account
+	if msg.Command != "authenticate" {
+		account = getUser(msg.UserId)
+		glog.Info("USER: ", account.AccountNumber, account.Balance)
+	}
+	
+	// if msg.Command == "add" {
+	// 	glog.Info("YAAY adding money!!!")
+	// 	add(&account, msg.PriceDollars)
+	// 	glog.Info("Account balance after adding: ", account.getBalance())
+	// }
+
+	//TODO: rewrite this!!
+	switch(msg.Command) {
+	case "authenticate":
+		authenticateUser(msg.UserId)
+	case "add":
+		add(account, msg.PriceDollars)
+		glog.Info("Account balance after adding: ", account.getBalance())
+		// UserMap[msg.UserId] = account
+	case "buy":
+		buy(account, msg.Stock, msg.PriceDollars)
+	case "commit_sell":
+		commitSell(account)
+	case "commit_buy":
+		commitBuy(account)
+	case "cance_buy":
+		cancelSell(account)
+	case "cancel_sell":
+		cancelSell(account)
+	case "set_buy_amount":
+		setSellAmount(account, msg.Stock, msg.PriceDollars)
+	case "set_sell_amount":
+		setSellAmount(account, msg.Stock, msg.PriceDollars)
+	case "cancel_set_buy":
+		cancelSetBuy(account, msg.Stock)
+	case "cancel_set_sell":
+		cancelSetSell(account, msg.Stock)
+	case "set_buy_trigger":
+		setBuyTrigger(account, msg.Stock, msg.PriceDollars)
+	case "set_sell_trigger":
+		setSellTrigger(account, msg.Stock, msg.PriceDollars)
+	case "dumplog":
+		glog.Info("SAVING XML LOG FILE")
+	default: 
+		panic("Oh noooo we can't process this request :(")
+
+	}
+
 
 	//Set Content-Type header so that clients will know how to read response
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	//Write json response back to response 
 	// w.Write(msgJson)
+	// return msg
 }
 
 func main() {
 	router := mux.NewRouter()
 
-	// router.HandleFunc("/", parseRequest)
+	router.HandleFunc("/api/test", echoString).Methods("GET")
 	// router.HandleFunc("/getQuote", echoString).Methods("GET")
+	router.HandleFunc("/api/authenticate", parseRequest).Methods("POST")
 	router.HandleFunc("/api/add", parseRequest).Methods("POST")
-	// router.HandleFunc("/api/sell", ).Methods("GET")
-	// router.HandleFunc("/api/buy", ).Methods("GET")
-	// router.HandleFunc("/api/commit_sell", ).Methods("GET")
-	// router.HandleFunc("/api/commit_buy", ).Methods("GET")
-	// router.HandleFunc("/api/cancel_buy", ).Methods("GET")
-	// router.HandleFunc("/api/cancel_sell", ).Methods("GET")
-	// router.HandleFunc("/api/set_buy_amount", ).Methods("GET")
-	// router.HandleFunc("/api/set_sell_amount", ).Methods("GET")
-	// router.HandleFunc("/api/cancel_set_buy", ).Methods("GET")
-	// router.HandleFunc("/api/cancel_set_sell", ).Methods("GET")
-	// router.HandleFunc("/api/set_buy_trigger", ).Methods("GET")
-	// router.HandleFunc("/api/set_sell_trigger", ).Methods("GET")
-	// router.HandleFunc("/api/", ).Methods()
-	//router.HandleFunc("/api/", ).Methods()
+	router.HandleFunc("/api/sell", parseRequest).Methods("POST")
+	router.HandleFunc("/api/buy", parseRequest).Methods("POST")
+	router.HandleFunc("/api/commit_sell",parseRequest).Methods("POST")
+	router.HandleFunc("/api/commit_buy",parseRequest).Methods("POST")
+	router.HandleFunc("/api/cancel_buy", parseRequest).Methods("POST")
+	router.HandleFunc("/api/cancel_sell", parseRequest).Methods("POST")
+	router.HandleFunc("/api/set_buy_amount", parseRequest).Methods("POST")
+	router.HandleFunc("/api/set_sell_amount", parseRequest).Methods("POST")
+	router.HandleFunc("/api/cancel_set_buy", parseRequest).Methods("POST")
+	router.HandleFunc("/api/cancel_set_sell", parseRequest).Methods("POST")
+	router.HandleFunc("/api/set_buy_trigger", parseRequest).Methods("POST")
+	router.HandleFunc("/api/set_sell_trigger", parseRequest).Methods("POST")
+	// router.HandleFunc("/api/", ).Methods("POST")
+	//router.HandleFunc("/api/", ).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":9090", router))
 
