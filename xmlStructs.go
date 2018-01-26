@@ -48,3 +48,15 @@ type QuoteServer struct {
 	Price           string   `xml:"price,omitempty"`
 	Cryptokey       string   `xml:"cryptokey,omitempty"`
 }
+
+type ErrorEvent struct {
+	XMLName        xml.Name `xml:"errorEvent"`
+	Timestamp      int64    `xml:"timestamp,omitempty"`
+	Server         string   `xml:"server,omitempty"`
+	TransactionNum int      `xml:"transactionNum,omitempty"`
+	Command        string   `xml:"command,omitempty"`
+	Username       string   `xml:"username,omitempty"`
+	StockSymbol    string   `xml:"stockSymbol,omitempty"`
+	Funds          string   `xml:"funds,omitempty"`
+	ErrorMessage   string   `xml:"errorMessage,omitempty"`
+}
