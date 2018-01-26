@@ -129,3 +129,32 @@ func (account *Account) startBuyTrigger(stock string) {
 		delete(account.SetBuyMap, stock)	
 	}
 }
+
+func (account *Account) startSellTrigger(stock string) {
+	price := getQuote(stock, account.AccountNumber)
+	//limit := trigger.MoneyAmount
+	min := account.SellTriggers[stock]
+
+	//if there is still trigger in the map
+	if(min>0){
+		glog.Info(">>>>>>>>>>>>>>>>>>>SELL TRIGGER CHECK: >>>>>> limit: ", min, " current: ", price)
+		for price < min {
+			glog.Info("Price is still greater than the trigger limit")
+			time.Sleep(60 * time.Millisecond)
+			price = getQuote(stock, account.AccountNumber)
+			//sleep for 60 sec
+		}
+
+		stockNum := account.SetSellMap[stock]
+		sell(account, stock, stockNum)
+		commitSell(account)
+		//hacky:
+		//put stock back
+		account.StockPortfolio[stock] += stockNum
+		glog.Info("!!! Just SOLD stocks for trigger #: ", stockNum)
+		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
+		glog.Info("Stock balance: ", account.StockPortfolio[stock])
+		//remove st buy
+		delete(account.SetSellMap, stock)	
+	}
+}

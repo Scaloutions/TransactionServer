@@ -148,13 +148,11 @@ func setBuyTrigger(account *Account, stock string, price float64) {
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up go routine")
+			//prevent race condition here TODO: rewrite
+			account.BuyTriggers[stock] = price
 			go account.startBuyTrigger(stock)
 		}
-		// if account.BuyTriggers[stock] > 0 {
-		// 	//spin up go routine trigger
-		// 	glog.Info("Spinning up go routine")
-		// 	go account.startBuyTrigger(stock)
-		// }
+
 		account.BuyTriggers[stock] = price
 		glog.Info("Set BUY trigger for ", stock, " at price ", price)
 	} else {
@@ -167,21 +165,41 @@ func setSellAmount(account *Account, stock string, amount float64) {
 		account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
-		glog.Info("Executed SET SELL AMOUNT")
+		glog.Info("Executed SET SELL AMOUNT for ", amount)
 	} else {
 		glog.Error("User does not have enough stock to sell ", stock)
 	}
 }
 
 func setSellTrigger(account *Account, stock string, price float64) {
+	//check for set buy on that stock
 	if _, ok := account.SetSellMap[stock]; ok {
+		//TODO: this is hacky we need to properly check for the key here
+		if _, exists := account.SellTriggers[stock]; exists {
+			glog.Info("Sell Trigger is already running!")
+		} else {
+			//spin up go routine trigger
+			glog.Info("Spinning up go routine SEll trigger")
+			account.SellTriggers[stock] = price
+			go account.startSellTrigger(stock)
+		}
+
 		account.SellTriggers[stock] = price
-		glog.Info("Executed SET SELL trigger for ", stock, "at price ", price)
+		glog.Info("Set SELL trigger for ", stock, " at price ", price)
 	} else {
 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
 	}
-
 }
+
+// func setSellTrigger(account *Account, stock string, price float64) {
+// 	if _, ok := account.SetSellMap[stock]; ok {
+// 		account.SellTriggers[stock] = price
+// 		glog.Info("Executed SET SELL trigger for ", stock, "at price ", price)
+// 	} else {
+// 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
+// 	}
+
+// }
 
 func cancelSetSell(account *Account, stock string) {
 	//put stock back
