@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var isFirstLoggingEvent bool = true
+isFirstLoggingEvent := true
 var xmlHeader string = `<?xml version="1.0"?>` + "\n"
 
 type UserCommand struct {
@@ -67,7 +67,11 @@ type ErrorEvent struct {
 
 func logCommand(loggingObject interface{}) {
 	if xmlstring, err := xml.MarshalIndent(loggingObject, "", "    "); err == nil {
-		xmlstring = []byte(xmlHeader + string(xmlstring))
+		if isFirstLoggingEvent {
+			xmlstring = []byte(xmlHeader + string(xmlstring))
+			isFirstLoggingEvent = false
+		}
+		xmlstring = []byte(string(xmlstring))
 		fmt.Printf("%s\n", xmlstring)
 	}
 }
