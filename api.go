@@ -534,12 +534,14 @@ func setSellTrigger(
 }
 
 func cancelSetSell(
-	account *Account, stock string, amount float64, file *os.File) {
+	account *Account, stock string, file *os.File) {
 
 	server := "CLT1"
 	transactionNum := 14
 	command := "CANCEL_SET_SELL"
 	username := account.AccountNumber
+
+	funds := account.SetSellMap[stock]
 
 	userCommand := getUserCommand(
 		server,
@@ -547,10 +549,8 @@ func cancelSetSell(
 		command,
 		username,
 		stock,
-		amount)
+		funds)
 	logging(userCommand, file)
-
-	funds := account.SetSellMap[stock]
 
 	//put stock back
 	account.unholdStock(stock, funds)
