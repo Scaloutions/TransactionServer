@@ -101,18 +101,28 @@ func (account *Account) addMoney(amount float64) {
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 // unix.Nono timestamp
-func (account *Account) startBuyTrigger(stock string, limit float64) {
+// FOR NOW JUST DO IT ON STOCK SYMBOL
+func (account *Account) startBuyTrigger(stock string) {
 	price := getQuote(stock, account.AccountNumber)
 	//limit := trigger.MoneyAmount
+	limit := account.BuyTriggers[stock]
 
-	for price > limit {
-		time.Sleep(60 * time.Millisecond)
-		price = getQuote(stock, account.AccountNumber)
-		//sleep for 60 sec
+	glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER CHECK")
+	//if there is still trigger in the map
+	if(limit>0){
+		glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER SET TO: >>>>>> ", limit, " current: ", price)
+		for price > limit {
+			glog.Info("Price is still greater than the trigger limit")
+			time.Sleep(60 * time.Millisecond)
+			price = getQuote(stock, account.AccountNumber)
+			//sleep for 60 sec
+		}
+
+		stockNum := account.SetBuyMap[stock]
+		buy(account, stock, stockNum)
+		commitBuy(account)
+		glog.Info("!!! Just bought stocks for trigger #: ", stockNum)
+		//remove st buy
+		delete(account.SetBuyMap, stock)	
 	}
-
-	stockNum := account.SetBuyMap[stock]
-	buy(account, stock, stockNum)
-	//remove st buy
-	delete(account.SetBuyMap, stock)	
 }
