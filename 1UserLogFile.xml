@@ -1,9 +1,34 @@
 <?xml version="1.0"?>
 <userCommand>
-    <timestamp>1516955087459</timestamp>
+    <timestamp>1516961223615</timestamp>
     <server>CLT1</server>
     <transactionNum>1</transactionNum>
     <command>ADD</command>
     <username>123</username>
     <funds>100.00</funds>
+</userCommand>
+<userCommand>
+    <timestamp>1516961223620</timestamp>
+    <server>CLT1</server>
+    <transactionNum>2</transactionNum>
+    <command>COMMIT_BUY</command>
+    <username>123</username>
+    <stockSymbol>Apple</stockSymbol>
+    <funds>10.00</funds>
+</userCommand>
+<userCommand>
+    <timestamp>1516961223627</timestamp>
+    <server>CLT1</server>
+    <transactionNum>4</transactionNum>
+    <command>COMMIT_SELL</command>
+    <username>123</username>
+    <funds>5.00</funds>
+</userCommand>
+<userCommand>
+    <timestamp>1516961223647</timestamp>
+    <server>CLT1</server>
+    <transactionNum>3</transactionNum>
+    <command>CANCEL_BUY</command>
+    <username>123</username>
+    <funds>1.00</funds>
 </userCommand>

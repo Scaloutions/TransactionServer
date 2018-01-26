@@ -27,7 +27,7 @@ func getXMLEventString(loggingObject interface{}) []byte {
 
 	var xmlstring []byte
 	if xmlstring, err := xml.MarshalIndent(loggingObject, "", "    "); err == nil {
-		xmlstring = []byte(string(xmlstring))
+		xmlstring = []byte(string(xmlstring) + "\n")
 		return xmlstring
 	}
 	return xmlstring

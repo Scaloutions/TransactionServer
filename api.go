@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/golang/glog"
@@ -9,37 +10,106 @@ import (
 //below are all the functions that need to be implemented in the system
 
 func add(account *Account, amount float64, f *os.File) {
+
+	server := "CLT1"
+	transactionNum := 1
+	command := "ADD"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		"",
+		amount)
+	logging(userCommand, f)
+
 	if amount > 0 {
+
 		account.addMoney(amount)
 		glog.Info("Added ", amount)
-		userCommand := UserCommand{
-			Timestamp:      getCurrentTs(),
-			Server:         "CLT1",
-			TransactionNum: 1,
-			Command:        "ADD",
-			Username:       account.AccountNumber,
-			Funds:          getFundsAsString(amount)}
-		logging(userCommand, f)
+
 	} else {
-		glog.Error("Cannot add negative amount to balance ", amount)
+
+		errMsg := fmt.Sprintf("Cannot add negative amount %.2f to balance ", amount)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			"",
+			amount,
+			errMsg)
+		logging(errorEvent, f)
+
 	}
 }
 
-func getQuote(stock string, userid string) float64 {
+func getQuote(stock string, userid string, file *os.File) float64 {
+
+	server := "CLT1"
+	transactionNum := 2
+	command := "QUOTE"
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		userid,
+		stock,
+		0)
+	logging(userCommand, file)
+
 	// quoteObj := getQuoteFromQS(userid, stock)
 	// //TODO: log quote server hit here
+
 	// return quoteObj.Price
 	return 1
 }
 
-func buy(account *Account, stock string, amount float64) {
+func buy(
+	account *Account, stock string, amount float64, file *os.File) {
+
 	//get qoute
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+	stockNum := amount / getQuote(stock, account.AccountNumber, file)
+
+	server := "CLT1"
+	transactionNum := 3
+	command := "BUY"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		amount)
+	logging(userCommand, file)
+
 	//check balance
 	if account.getBalance() < amount {
-		//TODO: improve logging
-		glog.Info("Not enough money for account ", account.AccountNumber, " to buy ", stock)
+
+		errMsg := fmt.Sprintf(
+			"Not enough money for account %s to buy %s",
+			account.AccountNumber, stock)
+		glog.Info(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			amount,
+			errMsg)
+		logging(errorEvent, file)
+
 	} else {
+
 		transaction := Buy{
 			Stock:       stock,
 			MoneyAmount: amount,
@@ -52,9 +122,24 @@ func buy(account *Account, stock string, amount float64) {
 	}
 }
 
-func sell(account *Account, stock string, amount float64) {
+func sell(account *Account, stock string, amount float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 4
+	command := "SELL"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		amount)
+	logging(userCommand, file)
+
 	//check if have that # of stocks
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+	stockNum := amount / getQuote(stock, account.AccountNumber, file)
 	if account.hasStock(stock, stockNum) {
 		transaction := Sell{
 			Stock:       stock,
@@ -67,16 +152,44 @@ func sell(account *Account, stock string, amount float64) {
 		account.holdStock(stock, stockNum)
 
 	} else {
-		//TODO: improve logging
-		glog.Info("Not enough stock ", stock, " to sell.")
+
+		errMsg := fmt.Sprintf("Not enough stock %s to sell.", stock)
+		glog.Info(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			amount,
+			errMsg)
+		logging(errorEvent, file)
+
 	}
 }
 
-func commitBuy(account *Account) {
+func commitBuy(account *Account, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 5
+	command := "COMMIT_BUY"
+	username := account.AccountNumber
+
 	if account.BuyStack.size > 0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
+
+		userCommand := getUserCommand(
+			server,
+			transactionNum,
+			command,
+			username,
+			transaction.Stock,
+			transaction.MoneyAmount)
+		logging(userCommand, file)
+
 		//should we check balance here insted? TODO: clarify
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
@@ -84,42 +197,131 @@ func commitBuy(account *Account) {
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 
 	} else {
-		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
+
+		errMsg := fmt.Sprintf("No BUY transactions previously set for account %s", username)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			"",
+			0,
+			errMsg)
+		logging(errorEvent, file)
 	}
 }
 
-func cancelBuy(account *Account) {
-	//TODO: log this
+func cancelBuy(account *Account, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 6
+	command := "CANCEL_BUY"
+	username := account.AccountNumber
+
 	i := account.BuyStack.Pop()
 	transaction := i.(Buy)
 	//add money back to Available Balance
-	account.unholdMoney(transaction.MoneyAmount)
+	funds := transaction.MoneyAmount
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		transaction.Stock,
+		transaction.MoneyAmount)
+	logging(userCommand, file)
+
+	account.unholdMoney(funds)
+
 }
 
-func commitSell(account *Account) {
+func commitSell(account *Account, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 7
+	command := "COMMIT_SELL"
+	username := account.AccountNumber
+
 	if account.SellStack.size > 0 {
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
-		account.addMoney(transaction.MoneyAmount)
+		funds := transaction.MoneyAmount
+		account.addMoney(funds)
 		//we already holded those stocks before
 		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount
+		userCommand := getUserCommand(
+			server,
+			transactionNum,
+			command,
+			username,
+			transaction.Stock,
+			funds)
+		logging(userCommand, file)
 	} else {
-		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
+		errMsg := fmt.Sprintf("No SELL transactions previously set for account %s", username)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			"",
+			0,
+			errMsg)
+		logging(errorEvent, file)
 	}
 }
 
-func cancelSell(account *Account) {
+func cancelSell(account *Account, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 8
+	command := "CANCEL_SELL"
+	username := account.AccountNumber
+
 	//TODO: log this
 	i := account.SellStack.Pop()
 	transaction := i.(Sell)
-	account.unholdStock(transaction.Stock, transaction.StockAmount)
+	stock := transaction.Stock
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		transaction.MoneyAmount)
+	logging(userCommand, file)
+
+	account.unholdStock(stock, transaction.StockAmount)
+
 }
 
 /*
 Sets a defined amount of the given stock to buy when the current stock price
 is less than or equal to the BUY_TRIGGER
 */
-func setBuyAmount(account *Account, stock string, amount float64) {
+func setBuyAmount(
+	account *Account, stock string, amount float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 9
+	command := "SET_BUY_AMOUNT"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		amount)
+	logging(userCommand, file)
+
 	//check if there is enough money in the account
 	if account.Available >= amount {
 		//hold money
@@ -127,8 +329,22 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 		account.SetBuyMap[stock] += amount
 		glog.Info("SetBut for $", amount, " and stock ", stock)
 		glog.Info("Total SET BUY on stock ", stock, " is now ", account.SetBuyMap[stock])
+
 	} else {
-		glog.Error("Account does not have enough money to buy stock ", stock)
+		errMsg := fmt.Sprintf(
+			"Account %s does not have enough money to buy stock %s",
+			username, stock)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			amount,
+			errMsg)
+		logging(errorEvent, file)
 	}
 }
 
@@ -136,48 +352,173 @@ func setBuyAmount(account *Account, stock string, amount float64) {
    TODO: verify what happens if the user set multiple SET BUY on one stock
    ?????
 */
-func cancelSetBuy(account *Account, stock string) {
+func cancelSetBuy(account *Account, stock string, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 10
+	command := "CANCEL_SET_BUY"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		funds)
+	logging(userCommand, file)
+
 	//put money back
-	account.unholdMoney(account.SetBuyMap[stock])
+	funds := account.SetBuyMap[stock]
+	account.unholdMoney(funds)
 	//cancel SET BUYs
 	delete(account.SetBuyMap, stock)
 	//cancel the trigger
 	delete(account.BuyTriggers, stock)
+
 }
 
-func setBuyTrigger(account *Account, stock string, price float64) {
+func setBuyTrigger(
+	account *Account, stock string, price float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 11
+	command := "SET_BUY_TRIGGER"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		account.SetBuyMap[stock])
+	logging(userCommand, file)
+
 	//check for set buy on that stock
 	if _, ok := account.SetBuyMap[stock]; ok {
 		account.BuyTriggers[stock] = price
 		glog.Info("Set BUY trigger for ", stock, "at price ", price)
+
 	} else {
-		glog.Error("You have to SET BUY AMOUNT on stock ", stock, " first.")
+		errMsg := fmt.Sprintf("You have to SET BUY AMOUNT on stock %s first", stock)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			account.SetBuyMap[stock],
+			errMsg)
+		logging(errorEvent, file)
 	}
 }
 
-func setSellAmount(account *Account, stock string, amount float64) {
+func setSellAmount(
+	account *Account, stock string, amount float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 12
+	command := "SET_SELL_AMOUNT"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		amount)
+	logging(userCommand, file)
+
 	if account.StockPortfolio[stock] > amount {
 		account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
+
 	} else {
-		glog.Error("User does not have enough stock to sell ", stock)
+
+		errMsg := fmt.Sprintf(
+			"User %s does not have enough stock %s to sell",
+			username, stock)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			amount,
+			errMsg)
+		logging(errorEvent, file)
 	}
 }
 
-func setSellTrigger(account *Account, stock string, price float64) {
+func setSellTrigger(
+	account *Account, stock string, price float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 13
+	command := "SET_SELL_TRIGGER"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		account.SetSellMap[stock])
+	logging(userCommand, file)
+
 	if _, ok := account.SetSellMap[stock]; ok {
 		account.SellTriggers[stock] = price
 		glog.Info("Set SELL trigger for ", stock, "at price ", price)
+
 	} else {
-		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
+
+		errMsg := fmt.Sprintf(
+			"User %s has not SET SELL AMOUNT on stock %s",
+			username, stock)
+		glog.Error(errMsg)
+
+		errorEvent := getErrorEvent(
+			server,
+			transactionNum,
+			command,
+			username,
+			stock,
+			0,
+			errMsg)
+		logging(errorEvent, file)
 	}
 
 }
 
-func cancelSetSell(account *Account, stock string, amount float64) {
+func cancelSetSell(
+	account *Account, stock string, amount float64, file *os.File) {
+
+	server := "CLT1"
+	transactionNum := 14
+	command := "CANCEL_SET_SELL"
+	username := account.AccountNumber
+
+	userCommand := getUserCommand(
+		server,
+		transactionNum,
+		command,
+		username,
+		stock,
+		amount)
+	logging(userCommand, file)
+
+	funds := account.SetSellMap[stock]
+
 	//put stock back
-	account.unholdStock(stock, account.SetSellMap[stock])
+	account.unholdStock(stock, funds)
 	//cancel SET SELLs
 	delete(account.SetSellMap, stock)
 	//cancel the trigger
