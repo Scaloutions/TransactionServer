@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <userCommand>
-    <timestamp>1517005591918</timestamp>
+    <timestamp>1517009733631</timestamp>
     <server>CLT1</server>
     <transactionNum>1</transactionNum>
     <command>ADD</command>
@@ -8,7 +8,7 @@
     <funds>100.00</funds>
 </userCommand>
 <accountTransaction>
-    <timestamp>1517005591921</timestamp>
+    <timestamp>1517009733634</timestamp>
     <server>CLT1</server>
     <transactionNum>1</transactionNum>
     <action>add</action>
@@ -16,7 +16,7 @@
     <funds>100.00</funds>
 </accountTransaction>
 <userCommand>
-    <timestamp>1517005591923</timestamp>
+    <timestamp>1517009733635</timestamp>
     <server>CLT1</server>
     <transactionNum>2</transactionNum>
     <command>QUOTE</command>
@@ -24,7 +24,7 @@
     <stockSymbol>Apple</stockSymbol>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591923</timestamp>
+    <timestamp>1517009733636</timestamp>
     <server>CLT1</server>
     <transactionNum>3</transactionNum>
     <command>BUY</command>
@@ -33,7 +33,7 @@
     <funds>10.00</funds>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591924</timestamp>
+    <timestamp>1517009733637</timestamp>
     <server>CLT1</server>
     <transactionNum>5</transactionNum>
     <command>COMMIT_BUY</command>
@@ -42,7 +42,7 @@
     <funds>10.00</funds>
 </userCommand>
 <accountTransaction>
-    <timestamp>1517005591924</timestamp>
+    <timestamp>1517009733637</timestamp>
     <server>CLT1</server>
     <transactionNum>5</transactionNum>
     <action>remove</action>
@@ -50,7 +50,7 @@
     <funds>10.00</funds>
 </accountTransaction>
 <userCommand>
-    <timestamp>1517005591926</timestamp>
+    <timestamp>1517009733639</timestamp>
     <server>CLT1</server>
     <transactionNum>4</transactionNum>
     <command>SELL</command>
@@ -59,7 +59,7 @@
     <funds>5.00</funds>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591926</timestamp>
+    <timestamp>1517009733640</timestamp>
     <server>CLT1</server>
     <transactionNum>2</transactionNum>
     <command>QUOTE</command>
@@ -67,7 +67,7 @@
     <stockSymbol>Apple</stockSymbol>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591927</timestamp>
+    <timestamp>1517009733644</timestamp>
     <server>CLT1</server>
     <transactionNum>7</transactionNum>
     <command>COMMIT_SELL</command>
@@ -76,7 +76,7 @@
     <funds>5.00</funds>
 </userCommand>
 <accountTransaction>
-    <timestamp>1517005591927</timestamp>
+    <timestamp>1517009733644</timestamp>
     <server>CLT1</server>
     <transactionNum>7</transactionNum>
     <action>add</action>
@@ -84,7 +84,7 @@
     <funds>5.00</funds>
 </accountTransaction>
 <userCommand>
-    <timestamp>1517005591931</timestamp>
+    <timestamp>1517009733645</timestamp>
     <server>CLT1</server>
     <transactionNum>4</transactionNum>
     <command>SELL</command>
@@ -93,7 +93,7 @@
     <funds>100.00</funds>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591931</timestamp>
+    <timestamp>1517009733645</timestamp>
     <server>CLT1</server>
     <transactionNum>2</transactionNum>
     <command>QUOTE</command>
@@ -101,7 +101,7 @@
     <stockSymbol>Apple</stockSymbol>
 </userCommand>
 <errorEvent>
-    <timestamp>1517005591931</timestamp>
+    <timestamp>1517009733646</timestamp>
     <server>CLT1</server>
     <transactionNum>4</transactionNum>
     <command>SELL</command>
@@ -111,7 +111,7 @@
     <errorMessage>Not enough stock Apple to sell.</errorMessage>
 </errorEvent>
 <errorEvent>
-    <timestamp>1517005591932</timestamp>
+    <timestamp>1517009733646</timestamp>
     <server>CLT1</server>
     <transactionNum>7</transactionNum>
     <command>COMMIT_SELL</command>
@@ -119,7 +119,7 @@
     <errorMessage>No SELL transactions previously set for account 123</errorMessage>
 </errorEvent>
 <userCommand>
-    <timestamp>1517005591936</timestamp>
+    <timestamp>1517009733648</timestamp>
     <server>CLT1</server>
     <transactionNum>2</transactionNum>
     <command>QUOTE</command>
@@ -127,7 +127,7 @@
     <stockSymbol>Apple</stockSymbol>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591937</timestamp>
+    <timestamp>1517009733648</timestamp>
     <server>CLT1</server>
     <transactionNum>3</transactionNum>
     <command>BUY</command>
@@ -136,7 +136,7 @@
     <funds>10000.00</funds>
 </userCommand>
 <errorEvent>
-    <timestamp>1517005591938</timestamp>
+    <timestamp>1517009733648</timestamp>
     <server>CLT1</server>
     <transactionNum>3</transactionNum>
     <command>BUY</command>
@@ -146,7 +146,7 @@
     <errorMessage>Not enough money for account 123 to buy Apple</errorMessage>
 </errorEvent>
 <errorEvent>
-    <timestamp>1517005591939</timestamp>
+    <timestamp>1517009733649</timestamp>
     <server>CLT1</server>
     <transactionNum>5</transactionNum>
     <command>COMMIT_BUY</command>
@@ -154,7 +154,7 @@
     <errorMessage>No BUY transactions previously set for account 123</errorMessage>
 </errorEvent>
 <userCommand>
-    <timestamp>1517005591943</timestamp>
+    <timestamp>1517009733651</timestamp>
     <server>CLT1</server>
     <transactionNum>2</transactionNum>
     <command>QUOTE</command>
@@ -162,7 +162,7 @@
     <stockSymbol>Apple</stockSymbol>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591943</timestamp>
+    <timestamp>1517009733651</timestamp>
     <server>CLT1</server>
     <transactionNum>3</transactionNum>
     <command>BUY</command>
@@ -171,7 +171,7 @@
     <funds>1.00</funds>
 </userCommand>
 <userCommand>
-    <timestamp>1517005591944</timestamp>
+    <timestamp>1517009733652</timestamp>
     <server>CLT1</server>
     <transactionNum>6</transactionNum>
     <command>CANCEL_BUY</command>

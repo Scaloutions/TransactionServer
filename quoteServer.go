@@ -97,7 +97,7 @@ func getQuoteFromQS(userid string, stock string, file *os.File) Quote {
 		Price:     price,
 		Stock:     quoteArgs[1],
 		UserId:    quoteArgs[2],
-		Timestamp: timestamp,
+		Timestamp: strconv.FormatInt(timestamp, 10),
 		CryptoKey: quoteArgs[4],
 	}
 
