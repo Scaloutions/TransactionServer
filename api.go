@@ -7,6 +7,11 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	addAction    = "add"
+	removeAction = "remove"
+)
+
 //below are all the functions that need to be implemented in the system
 
 func add(account *Account, amount float64, f *os.File) {
@@ -29,6 +34,14 @@ func add(account *Account, amount float64, f *os.File) {
 
 		account.addMoney(amount)
 		glog.Info("Added ", amount)
+		// TODO: add logging for accountTransaction here
+		accountTransaction := getAccountTransaction(
+			server,
+			transactionNum,
+			addAction,
+			username,
+			amount)
+		logging(accountTransaction, f)
 
 	} else {
 
@@ -190,8 +203,18 @@ func commitBuy(account *Account, file *os.File) {
 			transaction.MoneyAmount)
 		logging(userCommand, file)
 
+		funds := transaction.MoneyAmount
 		//should we check balance here insted? TODO: clarify
-		account.Balance -= transaction.MoneyAmount
+		account.Balance -= funds
+
+		accountTransaction := getAccountTransaction(
+			server,
+			transactionNum,
+			removeAction,
+			username,
+			funds)
+		logging(accountTransaction, file)
+
 		//add number of stocks to user
 		//TODO: refactor this line
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
@@ -252,6 +275,7 @@ func commitSell(account *Account, file *os.File) {
 		account.addMoney(funds)
 		//we already holded those stocks before
 		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount
+
 		userCommand := getUserCommand(
 			server,
 			transactionNum,
@@ -260,8 +284,19 @@ func commitSell(account *Account, file *os.File) {
 			transaction.Stock,
 			funds)
 		logging(userCommand, file)
+
+		accountTransaction := getAccountTransaction(
+			server,
+			transactionNum,
+			addAction,
+			username,
+			funds)
+		logging(accountTransaction, file)
+
 	} else {
-		errMsg := fmt.Sprintf("No SELL transactions previously set for account %s", username)
+
+		errMsg := fmt.Sprintf(
+			"No SELL transactions previously set for account %s", username)
 		glog.Error(errMsg)
 
 		errorEvent := getErrorEvent(
