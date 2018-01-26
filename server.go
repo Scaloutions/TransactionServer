@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/golang/glog"
 	"fmt"
-	"html"
+	//"html"
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
+	"strconv"
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
@@ -64,21 +65,47 @@ func testLogic(){
 
 }
 
+func parseRequest(w http.ResponseWriter, r *http.Request){
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		return
+	}
+	fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
+	userId := r.FormValue("userId")
+
+	price, err := strconv.ParseFloat(r.FormValue("priceDollars"), 64)
+	if err != nil {
+		glog.Error("Cannot parse POST REQ")
+	}
+
+	// price := float64(r.FormValue("priceDollars"))
+	fmt.Fprintf(w, "userId= %s\n", userId)
+	fmt.Fprintf(w, "Price = %s\n", price)
+
+	account := initializeAccount(userId)
+	//call add here
+	add(&account, price)
+	glog.Info("Account balance after adding: ", account.getBalance())
+}
+
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))}).Methods("GET")
-
-	router.HandleFunc("/getQuote", echoString).Methods("GET")
-	//router.HandleFunc("/api/buy", ).Methods()
-	//router.HandleFunc("/api/sell", ).Methods()
-	//router.HandleFunc("/api/commit_sell", ).Methods()
-	//router.HandleFunc("/api/commit_buy", ).Methods()
-	//router.HandleFunc("/api/cancel_buy", ).Methods()
-	//router.HandleFunc("/api/cancel_sell", ).Methods()
-	//router.HandleFunc("/api/set_buy_amount", ).Methods()
-	//router.HandleFunc("/api/set_sell_amount", ).Methods()
+	// router.HandleFunc("/", parseRequest)
+	// router.HandleFunc("/getQuote", echoString).Methods("GET")
+	router.HandleFunc("/api/buy", parseRequest).Methods("POST")
+	// router.HandleFunc("/api/sell", ).Methods("GET")
+	// router.HandleFunc("/api/commit_sell", ).Methods("GET")
+	// router.HandleFunc("/api/commit_buy", ).Methods("GET")
+	// router.HandleFunc("/api/cancel_buy", ).Methods("GET")
+	// router.HandleFunc("/api/cancel_sell", ).Methods("GET")
+	// router.HandleFunc("/api/set_buy_amount", ).Methods("GET")
+	// router.HandleFunc("/api/set_sell_amount", ).Methods("GET")
+	// router.HandleFunc("/api/cancel_set_buy", ).Methods("GET")
+	// router.HandleFunc("/api/cancel_set_sell", ).Methods("GET")
+	// router.HandleFunc("/api/set_buy_trigger", ).Methods("GET")
+	// router.HandleFunc("/api/set_sell_trigger", ).Methods("GET")
+	// router.HandleFunc("/api/", ).Methods()
 	//router.HandleFunc("/api/", ).Methods()
 
 	log.Fatal(http.ListenAndServe(":9090", router))

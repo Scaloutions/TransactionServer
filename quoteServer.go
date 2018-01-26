@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	QUOTE_SERVER_API = "quoteserve.seng:4444"
+	QUOTE_SERVER_API = "quoteserve.seng"
 	PORT = "444430"
 	CONNECTION_TYPE = "tcp"
 )
