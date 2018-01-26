@@ -71,6 +71,15 @@ func main() {
 		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))}).Methods("GET")
 
 	router.HandleFunc("/getQuote", echoString).Methods("GET")
+	//router.HandleFunc("/api/buy", ).Methods()
+	//router.HandleFunc("/api/sell", ).Methods()
+	//router.HandleFunc("/api/commit_sell", ).Methods()
+	//router.HandleFunc("/api/commit_buy", ).Methods()
+	//router.HandleFunc("/api/cancel_buy", ).Methods()
+	//router.HandleFunc("/api/cancel_sell", ).Methods()
+	//router.HandleFunc("/api/set_buy_amount", ).Methods()
+	//router.HandleFunc("/api/set_sell_amount", ).Methods()
+	//router.HandleFunc("/api/", ).Methods()
 
 	log.Fatal(http.ListenAndServe(":9090", router))
 
