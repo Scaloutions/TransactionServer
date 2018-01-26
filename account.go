@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/golang/glog"
+	"time"
 )
 
 type Account struct {
@@ -94,4 +95,24 @@ func (account *Account) addMoney(amount float64) {
 	account.Balance += amount
 	account.Available += amount
 	glog.Info("This account now has ", account.Balance, account.Available)
+}
+
+// Start a trigger
+// should pull quotes every 60 sec to check the price
+// then execute BUY/SELL
+// unix.Nono timestamp
+func (account *Account) startBuyTrigger(stock string, limit float64) {
+	price := getQuote(stock, account.AccountNumber)
+	//limit := trigger.MoneyAmount
+
+	for price > limit {
+		time.Sleep(60 * time.Millisecond)
+		price = getQuote(stock, account.AccountNumber)
+		//sleep for 60 sec
+	}
+
+	stockNum := account.SetBuyMap[stock]
+	buy(account, stock, stockNum)
+	//remove st buy
+	delete(account.SetBuyMap, stock)	
 }

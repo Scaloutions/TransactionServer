@@ -19,7 +19,7 @@ type Quote struct {
 	Price float64
 	Stock string
 	UserId string
-	Timestamp string
+	Timestamp int64
 	CryptoKey string
 }
 
@@ -46,11 +46,16 @@ func getQuoteFromQS(userid string, stock string) Quote {
 		glog.Error("Cannot parse QS stock price into float64 ", quoteArgs[0])
 	}
 
+	timestamp, err := strconv.ParseInt(quoteArgs[3], 10, 64)
+	if err != nil {
+		glog.Error("Cannot parse QS timestamp into int64 ", quoteArgs[3])
+	}
+
 	return Quote {
 		Price: price,
 		Stock: quoteArgs[1],
 		UserId: quoteArgs[2],
-		Timestamp: quoteArgs[3],
+		Timestamp: timestamp,
 		CryptoKey: quoteArgs[4],
 	}
 }
