@@ -6,6 +6,7 @@ import (
     "fmt"
 	"net"
    "strings"
+   "strconv"
 )
 
 const (
@@ -15,20 +16,21 @@ const (
 )
 
 type Quote struct {
-	Price string
+	Price float64
 	Stock string
 	UserId string
 	Timestamp string
 	CryptoKey string
 }
 
-func getQuote(userid string, stock string) Quote {
+func getQuoteFromQS(userid string, stock string) Quote {
 	// Get connection to the quote server
 	conn := getConnection()
 
 	cstr := stock+","+userid+"\n"
 	conn.Write([]byte(cstr))
 	
+	//TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
 	len, _ := conn.Read(buff)
 
@@ -39,8 +41,13 @@ func getQuote(userid string, stock string) Quote {
 		
 	//example response: 254.69,OY0,S,1516925116307,PXdxruf7H5p9Br19Si5hq+tlsP24mj6hQQbDUZi8v+s=
 	// Returns: quote,sym,userid,timestamp,cryptokey\n
+	price, err := strconv.ParseFloat(quoteArgs[0], 64)
+	if err != nil {
+		glog.Error("Cannot parse QS stock price into float64 ", quoteArgs[0])
+	}
+
 	return Quote {
-		Price: quoteArgs[0],
+		Price: price,
 		Stock: quoteArgs[1],
 		UserId: quoteArgs[2],
 		Timestamp: quoteArgs[3],

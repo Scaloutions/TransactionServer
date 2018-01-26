@@ -12,13 +12,16 @@ func add(account *Account, amount float64) {
 	}
 }
 
-func quote(stock string) float64 { 
-	return 1
+func getQuote(stock string, userid string) float64 { 
+	quoteObj := getQuoteFromQS(userid, stock)
+	//TODO: log quote server hit here
+	return quoteObj.Price
+	// return 1
 }
 
 func buy(account *Account, stock string, amount float64) {
 	//get qoute
-	stockNum := amount / quote(stock)
+	stockNum := amount / getQuote(stock, account.AccountNumber)
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
@@ -38,7 +41,7 @@ func buy(account *Account, stock string, amount float64) {
 
 func sell(account *Account, stock string, amount float64) {
 	//check if have that # of stocks
-	stockNum := amount / quote(stock)
+	stockNum := amount / getQuote(stock, account.AccountNumber)
 	if account.hasStock(stock, stockNum){
 		transaction := Sell {
 			Stock: stock,
