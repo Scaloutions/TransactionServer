@@ -1,0 +1,8 @@
+<userCommand>
+    <timestamp>1516953048262</timestamp>
+    <server>CLT1</server>
+    <transactionNum>1</transactionNum>
+    <command>QUOTE</command>
+    <username>123</username>
+    <stockSymbol>Apple</stockSymbol>
+</userCommand>

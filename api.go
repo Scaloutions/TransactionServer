@@ -1,22 +1,35 @@
 package main
 
-import "github.com/golang/glog"
+import (
+	"os"
+
+	"github.com/golang/glog"
+)
+
 //below are all the functions that need to be implemented in the system
 
-func add(account *Account, amount float64) {
-	if amount > 0{
+func add(account *Account, amount float64, f *os.File) {
+	if amount > 0 {
 		account.addMoney(amount)
 		glog.Info("Added ", amount)
+		userCommand := UserCommand{
+			Timestamp:      getCurrentTs(),
+			Server:         "CLT1",
+			TransactionNum: 1,
+			Command:        "ADD",
+			Username:       account.AccountNumber,
+			Funds:          getFundsAsString(amount)}
+		logging(userCommand, f)
 	} else {
-        glog.Error("Cannot add negative amount to balance ", amount)
+		glog.Error("Cannot add negative amount to balance ", amount)
 	}
 }
 
-func getQuote(stock string, userid string) float64 { 
-	quoteObj := getQuoteFromQS(userid, stock)
-	//TODO: log quote server hit here
-	return quoteObj.Price
-	// return 1
+func getQuote(stock string, userid string) float64 {
+	// quoteObj := getQuoteFromQS(userid, stock)
+	// //TODO: log quote server hit here
+	// return quoteObj.Price
+	return 1
 }
 
 func buy(account *Account, stock string, amount float64) {
@@ -25,10 +38,10 @@ func buy(account *Account, stock string, amount float64) {
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
-		glog.Info("Not enough money for account ",account.AccountNumber, " to buy ", stock)
+		glog.Info("Not enough money for account ", account.AccountNumber, " to buy ", stock)
 	} else {
 		transaction := Buy{
-			Stock: stock,
+			Stock:       stock,
 			MoneyAmount: amount,
 			StockAmount: stockNum,
 		}
@@ -42,13 +55,13 @@ func buy(account *Account, stock string, amount float64) {
 func sell(account *Account, stock string, amount float64) {
 	//check if have that # of stocks
 	stockNum := amount / getQuote(stock, account.AccountNumber)
-	if account.hasStock(stock, stockNum){
-		transaction := Sell {
-			Stock: stock,
+	if account.hasStock(stock, stockNum) {
+		transaction := Sell{
+			Stock:       stock,
 			MoneyAmount: amount,
-			StockAmount: stockNum, 
+			StockAmount: stockNum,
 		}
-		//this is fine becasue commit transaction has to be executed within 60sec 
+		//this is fine becasue commit transaction has to be executed within 60sec
 		//which means that the qoute does not change
 		account.SellStack.Push(transaction)
 		account.holdStock(stock, stockNum)
@@ -60,7 +73,7 @@ func sell(account *Account, stock string, amount float64) {
 }
 
 func commitBuy(account *Account) {
-	if account.BuyStack.size >0 {
+	if account.BuyStack.size > 0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
@@ -68,42 +81,42 @@ func commitBuy(account *Account) {
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
 		//TODO: refactor this line
-		account.StockPortfolio[transaction.Stock] += transaction.StockAmount 
+		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 
 	} else {
 		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
 	}
-} 
+}
 
 func cancelBuy(account *Account) {
 	//TODO: log this
-	 i := account.BuyStack.Pop()
-	 transaction := i.(Buy)
-	 //add money back to Available Balance
-	 account.unholdMoney(transaction.MoneyAmount)
-} 
+	i := account.BuyStack.Pop()
+	transaction := i.(Buy)
+	//add money back to Available Balance
+	account.unholdMoney(transaction.MoneyAmount)
+}
 
 func commitSell(account *Account) {
-	if account.SellStack.size > 0{
+	if account.SellStack.size > 0 {
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
 		account.addMoney(transaction.MoneyAmount)
 		//we already holded those stocks before
-		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
+		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount
 	} else {
 		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
 	}
-} 
+}
 
 func cancelSell(account *Account) {
 	//TODO: log this
 	i := account.SellStack.Pop()
 	transaction := i.(Sell)
 	account.unholdStock(transaction.Stock, transaction.StockAmount)
-} 
+}
 
 /*
-Sets a defined amount of the given stock to buy when the current stock price 
+Sets a defined amount of the given stock to buy when the current stock price
 is less than or equal to the BUY_TRIGGER
 */
 func setBuyAmount(account *Account, stock string, amount float64) {
@@ -174,5 +187,3 @@ func cancelSetSell(account *Account, stock string, amount float64) {
 func dumplog(account *Account, filename string) {}
 
 func dumplogAll(filename string) {}
-
-

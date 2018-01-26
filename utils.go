@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Stack struct {
 	size       int32
@@ -38,4 +41,14 @@ func (s *Stack) Pop() interface{} {
 
 func getCurrentTs() int64 {
 	return time.Now().UnixNano() / 1000000
+}
+
+func getFundsAsString(amount float64) string {
+	return fmt.Sprintf("%.2f", float64(amount))
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

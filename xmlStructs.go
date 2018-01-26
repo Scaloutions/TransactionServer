@@ -4,9 +4,6 @@ import (
 	"encoding/xml"
 )
 
-var isFirstLoggingEvent bool = true
-var xmlHeader string = `<?xml version="1.0"?>` + "\n"
-
 type UserCommand struct {
 	XMLName        xml.Name `xml:"userCommand"`
 	Timestamp      int64    `xml:"timestamp,omitempty"`
@@ -62,19 +59,4 @@ type ErrorEvent struct {
 	StockSymbol    string   `xml:"stockSymbol,omitempty"`
 	Funds          string   `xml:"funds,omitempty"`
 	ErrorMessage   string   `xml:"errorMessage,omitempty"`
-}
-
-func getXMLEventString(loggingObject interface{}) []byte {
-
-	var xmlstring []byte
-	if xmlstring, err := xml.MarshalIndent(loggingObject, "", "    "); err == nil {
-		if isFirstLoggingEvent {
-			xmlstring = []byte(xmlHeader + string(xmlstring))
-			isFirstLoggingEvent = false
-		}
-		xmlstring = []byte(string(xmlstring))
-		return xmlstring
-	}
-	return xmlstring
-
 }

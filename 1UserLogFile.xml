@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<userCommand>
+    <timestamp>1516955087459</timestamp>
+    <server>CLT1</server>
+    <transactionNum>1</transactionNum>
+    <command>ADD</command>
+    <username>123</username>
+    <funds>100.00</funds>
+</userCommand>
