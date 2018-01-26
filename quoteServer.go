@@ -2,55 +2,60 @@
 package main
 
 import (
+	"github.com/golang/glog"
     "fmt"
 	"net"
-//look into how to do requests with bufio
-// might be easier to read ?
-//    "bufio"
+   "strings"
 )
 
 const (
 	QUOTE_SERVER_API = "quoteserve.seng:4444"
-	//TODO: append port instead
-	PORT = 4444
+	PORT = "444430"
 	CONNECTION_TYPE = "tcp"
 )
 
-//function that will return the value of a requested stock
-//func getQuote(stock string) float32 {
-//	return 1
-//}
+type Quote struct {
+	Price string
+	Stock string
+	UserId string
+	Timestamp string
+	CryptoKey string
+}
 
-func connectToQuoteServer(){
-	//this should create a TCP connection with the quote server
-	fmt.Println("Connecting...")
-	conn, err := net.Dial(CONNECTION_TYPE, QUOTE_SERVER_API)
+func getQuote(userid string, stock string) Quote {
+	// Get connection to the quote server
+	conn := getConnection()
 
-	if err != nil {
-		fmt.Print("Error connecting to the Quote Server: somthing went wrong :(")
-	}
-
-	fmt.Println("Reading response...")
-
-	//send request here
-	cstr := "oY01WVirLr,S"
-
-	conn.Write([]byte(cstr+"\n"))
+	cstr := stock+","+userid+"\n"
+	conn.Write([]byte(cstr))
 	
 	buff := make([]byte, 1024)
 	len, _ := conn.Read(buff)
 
-	//gives back : 254.69,OY0,S,1516925116307,PXdxruf7H5p9Br19Si5hq+tlsP24mj6hQQbDUZi8v+s=
 	response := string(buff[:len])
-	fmt.Println("Got back: ", response)
+	glog.Info("Got back: ", response)
 
-	//	response, _ := bufio.NewReader(conn).ReadString('\n')
-	conn.Close()
+	quoteArgs := strings.Split(response, ",")
+		
+	//example response: 254.69,OY0,S,1516925116307,PXdxruf7H5p9Br19Si5hq+tlsP24mj6hQQbDUZi8v+s=
+	// Returns: quote,sym,userid,timestamp,cryptokey\n
+	return Quote {
+		Price: quoteArgs[0],
+		Stock: quoteArgs[1],
+		UserId: quoteArgs[2],
+		Timestamp: quoteArgs[3],
+		CryptoKey: quoteArgs[4],
+	}
 }
 
-//main here just for testing
-func main() {
-	connectToQuoteServer()
-	fmt.Println("Check connection now...")	
-}
+func getConnection() net.Conn {
+	//this should create a TCP connection with the quote server
+	glog.Info("Connecting to the quote server... ")	
+	url := QUOTE_SERVER_API + ":" + PORT
+	conn, err := net.Dial(CONNECTION_TYPE, url)
 
+	if err != nil {
+		fmt.Print("Error connecting to the Quote Server: somthing went wrong :(")
+	}
+	return conn
+}
