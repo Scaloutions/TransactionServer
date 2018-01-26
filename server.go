@@ -3,17 +3,18 @@ package main
 import (
 	"github.com/golang/glog"
 	"fmt"
-	//"html"
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
-	"strconv"
+	"encoding/json"
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hi, there!")
 	testLogic()
 }
+
+
 
 func testLogic(){
 	account := initializeAccount("123")
@@ -65,27 +66,47 @@ func testLogic(){
 
 }
 
+type Response struct {
+	UserId string
+	PriceDollars float64
+	PriceCents float64
+	Command string
+	CommandNumber int
+	Stock string
+}
+
+//Parse request and return Response Object
 func parseRequest(w http.ResponseWriter, r *http.Request){
-	if err := r.ParseForm(); err != nil {
-		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		return
-	}
-	fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
-	userId := r.FormValue("userId")
+	msg := Response{} //initialize empty user
 
-	price, err := strconv.ParseFloat(r.FormValue("priceDollars"), 64)
-	if err != nil {
-		glog.Error("Cannot parse POST REQ")
+	//Parse json request body and use it to set fields on user
+	//Note that user is passed as a pointer variable so that it's fields can be modified
+	err := json.NewDecoder(r.Body).Decode(&msg)
+	if err != nil{
+		panic(err)
 	}
 
-	// price := float64(r.FormValue("priceDollars"))
-	fmt.Fprintf(w, "userId= %s\n", userId)
-	fmt.Fprintf(w, "Price = %s\n", price)
+	//Marshal or convert user object back to json and write to response 
+	// msgJson, err := json.Marshal(msg)
+	// if err != nil{
+	// 	panic(err)
+	// }
 
-	account := initializeAccount(userId)
-	//call add here
-	add(&account, price)
+	glog.Info("USERID: ", msg.UserId)
+	glog.Info("PRICE: ", msg.PriceDollars)
+	glog.Info("Command: ", msg.Command)
+	glog.Info("CommandNo: ", msg.CommandNumber)
+	glog.Info("Stock: ", msg.Stock)
+
+	account := initializeAccount(msg.UserId)
+	add(&account, msg.PriceDollars)
 	glog.Info("Account balance after adding: ", account.getBalance())
+
+	//Set Content-Type header so that clients will know how to read response
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(http.StatusOK)
+	//Write json response back to response 
+	// w.Write(msgJson)
 }
 
 func main() {
@@ -93,8 +114,9 @@ func main() {
 
 	// router.HandleFunc("/", parseRequest)
 	// router.HandleFunc("/getQuote", echoString).Methods("GET")
-	router.HandleFunc("/api/buy", parseRequest).Methods("POST")
+	router.HandleFunc("/api/add", parseRequest).Methods("POST")
 	// router.HandleFunc("/api/sell", ).Methods("GET")
+	// router.HandleFunc("/api/buy", ).Methods("GET")
 	// router.HandleFunc("/api/commit_sell", ).Methods("GET")
 	// router.HandleFunc("/api/commit_buy", ).Methods("GET")
 	// router.HandleFunc("/api/cancel_buy", ).Methods("GET")
