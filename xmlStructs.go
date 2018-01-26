@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
 )
 
 var isFirstLoggingEvent bool = true
@@ -65,9 +64,17 @@ type ErrorEvent struct {
 	ErrorMessage   string   `xml:"errorMessage,omitempty"`
 }
 
-func logCommand(loggingObject interface{}) {
+func getXMLEventString(loggingObject interface{}) []byte {
+
+	var xmlstring []byte
 	if xmlstring, err := xml.MarshalIndent(loggingObject, "", "    "); err == nil {
-		xmlstring = []byte(xmlHeader + string(xmlstring))
-		fmt.Printf("%s\n", xmlstring)
+		if isFirstLoggingEvent {
+			xmlstring = []byte(xmlHeader + string(xmlstring))
+			isFirstLoggingEvent = false
+		}
+		xmlstring = []byte(string(xmlstring))
+		return xmlstring
 	}
+	return xmlstring
+
 }
