@@ -156,7 +156,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 
 	var account *Account
 	if msg.Command != "authenticate" {
-		glog.Info("Retrieving user from the map......>>>")
 		account = getUser(msg.UserId)
 		glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
@@ -173,16 +172,12 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		buy(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
-		glog.Info("######### IN SERVER  ", account.BuyStack.size)
 	case "commit_sell":
 		commitSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "commit_buy":
 		glog.Info("About to execute commit_buy")
-		glog.Info("DO I HAVE AN ACCOUNT?: ", account!=nil)
-		glog.Info("######### IN SERVER  COMMIT BUYY", account.AccountNumber)
-		
 		commitBuy(account)
 		// glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
