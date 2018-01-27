@@ -6,9 +6,9 @@ import "github.com/golang/glog"
 func add(account *Account, amount float64) {
 	if amount > 0{
 		account.addMoney(amount)
-		glog.Info("Added ", amount)
+		glog.Info("SUCCESS: Added ", amount)
 	} else {
-        glog.Error("Cannot add negative amount to balance ", amount)
+        glog.Error("ERROR: Cannot add negative amount to balance ", amount)
 	}
 }
 
@@ -24,7 +24,7 @@ func buy(account *Account, stock string, amount float64) {
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
-		glog.Info("Not enough money for account ",account.AccountNumber, " to buy ", stock)
+		glog.Info("WARNING: Not enough money for account ",account.AccountNumber, " to buy ", stock)
 	} else {
 		transaction := Buy{
 			Stock: stock,
@@ -35,7 +35,7 @@ func buy(account *Account, stock string, amount float64) {
 		account.BuyStack.Push(transaction)
 		//hold the money
 		account.holdMoney(amount)
-		glog.Info("Executed BUY for ", amount)
+		glog.Info("SUCCESS: Executed BUY for ", amount)
 	}
 }
 
@@ -56,7 +56,7 @@ func sell(account *Account, stock string, amount float64) {
 
 	} else {
 		//TODO: improve logging
-		glog.Info("Not enough stock ", stock, " to sell.")
+		glog.Info("WARNING: Not enough stock ", stock, " to sell.")
 	}
 }
 
@@ -70,10 +70,10 @@ func commitBuy(account *Account) {
 		//add number of stocks to user
 		//TODO: refactor this line
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount 
-		glog.Info("Executed COMMIT BUY")
+		glog.Info("SUCCESS: Executed COMMIT BUY")
 
 	} else {
-		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
+		glog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
 	}
 } 
 
