@@ -31,15 +31,15 @@ func testLogic() {
 	f := getFilePointer()
 
 	account := initializeAccount("123")
-	add(&account, 100, f, 1)
+	add(&account, 100, f, 1, "ADD")
 	// glog.Info("Account balance after adding: ", account.getBalance())
 	glog.Info(account.Balance == 100)
-	buy(&account, "Apple", 10, f, 2)
+	buy(&account, "Apple", 10, f, 2, "BUY")
 	// glog.Info("Available account balance after BUY: ", account.getBalance())
 	glog.Info(account.Balance == 100)
 	glog.Info(account.Available == 90)
 	// glog.Info("Account balance after BUY: ", account.Balance)
-	commitBuy(&account, f, 3)
+	commitBuy(&account, f, 3, "COMMIT_BUY")
 	glog.Info(account.Balance == 90)
 	glog.Info(account.Available == 90)
 	glog.Info(account.StockPortfolio["Apple"] == 10)
@@ -47,10 +47,10 @@ func testLogic() {
 	// glog.Info("Account balance after COMMIT BUY: ", account.Balance)
 	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
 	// glog.Info("Selling 5 shares of Apple")
-	sell(&account, "Apple", 5, f, 4)
+	sell(&account, "Apple", 5, f, 4, "SELL")
 	glog.Info(account.StockPortfolio["Apple"] == 5)
 	glog.Info(account.Balance == 90)
-	commitSell(&account, f, 5)
+	commitSell(&account, f, 5, "COMMIT_SELL")
 	glog.Info(account.StockPortfolio["Apple"] == 5)
 	glog.Info(account.Balance == 95)
 	glog.Info(account.Available == 95)
@@ -58,21 +58,21 @@ func testLogic() {
 	// glog.Info("Account balance after COMMIT SELL: ", account.Balance)
 	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
 	//this should fail
-	sell(&account, "Apple", 100, f, 6)
-	commitSell(&account, f, 7)
+	sell(&account, "Apple", 100, f, 6, "SELL")
+	commitSell(&account, f, 7, "COMMIT_SELL")
 	// glog.Info("User has ", account.StockPortfolio["Apple"], " Apple stocks.")
 	glog.Info(account.StockPortfolio["Apple"] == 5)
 	glog.Info(account.Balance == 95)
 	glog.Info(account.Available == 95)
-	buy(&account, "Apple", 10000, f, 8)
-	commitBuy(&account, f, 9)
+	buy(&account, "Apple", 10000, f, 8, "BUY")
+	commitBuy(&account, f, 9, "COMMIT_BUY")
 	glog.Info(account.StockPortfolio["Apple"] == 5)
 	glog.Info(account.Balance == 95)
 	glog.Info(account.Available == 95)
-	buy(&account, "Apple", 1, f, 10)
+	buy(&account, "Apple", 1, f, 10, "BUY")
 	glog.Info(account.Balance == 95)
 	glog.Info(account.Available == 94)
-	cancelBuy(&account, f, 11)
+	cancelBuy(&account, f, 11, "CANCEL_BUY")
 	glog.Info(account.Balance == 95)
 	glog.Info(account.Available == 95)
 	glog.Info(account.StockPortfolio["Apple"] == 5)
@@ -134,31 +134,31 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 	case "authenticate":
 		authenticateUser(msg.UserId)
 	case "add":
-		add(account, msg.PriceDollars, f, msg.CommandNumber)
+		add(account, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 		glog.Info("Account balance after adding: ", account.getBalance())
 		// UserMap[msg.UserId] = account
 	case "buy":
-		buy(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber)
+		buy(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 	case "commit_sell":
-		commitSell(account, f, msg.CommandNumber)
+		commitSell(account, f, msg.CommandNumber, msg.Command)
 	case "commit_buy":
-		commitBuy(account, f, msg.CommandNumber)
+		commitBuy(account, f, msg.CommandNumber, msg.Command)
 	case "cance_buy":
-		cancelSell(account, f, msg.CommandNumber)
+		cancelSell(account, f, msg.CommandNumber, msg.Command)
 	case "cancel_sell":
-		cancelSell(account, f, msg.CommandNumber)
+		cancelSell(account, f, msg.CommandNumber, msg.Command)
 	case "set_buy_amount":
-		setSellAmount(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber)
+		setSellAmount(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 	case "set_sell_amount":
-		setSellAmount(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber)
+		setSellAmount(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 	case "cancel_set_buy":
-		cancelSetBuy(account, msg.Stock, f, msg.CommandNumber)
+		cancelSetBuy(account, msg.Stock, f, msg.CommandNumber, msg.Command)
 	case "cancel_set_sell":
-		cancelSetSell(account, msg.Stock, f, msg.CommandNumber)
+		cancelSetSell(account, msg.Stock, f, msg.CommandNumber, msg.Command)
 	case "set_buy_trigger":
-		setBuyTrigger(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber)
+		setBuyTrigger(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 	case "set_sell_trigger":
-		setSellTrigger(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber)
+		setSellTrigger(account, msg.Stock, msg.PriceDollars, f, msg.CommandNumber, msg.Command)
 	case "dumplog":
 		glog.Info("SAVING XML LOG FILE")
 	default:
