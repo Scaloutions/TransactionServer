@@ -27,9 +27,9 @@ var UserMap = make(map[string]*Account)
 func authenticateUser(userId string) {
 	account := initializeAccount(userId)
 	UserMap[userId] = &account
-	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
 	// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
-	glog.Info("Retrieving user from the db..")
+	glog.Info("INFO: Retrieving user from the db..")
 }
 
 func testLogic(){
@@ -157,62 +157,87 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 	var account *Account
 	if msg.Command != "authenticate" {
 		account = getUser(msg.UserId)
-		glog.Info("USER: ", account.AccountNumber, account.Balance)
+		// glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
 	
 	//TODO: rewrite this!!
 	switch(msg.Command) {
 	case "authenticate":
+		glog.Info("\n\n############################### INFO: Executing authenticate... ", msg.CommandNumber)
 		authenticateUser(msg.UserId)
+		glog.Info("\n############################### SUCCESS: Authentication Successful!")
 	case "add":
+		glog.Info("\n\n############################### INFO: Executing ADD FOR... ", msg.PriceDollars, msg.CommandNumber)
 		add(account, msg.PriceDollars)
-		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("SUCCESS: Account Balance: ", account.Balance, " Available: ", account.Available)
+		glog.Info("SUCCESS: Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: ADD Successful \n")
 	case "buy":
+		glog.Info("\n\n############################### INFO: Executing BUY FOR... ", msg.PriceDollars, msg.CommandNumber)
 		buy(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: BUY Successful")
 	case "commit_sell":
+		glog.Info("\n\n############################### INFO: Executing COMMIT SELL ", msg.CommandNumber)
 		commitSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: COMMIT SELL Successful")
 	case "commit_buy":
-		glog.Info("About to execute commit_buy")
+		glog.Info("\n\n############################### INFO: Executing COMMIT BUY ", msg.CommandNumber)
 		commitBuy(account)
+		glog.Info("\n############################### SUCCESS: COMMIT BUY Successful")
 		// glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
-	case "cance_buy":
+	case "cancel_buy":
+		glog.Info("\n\n############################### INFO: Executing CANCEL BUY ", msg.CommandNumber)
 		cancelSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: CANCEL BUY Successful")
 	case "cancel_sell":
+		glog.Info("\n\n############################### INFO: Executing CANCEL SELL ", msg.CommandNumber)
 		cancelSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: CANCEL SELL Successful")
 	case "set_buy_amount":
+		glog.Info("\n\n############################### INFO: Executing SET BUY AMOUNT ", msg.CommandNumber)
 		setSellAmount(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: SET BUY AMOUNT Successful")
 	case "set_sell_amount":
+		glog.Info("\n\n############################### INFO: Executing SET SELL AMOUNT ", msg.CommandNumber)
 		setSellAmount(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: SET SELL AMOUNT Successful")
 	case "cancel_set_buy":
+		glog.Info("\n\n############################### INFO: Executing CANCEL SET BUY ", msg.CommandNumber)
 		cancelSetBuy(account, msg.Stock)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: CANCEL SET BUY Successful")
 	case "cancel_set_sell":
+		glog.Info("\n\n############################### INFO: Executing CANCEL SET SELL ", msg.CommandNumber)
 		cancelSetSell(account, msg.Stock)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: CANCEL SET SELL Successful")
 	case "set_buy_trigger":
+		glog.Info("\n\n############################### INFO: Executing SET BUY TRIGGER ", msg.CommandNumber)
 		setBuyTrigger(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: SET BUY TRIGGER Successful")
 	case "set_sell_trigger":
+		glog.Info("\n\n############################### INFO: Executing SET SELL TRIGGER ", msg.CommandNumber)
 		setSellTrigger(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("\n############################### SUCCESS: SET SELL TRIGGER Successful")
 	case "dumplog":
 		glog.Info("SAVING XML LOG FILE")
 	default: 
