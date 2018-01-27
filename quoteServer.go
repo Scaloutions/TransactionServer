@@ -63,7 +63,7 @@ func getQuoteFromQS(userid string, stock string) Quote {
 	return Quote {
 		Price: 1,
 		Stock: "S",
-		UserId: "Daria",
+		UserId: "oY01WVirLr",
 		Timestamp: 1516925116307,
 		CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 	}
