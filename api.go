@@ -67,8 +67,9 @@ func sell(account *Account, stock string, amount float64) {
 }
 
 func commitBuy(account *Account) {
-	glog.Info("######INSIDE COMMIT BUY", account.BuyStack.size)
+	glog.Info("!!!INSIDE COMMIT BUY")
 	if account.BuyStack.size >0 {
+	glog.Info("######INSIDE COMMIT BUY", account.BuyStack.size)
 		
 		//weird go casting
 		i := account.BuyStack.Pop()
@@ -89,11 +90,15 @@ func commitBuy(account *Account) {
 
 func cancelBuy(account *Account) {
 	//TODO: log this
-	 i := account.BuyStack.Pop()
-	 transaction := i.(Buy)
-	 //add money back to Available Balance
-	account.unholdMoney(transaction.MoneyAmount)
-	glog.Info("Executed CANCEL BUY")
+	if account.BuyStack.size > 0 {
+		 i := account.BuyStack.Pop()
+		 transaction := i.(Buy)
+		 //add money back to Available Balance
+		account.unholdMoney(transaction.MoneyAmount)
+		glog.Info("Executed CANCEL BUY")
+	} else {
+		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
+	}
 } 
 
 func commitSell(account *Account) {
@@ -111,10 +116,15 @@ func commitSell(account *Account) {
 
 func cancelSell(account *Account) {
 	//TODO: log this
-	i := account.SellStack.Pop()
-	transaction := i.(Sell)
-	account.unholdStock(transaction.Stock, transaction.StockAmount)
-	glog.Info("Executed CANCEL SELL")
+	glog.Info("Executing CANCEL SELL")
+	if account.SellStack.size > 0 {
+		i := account.SellStack.Pop()
+		transaction := i.(Sell)
+		account.unholdStock(transaction.Stock, transaction.StockAmount)
+		glog.Info("Executed CANCEL SELL")
+	} else {
+		glog.Error("There are no SELL commands associated with this user.")
+	}
 } 
 
 /*

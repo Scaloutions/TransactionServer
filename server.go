@@ -28,7 +28,7 @@ func authenticateUser(userId string) {
 	account := initializeAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-	glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+	// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	glog.Info("Retrieving user from the db..")
 }
 
@@ -156,15 +156,15 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 
 	var account *Account
 	if msg.Command != "authenticate" {
+		glog.Info("Retrieving user from the map......>>>")
 		account = getUser(msg.UserId)
-		// glog.Info("USER: ", account.AccountNumber, account.Balance)
+		glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
 	
 	//TODO: rewrite this!!
 	switch(msg.Command) {
 	case "authenticate":
 		authenticateUser(msg.UserId)
-		
 	case "add":
 		add(account, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
@@ -179,7 +179,9 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "commit_buy":
-		glog.Info("######### IN SERVER  COMMIT BUYY", account.BuyStack.size)
+		glog.Info("About to execute commit_buy")
+		glog.Info("DO I HAVE AN ACCOUNT?: ", account!=nil)
+		glog.Info("######### IN SERVER  COMMIT BUYY", account.AccountNumber)
 		
 		commitBuy(account)
 		// glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
