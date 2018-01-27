@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -23,8 +24,10 @@ func echoString(w http.ResponseWriter, r *http.Request) {
 
 // User map
 var UserMap = make(map[string]*Account)
+var f *os.File = nil
 
 func authenticateUser(userId string) {
+	f = getFilePointer()
 	account := initializeAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
@@ -163,7 +166,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		// glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
 
-	f := getFilePointer()
 
 	//TODO: rewrite this!!
 	switch msg.Command {
