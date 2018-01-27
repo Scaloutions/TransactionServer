@@ -228,7 +228,7 @@ func commitBuy(account *Account, file *os.File, transactionNum int, command stri
 	} else {
 
 		errMsg := fmt.Sprintf("No BUY transactions previously set for account %s", username)
-		gglog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
+		glog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
 
 		errorEvent := getErrorEvent(
 			server,
@@ -263,6 +263,7 @@ func cancelBuy(account *Account, file *os.File, transactionNum int, command stri
 			transaction.Stock,
 			transaction.MoneyAmount)
 		logging(userCommand, file)
+		glog.Info(">>>>>writin into logfile", userCommand.Command)
 	} else {
 		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
 	}
@@ -300,6 +301,7 @@ func commitSell(account *Account, file *os.File, transactionNum int, command str
 			addAction,
 			username,
 			funds)
+		glog.Info(">>>>>writin into logfile ", accountTransaction.TransactionNum)
 		logging(accountTransaction, file)
 
 	} else {
@@ -316,6 +318,7 @@ func commitSell(account *Account, file *os.File, transactionNum int, command str
 			"",
 			0,
 			errMsg)
+		glog.Info(">>>>>writin into logfile", errorEvent.Command)
 		logging(errorEvent, file)
 
 	}
@@ -455,7 +458,7 @@ func setBuyTrigger(account *Account, stock string, price float64,
 			glog.Info("Spinning up go routine")
 			//prevent race condition here TODO: rewrite
 			account.BuyTriggers[stock] = price
-			go account.startBuyTrigger(stock)
+			go account.startBuyTrigger(stock, file)
 		}
 
 		account.BuyTriggers[stock] = price
@@ -544,7 +547,7 @@ func setSellTrigger(account *Account, stock string, price float64,
 			//spin up go routine trigger
 			glog.Info("Spinning up go routine SEll trigger")
 			account.SellTriggers[stock] = price
-			go account.startSellTrigger(stock)
+			go account.startSellTrigger(stock, file)
 		}
 
 		account.SellTriggers[stock] = price

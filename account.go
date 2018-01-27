@@ -103,7 +103,7 @@ func (account *Account) addMoney(amount float64) {
 // then execute BUY/SELL
 // unix.Nono timestamp
 // FOR NOW JUST DO IT ON STOCK SYMBOL
-func startBuyTrigger(account *Account, stock string, file *os.File) {
+func (account *Account) startBuyTrigger(stock string, file *os.File) {
 	price := getQuote(stock, account.AccountNumber, file, 0, "QUOTE")
 	//limit := trigger.MoneyAmount
 	limit := account.BuyTriggers[stock]
@@ -131,7 +131,7 @@ func startBuyTrigger(account *Account, stock string, file *os.File) {
 	}
 }
 
-func startSellTrigger(account *Account, stock string, file *os.File) {
+func (account *Account) startSellTrigger(stock string, file *os.File) {
 	price := getQuote(stock, account.AccountNumber, file, 0, "QUOTE")
 	//limit := trigger.MoneyAmount
 	min := account.SellTriggers[stock]

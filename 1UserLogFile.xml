@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<errorEvent>
+    <timestamp>1517036823800</timestamp>
+    <server>CLT1</server>
+    <transactionNum>10</transactionNum>
+    <command>commit_buy</command>
+    <username>oY01WVirLr</username>
+    <errorMessage>No BUY transactions previously set for account oY01WVirLr</errorMessage>
+</errorEvent>
