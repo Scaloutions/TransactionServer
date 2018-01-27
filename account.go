@@ -102,18 +102,19 @@ func (account *Account) addMoney(amount float64) {
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 // unix.Nono timestamp
-func (account *Account) startBuyTrigger(stock string, limit float64, file *os.File) {
-	price := getQuote(stock, account.AccountNumber, file)
+func (account *Account) startBuyTrigger(
+	stock string, limit float64, file *os.File, transactionNum int) {
+	price := getQuote(stock, account.AccountNumber, file, transactionNum)
 	//limit := trigger.MoneyAmount
 
 	for price > limit {
 		time.Sleep(60 * time.Millisecond)
-		price = getQuote(stock, account.AccountNumber, file)
+		price = getQuote(stock, account.AccountNumber, file, transactionNum)
 		//sleep for 60 sec
 	}
 
 	stockNum := account.SetBuyMap[stock]
-	buy(account, stock, stockNum, file)
+	buy(account, stock, stockNum, file, transactionNum)
 	//remove st buy
 	delete(account.SetBuyMap, stock)
 }

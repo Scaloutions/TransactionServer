@@ -14,10 +14,9 @@ const (
 
 //below are all the functions that need to be implemented in the system
 
-func add(account *Account, amount float64, f *os.File) {
+func add(account *Account, amount float64, f *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 1
 	command := "ADD"
 	username := account.AccountNumber
 
@@ -61,10 +60,10 @@ func add(account *Account, amount float64, f *os.File) {
 	}
 }
 
-func getQuote(stock string, userid string, file *os.File) float64 {
+func getQuote(
+	stock string, userid string, file *os.File, transactionNum int) float64 {
 
 	server := "CLT1"
-	transactionNum := 2
 	command := "QUOTE"
 
 	userCommand := getUserCommand(
@@ -84,13 +83,12 @@ func getQuote(stock string, userid string, file *os.File) float64 {
 }
 
 func buy(
-	account *Account, stock string, amount float64, file *os.File) {
+	account *Account, stock string, amount float64, file *os.File, transactionNum int) {
 
 	//get qoute
-	stockNum := amount / getQuote(stock, account.AccountNumber, file)
+	stockNum := amount / getQuote(stock, account.AccountNumber, file, transactionNum)
 
 	server := "CLT1"
-	transactionNum := 3
 	command := "BUY"
 	username := account.AccountNumber
 
@@ -135,10 +133,10 @@ func buy(
 	}
 }
 
-func sell(account *Account, stock string, amount float64, file *os.File) {
+func sell(
+	account *Account, stock string, amount float64, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 4
 	command := "SELL"
 	username := account.AccountNumber
 
@@ -152,7 +150,7 @@ func sell(account *Account, stock string, amount float64, file *os.File) {
 	logging(userCommand, file)
 
 	//check if have that # of stocks
-	stockNum := amount / getQuote(stock, account.AccountNumber, file)
+	stockNum := amount / getQuote(stock, account.AccountNumber, file, transactionNum)
 	if account.hasStock(stock, stockNum) {
 		transaction := Sell{
 			Stock:       stock,
@@ -182,10 +180,9 @@ func sell(account *Account, stock string, amount float64, file *os.File) {
 	}
 }
 
-func commitBuy(account *Account, file *os.File) {
+func commitBuy(account *Account, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 5
 	command := "COMMIT_BUY"
 	username := account.AccountNumber
 
@@ -236,10 +233,9 @@ func commitBuy(account *Account, file *os.File) {
 	}
 }
 
-func cancelBuy(account *Account, file *os.File) {
+func cancelBuy(account *Account, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 6
 	command := "CANCEL_BUY"
 	username := account.AccountNumber
 
@@ -261,10 +257,9 @@ func cancelBuy(account *Account, file *os.File) {
 
 }
 
-func commitSell(account *Account, file *os.File) {
+func commitSell(account *Account, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 7
 	command := "COMMIT_SELL"
 	username := account.AccountNumber
 
@@ -311,10 +306,9 @@ func commitSell(account *Account, file *os.File) {
 	}
 }
 
-func cancelSell(account *Account, file *os.File) {
+func cancelSell(account *Account, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 8
 	command := "CANCEL_SELL"
 	username := account.AccountNumber
 
@@ -341,10 +335,9 @@ Sets a defined amount of the given stock to buy when the current stock price
 is less than or equal to the BUY_TRIGGER
 */
 func setBuyAmount(
-	account *Account, stock string, amount float64, file *os.File) {
+	account *Account, stock string, amount float64, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 9
 	command := "SET_BUY_AMOUNT"
 	username := account.AccountNumber
 
@@ -387,10 +380,9 @@ func setBuyAmount(
    TODO: verify what happens if the user set multiple SET BUY on one stock
    ?????
 */
-func cancelSetBuy(account *Account, stock string, file *os.File) {
+func cancelSetBuy(account *Account, stock string, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 10
 	command := "CANCEL_SET_BUY"
 	username := account.AccountNumber
 
@@ -414,10 +406,9 @@ func cancelSetBuy(account *Account, stock string, file *os.File) {
 }
 
 func setBuyTrigger(
-	account *Account, stock string, price float64, file *os.File) {
+	account *Account, stock string, price float64, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 11
 	command := "SET_BUY_TRIGGER"
 	username := account.AccountNumber
 
@@ -452,10 +443,9 @@ func setBuyTrigger(
 }
 
 func setSellAmount(
-	account *Account, stock string, amount float64, file *os.File) {
+	account *Account, stock string, amount float64, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 12
 	command := "SET_SELL_AMOUNT"
 	username := account.AccountNumber
 
@@ -493,10 +483,9 @@ func setSellAmount(
 }
 
 func setSellTrigger(
-	account *Account, stock string, price float64, file *os.File) {
+	account *Account, stock string, price float64, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 13
 	command := "SET_SELL_TRIGGER"
 	username := account.AccountNumber
 
@@ -534,10 +523,9 @@ func setSellTrigger(
 }
 
 func cancelSetSell(
-	account *Account, stock string, file *os.File) {
+	account *Account, stock string, file *os.File, transactionNum int) {
 
 	server := "CLT1"
-	transactionNum := 14
 	command := "CANCEL_SET_SELL"
 	username := account.AccountNumber
 
