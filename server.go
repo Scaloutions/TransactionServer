@@ -27,6 +27,8 @@ var UserMap = make(map[string]*Account)
 func authenticateUser(userId string) {
 	account := initializeAccount(userId)
 	UserMap[userId] = &account
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	glog.Info("Retrieving user from the db..")
 }
 
@@ -37,80 +39,80 @@ func testLogic(){
 		Test core commands
 	*/
 	// glog.Info(account.Balance==100)
-	// buy(&account, "Apple", 10)
+	// buy(&account, "S", 10)
 	// glog.Info(account.Balance==100)
 	// glog.Info(account.Available==90)
 	// commitBuy(&account)
 	// glog.Info(account.Balance==90)
 	// glog.Info(account.Available==90)
-	// glog.Info(account.StockPortfolio["Apple"]==10)
-	// sell(&account, "Apple", 5)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
+	// glog.Info(account.StockPortfolio["S"]==10)
+	// sell(&account, "S", 5)
+	// glog.Info(account.StockPortfolio["S"]==5)
 	// glog.Info(account.Balance==90)
 	// glog.Info(account.Available==90)
 	// commitSell(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
+	// glog.Info(account.StockPortfolio["S"]==5)
 	// glog.Info(account.Balance==95)
 	// glog.Info(account.Available==95)
 	// //this should fail
-	// sell(&account, "Apple", 100)
+	// sell(&account, "S", 100)
 	// commitSell(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
+	// glog.Info(account.StockPortfolio["S"]==5)
 	// glog.Info(account.Balance==95)
 	// glog.Info(account.Available==95)
-	// buy(&account, "Apple", 10000)
+	// buy(&account, "S", 10000)
 	// commitBuy(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
+	// glog.Info(account.StockPortfolio["S"]==5)
 	// glog.Info(account.Balance==95)
 	// glog.Info(account.Available==95)
-	// buy(&account, "Apple", 10)
+	// buy(&account, "S", 10)
 	// glog.Info(account.Balance==95)
 	// glog.Info(account.Available==85)
 	// cancelBuy(&account)
 	// glog.Info(account.Balance==95)
 	// glog.Info(account.Available==95)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
+	// glog.Info(account.StockPortfolio["S"]==5)
 	// /*
 	//     Test Buy Triggers
 	// */
 	// glog.Info("BEFORE TRIGGERS:", account.Balance, " Available: ", account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// setBuyAmount(&account, "Apple", 10)
-	// setBuyTrigger(&account,"Apple", 0.5)
+	// glog.Info(account.StockPortfolio["S"])
+	// setBuyAmount(&account, "S", 10)
+	// setBuyTrigger(&account,"S", 0.5)
 	// glog.Info("AFTER TRIGGERS:", account.Balance)
 	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// buy(&account, "Apple", 10)
+	// glog.Info(account.StockPortfolio["S"])
+	// buy(&account, "S", 10)
 	// commitBuy(&account)
 	// glog.Info("Balance: ", account.Balance)
 	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// setBuyAmount(&account, "Apple", 5)
-	// setBuyTrigger(&account,"Apple", 5)
+	// glog.Info(account.StockPortfolio["S"])
+	// setBuyAmount(&account, "S", 5)
+	// setBuyTrigger(&account,"S", 5)
 	// glog.Info("AFTER TRIGGERS:", account.Balance)
 	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
+	// glog.Info(account.StockPortfolio["S"])
 	/*
 	    Test Sell Triggers
 	*/
-	buy(&account, "Apple", 50)
+	buy(&account, "S", 50)
 	commitBuy(&account)
 	glog.Info("TESTING SELL TRIGGER")
-	setSellAmount(&account, "Apple", 10)
-	setSellTrigger(&account,"Apple", 5)
+	setSellAmount(&account, "S", 10)
+	setSellTrigger(&account,"S", 5)
 	glog.Info("AFTER TRIGGERS:", account.Balance)
 	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
-	buy(&account, "Apple", 10)
+	glog.Info(account.StockPortfolio["S"])
+	buy(&account, "S", 10)
 	commitBuy(&account)
 	glog.Info("Balance: ", account.Balance)
 	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
-	setSellAmount(&account, "Apple", 5)
-	setSellTrigger(&account,"Apple", 1)
+	glog.Info(account.StockPortfolio["S"])
+	setSellAmount(&account, "S", 5)
+	setSellTrigger(&account,"S", 1)
 	glog.Info("AFTER TRIGGERS:", account.Balance)
 	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
+	glog.Info(account.StockPortfolio["S"])
 
 }
 
@@ -126,6 +128,13 @@ type Response struct {
 func getUser(userId string) *Account {
 	return UserMap[userId]
 }
+
+// func loggingMiddleware(next http.Handler) http.Handler {
+//     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//         log.Println(r.RequestURI)
+//         next.ServeHTTP(w, r)
+//     })
+// }
 
 //Parse request and return Response Object
 func parseRequest(w http.ResponseWriter, r *http.Request) {
@@ -155,56 +164,58 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 	switch(msg.Command) {
 	case "authenticate":
 		authenticateUser(msg.UserId)
-		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		
 	case "add":
 		add(account, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "buy":
 		buy(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
+		glog.Info("######### IN SERVER  ", account.BuyStack.size)
 	case "commit_sell":
 		commitSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "commit_buy":
+		glog.Info("######### IN SERVER  COMMIT BUYY", account.BuyStack.size)
+		
 		commitBuy(account)
-		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		// glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+		// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "cance_buy":
 		cancelSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "cancel_sell":
 		cancelSell(account)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "set_buy_amount":
 		setSellAmount(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "set_sell_amount":
 		setSellAmount(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "cancel_set_buy":
 		cancelSetBuy(account, msg.Stock)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "cancel_set_sell":
 		cancelSetSell(account, msg.Stock)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "set_buy_trigger":
 		setBuyTrigger(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "set_sell_trigger":
 		setSellTrigger(account, msg.Stock, msg.PriceDollars)
 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-		glog.Info("Account Stocks: ", account.StockPortfolio["Apple"])
+		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
 	case "dumplog":
 		glog.Info("SAVING XML LOG FILE")
 	default: 
@@ -225,6 +236,8 @@ func main() {
 	router := mux.NewRouter()
 	flag.Usage = usage
 	flag.Parse()
+
+	// router.Use(loggingMiddleware)
 
 	router.HandleFunc("/api/test", echoString).Methods("GET")
 	// router.HandleFunc("/getQuote", echoString).Methods("GET")

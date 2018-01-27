@@ -32,8 +32,13 @@ func buy(account *Account, stock string, amount float64) {
 			MoneyAmount: amount,
 			StockAmount: stockNum,
 		}
+		glog.Info("@@@@@@@@@@@@@@@@@@@@@@@ Stack size ", account.BuyStack.size)
+
 		//add buy transcation to the stack
 		account.BuyStack.Push(transaction)
+
+		glog.Info("@$$$$$$$$$$$$$$$$$@ Stack size ", account.BuyStack.size)
+		
 		//hold the money
 		account.holdMoney(amount)
 		glog.Info("Executed BUY for ", amount)
@@ -62,7 +67,9 @@ func sell(account *Account, stock string, amount float64) {
 }
 
 func commitBuy(account *Account) {
+	glog.Info("######INSIDE COMMIT BUY", account.BuyStack.size)
 	if account.BuyStack.size >0 {
+		
 		//weird go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
@@ -76,6 +83,8 @@ func commitBuy(account *Account) {
 	} else {
 		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
 	}
+	glog.Info("###### $$AFTER COMMIT BUY")
+	
 } 
 
 func cancelBuy(account *Account) {
