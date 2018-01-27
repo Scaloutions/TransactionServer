@@ -36,6 +36,7 @@ func buy(account *Account, stock string, amount float64) {
 		account.BuyStack.Push(transaction)
 		//hold the money
 		account.holdMoney(amount)
+		glog.Info("Executed BUY for ", amount)
 	}
 }
 
@@ -52,6 +53,7 @@ func sell(account *Account, stock string, amount float64) {
 		//which means that the qoute does not change
 		account.SellStack.Push(transaction)
 		account.holdStock(stock, stockNum)
+		glog.Info("Executed SELL for ", amount)
 
 	} else {
 		//TODO: improve logging
@@ -69,6 +71,7 @@ func commitBuy(account *Account) {
 		//add number of stocks to user
 		//TODO: refactor this line
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount 
+		glog.Info("Executed COMMIT BUY")
 
 	} else {
 		glog.Error("No BUY transactions previously set for account: ", account.AccountNumber)
@@ -80,7 +83,8 @@ func cancelBuy(account *Account) {
 	 i := account.BuyStack.Pop()
 	 transaction := i.(Buy)
 	 //add money back to Available Balance
-	 account.unholdMoney(transaction.MoneyAmount)
+	account.unholdMoney(transaction.MoneyAmount)
+	glog.Info("Executed CANCEL BUY")
 } 
 
 func commitSell(account *Account) {
@@ -90,6 +94,7 @@ func commitSell(account *Account) {
 		account.addMoney(transaction.MoneyAmount)
 		//we already holded those stocks before
 		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount 
+		glog.Info("Executed COMMIT SELL")
 	} else {
 		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
 	}
@@ -100,6 +105,7 @@ func cancelSell(account *Account) {
 	i := account.SellStack.Pop()
 	transaction := i.(Sell)
 	account.unholdStock(transaction.Stock, transaction.StockAmount)
+	glog.Info("Executed CANCEL SELL")
 } 
 
 /*
@@ -112,7 +118,7 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 		//hold money
 		account.holdMoney(amount)
 		account.SetBuyMap[stock] += amount
-		glog.Info("SetBut for $", amount, " and stock ", stock)
+		glog.Info("Executed SET BUY for $", amount, " and stock ", stock)
 		glog.Info("Total SET BUY on stock ", stock, " is now ", account.SetBuyMap[stock])
 	} else {
 		glog.Error("Account does not have enough money to buy stock ", stock)
@@ -130,13 +136,25 @@ func cancelSetBuy(account *Account, stock string) {
 	delete(account.SetBuyMap, stock)
 	//cancel the trigger
 	delete(account.BuyTriggers, stock)
+	glog.Info("Executed CANCEL SET BUY")
 }
 
 func setBuyTrigger(account *Account, stock string, price float64) {
 	//check for set buy on that stock
 	if _, ok := account.SetBuyMap[stock]; ok {
+		//TODO: this is hacky we need to properly check for the key here
+		if _, exists := account.BuyTriggers[stock]; exists {
+			glog.Info("Trigger is already running!")
+		} else {
+			//spin up go routine trigger
+			glog.Info("Spinning up go routine")
+			//prevent race condition here TODO: rewrite
+			account.BuyTriggers[stock] = price
+			go account.startBuyTrigger(stock)
+		}
+
 		account.BuyTriggers[stock] = price
-		glog.Info("Set BUY trigger for ", stock, "at price ", price)
+		glog.Info("Set BUY trigger for ", stock, " at price ", price)
 	} else {
 		glog.Error("You have to SET BUY AMOUNT on stock ", stock, " first.")
 	}
@@ -147,28 +165,50 @@ func setSellAmount(account *Account, stock string, amount float64) {
 		account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
+		glog.Info("Executed SET SELL AMOUNT for ", amount)
 	} else {
 		glog.Error("User does not have enough stock to sell ", stock)
 	}
 }
 
 func setSellTrigger(account *Account, stock string, price float64) {
+	//check for set buy on that stock
 	if _, ok := account.SetSellMap[stock]; ok {
+		//TODO: this is hacky we need to properly check for the key here
+		if _, exists := account.SellTriggers[stock]; exists {
+			glog.Info("Sell Trigger is already running!")
+		} else {
+			//spin up go routine trigger
+			glog.Info("Spinning up go routine SEll trigger")
+			account.SellTriggers[stock] = price
+			go account.startSellTrigger(stock)
+		}
+
 		account.SellTriggers[stock] = price
-		glog.Info("Set SELL trigger for ", stock, "at price ", price)
+		glog.Info("Set SELL trigger for ", stock, " at price ", price)
 	} else {
 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
 	}
-
 }
 
-func cancelSetSell(account *Account, stock string, amount float64) {
+// func setSellTrigger(account *Account, stock string, price float64) {
+// 	if _, ok := account.SetSellMap[stock]; ok {
+// 		account.SellTriggers[stock] = price
+// 		glog.Info("Executed SET SELL trigger for ", stock, "at price ", price)
+// 	} else {
+// 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
+// 	}
+
+// }
+
+func cancelSetSell(account *Account, stock string) {
 	//put stock back
 	account.unholdStock(stock, account.SetSellMap[stock])
 	//cancel SET SELLs
 	delete(account.SetSellMap, stock)
 	//cancel the trigger
 	delete(account.SellTriggers, stock)
+	glog.Info("Executed CANCEL SET SELL")
 }
 
 func dumplog(account *Account, filename string) {}

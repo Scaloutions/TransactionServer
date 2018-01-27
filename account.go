@@ -101,18 +101,60 @@ func (account *Account) addMoney(amount float64) {
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 // unix.Nono timestamp
-func (account *Account) startBuyTrigger(stock string, limit float64) {
+// FOR NOW JUST DO IT ON STOCK SYMBOL
+func (account *Account) startBuyTrigger(stock string) {
 	price := getQuote(stock, account.AccountNumber)
 	//limit := trigger.MoneyAmount
+	limit := account.BuyTriggers[stock]
 
-	for price > limit {
-		time.Sleep(60 * time.Millisecond)
-		price = getQuote(stock, account.AccountNumber)
-		//sleep for 60 sec
+	//if there is still trigger in the map
+	if(limit>0){
+		glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER CHECK: >>>>>> limit: ", limit, " current: ", price)
+		for price > limit {
+			glog.Info("Price is still greater than the trigger limit")
+			time.Sleep(60 * time.Millisecond)
+			price = getQuote(stock, account.AccountNumber)
+			//sleep for 60 sec
+		}
+
+		stockNum := account.SetBuyMap[stock]
+		buy(account, stock, stockNum)
+		commitBuy(account)
+		//hacky:
+		//put money back
+		account.Available = account.Balance
+		glog.Info("!!! Just bought stocks for trigger #: ", stockNum)
+		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
+		//remove st buy
+		delete(account.SetBuyMap, stock)	
 	}
+}
 
-	stockNum := account.SetBuyMap[stock]
-	buy(account, stock, stockNum)
-	//remove st buy
-	delete(account.SetBuyMap, stock)	
+func (account *Account) startSellTrigger(stock string) {
+	price := getQuote(stock, account.AccountNumber)
+	//limit := trigger.MoneyAmount
+	min := account.SellTriggers[stock]
+
+	//if there is still trigger in the map
+	if(min>0){
+		glog.Info(">>>>>>>>>>>>>>>>>>>SELL TRIGGER CHECK: >>>>>> limit: ", min, " current: ", price)
+		for price < min {
+			glog.Info("Price is still greater than the trigger limit")
+			time.Sleep(60 * time.Millisecond)
+			price = getQuote(stock, account.AccountNumber)
+			//sleep for 60 sec
+		}
+
+		stockNum := account.SetSellMap[stock]
+		sell(account, stock, stockNum)
+		commitSell(account)
+		//hacky:
+		//put stock back
+		account.StockPortfolio[stock] += stockNum
+		glog.Info("!!! Just SOLD stocks for trigger #: ", stockNum)
+		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
+		glog.Info("Stock balance: ", account.StockPortfolio[stock])
+		//remove st buy
+		delete(account.SetSellMap, stock)	
+	}
 }

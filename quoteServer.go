@@ -5,12 +5,12 @@ import (
 	"github.com/golang/glog"
     "fmt"
 	"net"
-   "strings"
-   "strconv"
+//    "strings"
+//    "strconv"
 )
 
 const (
-	QUOTE_SERVER_API = "quoteserve.seng:4444"
+	QUOTE_SERVER_API = "quoteserve.seng"
 	PORT = "444430"
 	CONNECTION_TYPE = "tcp"
 )
@@ -24,6 +24,7 @@ type Quote struct {
 }
 
 func getQuoteFromQS(userid string, stock string) Quote {
+	/*
 	// Get connection to the quote server
 	conn := getConnection()
 
@@ -57,7 +58,16 @@ func getQuoteFromQS(userid string, stock string) Quote {
 		UserId: quoteArgs[2],
 		Timestamp: timestamp,
 		CryptoKey: quoteArgs[4],
+	}*/
+
+	return Quote {
+		Price: 1,
+		Stock: "S",
+		UserId: "Daria",
+		Timestamp: 1516925116307,
+		CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 	}
+
 }
 
 func getConnection() net.Conn {
