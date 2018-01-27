@@ -1,57 +1,59 @@
 package main
 
 import (
-	"github.com/golang/glog"
+	"os"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 type Account struct {
-	AccountNumber string
-	Balance float64
-	Available float64
-	SellStack Stack
-	BuyStack Stack
+	AccountNumber  string
+	Balance        float64
+	Available      float64
+	SellStack      Stack
+	BuyStack       Stack
 	StockPortfolio map[string]float64
-	SetBuyMap map[string]float64
-	BuyTriggers map[string]float64
-	SetSellMap map[string]float64
-	SellTriggers map[string]float64
+	SetBuyMap      map[string]float64
+	BuyTriggers    map[string]float64
+	SetSellMap     map[string]float64
+	SellTriggers   map[string]float64
 }
 
 type Buy struct {
-	Stock string
+	Stock       string
 	StockAmount float64
 	MoneyAmount float64
 }
 
 type SetBuy struct {
-	Stock string
+	Stock       string
 	MoneyAmount float64
 }
 
 type Sell struct {
-	Stock string
+	Stock       string
 	StockAmount float64
 	MoneyAmount float64
 }
 
 type SetSell struct {
-	Stock string
+	Stock       string
 	StockAmount float64
 }
 
 func initializeAccount(value string) Account {
 	return Account{
-		AccountNumber: value,
-		Balance: 0.0,
-		Available: 0.0,
-		SellStack: Stack{},
-		BuyStack: Stack{},
+		AccountNumber:  value,
+		Balance:        0.0,
+		Available:      0.0,
+		SellStack:      Stack{},
+		BuyStack:       Stack{},
 		StockPortfolio: make(map[string]float64),
-		SetBuyMap: make(map[string]float64),
-		BuyTriggers: make(map[string]float64),
-		SetSellMap: make(map[string]float64),
-		SellTriggers: make(map[string]float64),
+		SetBuyMap:      make(map[string]float64),
+		BuyTriggers:    make(map[string]float64),
+		SetSellMap:     make(map[string]float64),
+		SellTriggers:   make(map[string]float64),
 	}
 }
 
@@ -77,7 +79,6 @@ func (account *Account) unholdMoney(amount float64) {
 	}
 }
 
-
 /*
 	TODO: we probably need to store hold stocks separately
 	i.e. the same way we're dealing with the account balance
@@ -101,18 +102,19 @@ func (account *Account) addMoney(amount float64) {
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 // unix.Nono timestamp
-func (account *Account) startBuyTrigger(stock string, limit float64) {
-	price := getQuote(stock, account.AccountNumber)
+func (account *Account) startBuyTrigger(
+	stock string, limit float64, file *os.File, transactionNum int, command string) {
+	price := getQuote(stock, account.AccountNumber, file, transactionNum, command)
 	//limit := trigger.MoneyAmount
 
 	for price > limit {
 		time.Sleep(60 * time.Millisecond)
-		price = getQuote(stock, account.AccountNumber)
+		price = getQuote(stock, account.AccountNumber, file, transactionNum, command)
 		//sleep for 60 sec
 	}
 
 	stockNum := account.SetBuyMap[stock]
-	buy(account, stock, stockNum)
+	buy(account, stock, stockNum, file, transactionNum, command)
 	//remove st buy
-	delete(account.SetBuyMap, stock)	
+	delete(account.SetBuyMap, stock)
 }
