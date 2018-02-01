@@ -1,4 +1,6 @@
-# Web Server
+# Transaction Server
+
+This server is responsible for the business logic and user authentication.
 
 # Running the server
 
