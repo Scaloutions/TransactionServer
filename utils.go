@@ -6,7 +6,7 @@ type Stack struct {
 }
 
 type StackElement struct {
-	//interface support any type
+	//interface supports any type
 	value interface {}
 	next *StackElement
 }

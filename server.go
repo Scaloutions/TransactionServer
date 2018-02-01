@@ -33,85 +33,8 @@ func authenticateUser(userId string) {
 func testLogic(){
 	account := initializeAccount("123")
 	add(&account, 100)
-	/*
-		Test core commands
-	*/
-	// glog.Info(account.Balance==100)
-	// buy(&account, "Apple", 10)
-	// glog.Info(account.Balance==100)
-	// glog.Info(account.Available==90)
-	// commitBuy(&account)
-	// glog.Info(account.Balance==90)
-	// glog.Info(account.Available==90)
-	// glog.Info(account.StockPortfolio["Apple"]==10)
-	// sell(&account, "Apple", 5)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
-	// glog.Info(account.Balance==90)
-	// glog.Info(account.Available==90)
-	// commitSell(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
-	// glog.Info(account.Balance==95)
-	// glog.Info(account.Available==95)
-	// //this should fail
-	// sell(&account, "Apple", 100)
-	// commitSell(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
-	// glog.Info(account.Balance==95)
-	// glog.Info(account.Available==95)
-	// buy(&account, "Apple", 10000)
-	// commitBuy(&account)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
-	// glog.Info(account.Balance==95)
-	// glog.Info(account.Available==95)
-	// buy(&account, "Apple", 10)
-	// glog.Info(account.Balance==95)
-	// glog.Info(account.Available==85)
-	// cancelBuy(&account)
-	// glog.Info(account.Balance==95)
-	// glog.Info(account.Available==95)
-	// glog.Info(account.StockPortfolio["Apple"]==5)
-	// /*
-	//     Test Buy Triggers
-	// */
-	// glog.Info("BEFORE TRIGGERS:", account.Balance, " Available: ", account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// setBuyAmount(&account, "Apple", 10)
-	// setBuyTrigger(&account,"Apple", 0.5)
-	// glog.Info("AFTER TRIGGERS:", account.Balance)
-	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// buy(&account, "Apple", 10)
-	// commitBuy(&account)
-	// glog.Info("Balance: ", account.Balance)
-	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	// setBuyAmount(&account, "Apple", 5)
-	// setBuyTrigger(&account,"Apple", 5)
-	// glog.Info("AFTER TRIGGERS:", account.Balance)
-	// glog.Info(account.Available)
-	// glog.Info(account.StockPortfolio["Apple"])
-	/*
-	    Test Sell Triggers
-	*/
-	buy(&account, "Apple", 50)
-	commitBuy(&account)
-	glog.Info("TESTING SELL TRIGGER")
-	setSellAmount(&account, "Apple", 10)
-	setSellTrigger(&account,"Apple", 5)
-	glog.Info("AFTER TRIGGERS:", account.Balance)
-	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
-	buy(&account, "Apple", 10)
-	commitBuy(&account)
 	glog.Info("Balance: ", account.Balance)
 	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
-	setSellAmount(&account, "Apple", 5)
-	setSellTrigger(&account,"Apple", 1)
-	glog.Info("AFTER TRIGGERS:", account.Balance)
-	glog.Info(account.Available)
-	glog.Info(account.StockPortfolio["Apple"])
-
 }
 
 type Response struct {
@@ -138,17 +61,9 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	//Marshal or convert user object back to json and write to response 
-	// msgJson, err := json.Marshal(msg)
-	// if err != nil{
-	// 	panic(err)
-	// }
-
-
 	var account *Account
 	if msg.Command != "authenticate" {
 		account = getUser(msg.UserId)
-		// glog.Info("USER: ", account.AccountNumber, account.Balance)
 	}
 	
 	//TODO: rewrite this!!
@@ -211,7 +126,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) {
 		panic("Oh noooo we can't process this request :(")
 
 	}
-
 
 	//Set Content-Type header so that clients will know how to read response
 	w.Header().Set("Content-Type","application/json")

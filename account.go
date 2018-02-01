@@ -104,7 +104,6 @@ func (account *Account) addMoney(amount float64) {
 // FOR NOW JUST DO IT ON STOCK SYMBOL
 func (account *Account) startBuyTrigger(stock string) {
 	price := getQuote(stock, account.AccountNumber)
-	//limit := trigger.MoneyAmount
 	limit := account.BuyTriggers[stock]
 
 	//if there is still trigger in the map

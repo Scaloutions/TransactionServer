@@ -5,8 +5,6 @@ import (
 	"github.com/golang/glog"
     "fmt"
 	"net"
-//    "strings"
-//    "strconv"
 )
 
 const (
@@ -60,10 +58,11 @@ func getQuoteFromQS(userid string, stock string) Quote {
 		CryptoKey: quoteArgs[4],
 	}*/
 
+	//this is just to mock quote server response for testing purposes
 	return Quote {
 		Price: 1,
 		Stock: "S",
-		UserId: "Daria",
+		UserId: "Agent007",
 		Timestamp: 1516925116307,
 		CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 	}
@@ -71,7 +70,6 @@ func getQuoteFromQS(userid string, stock string) Quote {
 }
 
 func getConnection() net.Conn {
-	//this should create a TCP connection with the quote server
 	glog.Info("Connecting to the quote server... ")	
 	url := QUOTE_SERVER_API + ":" + PORT
 	conn, err := net.Dial(CONNECTION_TYPE, url)

@@ -16,7 +16,6 @@ func getQuote(stock string, userid string) float64 {
 	quoteObj := getQuoteFromQS(userid, stock)
 	//TODO: log quote server hit here
 	return quoteObj.Price
-	// return 1
 }
 
 func buy(account *Account, stock string, amount float64) {
@@ -127,7 +126,8 @@ func setBuyAmount(account *Account, stock string, amount float64) {
 
 /* Cancels SET BUY associated with a particular stock
    TODO: verify what happens if the user set multiple SET BUY on one stock
-   ?????
+   It shouldbe overwritten by the most recent one!
+   TODO: fix this.
 */
 func cancelSetBuy(account *Account, stock string) {
 	//put money back
@@ -190,16 +190,6 @@ func setSellTrigger(account *Account, stock string, price float64) {
 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
 	}
 }
-
-// func setSellTrigger(account *Account, stock string, price float64) {
-// 	if _, ok := account.SetSellMap[stock]; ok {
-// 		account.SellTriggers[stock] = price
-// 		glog.Info("Executed SET SELL trigger for ", stock, "at price ", price)
-// 	} else {
-// 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
-// 	}
-
-// }
 
 func cancelSetSell(account *Account, stock string) {
 	//put stock back
