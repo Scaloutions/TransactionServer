@@ -82,7 +82,7 @@ func addReq(c *gin.Context) {
 	add(account, req.PriceDollars)
 }
 
-func BuyReq(c *gin.Context) {
+func buyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -92,7 +92,7 @@ func BuyReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: BUY Successful")
 }
 
-func SellReq(c *gin.Context) {
+func sellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -102,7 +102,7 @@ func SellReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: SELL Successful")
 }
 
-func CommitSellReq(c *gin.Context) {
+func commitSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -111,7 +111,7 @@ func CommitSellReq(c *gin.Context) {
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: COMMIT SELL Successful")
 }
-func CommitBuyReq(c *gin.Context) {
+func commitBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -120,7 +120,7 @@ func CommitBuyReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: COMMIT BUY Successful")
 }
 
-func CancelBuyReq(c *gin.Context) {
+func cancelBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -130,7 +130,7 @@ func CancelBuyReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: CANCEL BUY Successful")
 }
 
-func CancelSellReq(c *gin.Context) {
+func cancelSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -140,7 +140,7 @@ func CancelSellReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: CANCEL SELL Successful")
 }
 
-func SetBuyAmountReq(c *gin.Context) {
+func setBuyAmountReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -150,7 +150,7 @@ func SetBuyAmountReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: SET BUY AMOUNT Successful")
 }
 
-func SetSellAmountReq(c *gin.Context) {
+func setSellAmountReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -160,7 +160,7 @@ func SetSellAmountReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: SET SELL AMOUNT Successful")
 }
 
-func CancelSetBuyReq(c *gin.Context) {
+func cancelSetBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -170,7 +170,7 @@ func CancelSetBuyReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: CANCEL SET BUY Successful")
 }
 
-func CancelSetSellReq(c *gin.Context) {
+func cancelSetSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -180,7 +180,7 @@ func CancelSetSellReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: CANCEL SET SELL Successful")
 }
 
-func SetBuyTriggerReq(c *gin.Context) {
+func setBuyTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -189,7 +189,7 @@ func SetBuyTriggerReq(c *gin.Context) {
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 }
 
-func SetSellTriggerReq(c *gin.Context) {
+func setSellTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
@@ -199,8 +199,8 @@ func SetSellTriggerReq(c *gin.Context) {
 	glog.Info("\n############################### SUCCESS: SET SELL TRIGGER Successful")
 }
 
-func DumplogReq(c *gin.Context) {
-	req := getParams(c)
+func dumplogReq(c *gin.Context) {
+	// req := getParams(c)
 
 	glog.Info("SAVING XML LOG FILE")
 	c.String(http.StatusOK, "Getting logs...")
@@ -208,30 +208,28 @@ func DumplogReq(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
-	// router := mux.NewRouter()
+	//glog initialization flags
 	flag.Usage = usage
 	flag.Parse()
 
 	router.GET("/api/test", echoString)
+	router.GET("/api/dumplog", dumplogReq)
 	// routPOSTunc("/getQuote", echoString
 	router.POST("/api/authenticate", authenticateUser)
 	router.POST("/api/add", addReq)
-	// router.POST("/api/sell", parseRequest)
-	// router.POST("/api/buy", parseRequest)
-	// router.POST("/api/commit_sell", parseRequest)
-	// router.POST("/api/commit_buy", parseRequest)
-	// router.POST("/api/cancel_buy", parseRequest)
-	// router.POST("/api/cancel_sell", parseRequest)
-	// router.POST("/api/set_buy_amount", parseRequest)
-	// router.POST("/api/set_sell_amount", parseRequest)
-	// router.POST("/api/cancel_set_buy", parseRequest)
-	// router.POST("/api/cancel_set_sell", parseRequest)
-	// router.POST("/api/set_buy_trigger", parseRequest)
-	// router.POST("/api/set_sell_trigger", parseRequest)
-	// router.HandleFunc("/api/", ).Methods("POST")
-	//router.HandleFunc("/api/", ).Methods("POST")
+	router.POST("/api/buy", buyReq)
+	router.POST("/api/sell", sellReq)
+	router.POST("/api/commit_sell", commitSellReq)
+	router.POST("/api/commit_buy", commitBuyReq)
+	router.POST("/api/cancel_buy", cancelBuyReq)
+	router.POST("/api/cancel_sell", cancelSellReq)
+	router.POST("/api/set_buy_amount", setBuyAmountReq)
+	router.POST("/api/set_sell_amount", setSellAmountReq)
+	router.POST("/api/cancel_set_buy", cancelSetBuyReq)
+	router.POST("/api/cancel_set_sell", cancelSetSellReq)
+	router.POST("/api/set_buy_trigger", setBuyTriggerReq)
+	router.POST("/api/set_sell_trigger", setSellTriggerReq)
 
-	// log.Fatal(http.ListenAndServe(":9090", router))
 	log.Fatal(router.Run(":9090"))
 
 }
