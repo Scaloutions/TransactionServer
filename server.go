@@ -19,7 +19,6 @@ func usage() {
 
 func echoString(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome to DayTrading Inc! \n Running some tests...")
-	// fmt.Fprintf(w, "Hi, there! Running test function..")
 	testLogic()
 }
 
@@ -69,6 +68,14 @@ func getParams(c *gin.Context) Request {
 	}
 
 	return request
+}
+
+func getQuoteReq(c *gin.Context) {
+	req := getParams(c)
+
+	glog.Info("\n\n############################### INFO: Executing QUOTE FOR... ", req.Stock)
+	getQuote(req.Stock, req.UserId)
+	glog.Info("\n############################### SUCCESS: QUOTE Successful")
 }
 
 func addReq(c *gin.Context) {
@@ -214,7 +221,7 @@ func main() {
 
 	router.GET("/api/test", echoString)
 	router.GET("/api/dumplog", dumplogReq)
-	// routPOSTunc("/getQuote", echoString
+	router.GET("/get_quote", getQuoteReq)
 	router.POST("/api/authenticate", authenticateUser)
 	router.POST("/api/add", addReq)
 	router.POST("/api/buy", buyReq)
