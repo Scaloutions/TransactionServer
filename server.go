@@ -28,10 +28,11 @@ var UserMap = make(map[string]*Account)
 
 func authenticateUser(c *gin.Context) {
 	req := getParams(c)
+	glog.Info("\n\n############################### INFO: Executing authenticate... ", req.CommandNumber)
 	account := initializeAccount(req.UserId)
 	UserMap[req.UserId] = &account
+	glog.Info("\n############################### SUCCESS: Authentication Successful!")
 	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
-	glog.Info("INFO: Retrieving user from the db..")
 }
 
 func testLogic() {
@@ -94,7 +95,13 @@ func BuyReq(c *gin.Context) {
 func SellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing SELL FOR... ", req.PriceDollars, req.CommandNumber)
+	sell(account, req.Stock, req.PriceDollars)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: SELL Successful")
 }
+
 func CommitSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
@@ -107,116 +114,97 @@ func CommitSellReq(c *gin.Context) {
 func CommitBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing COMMIT BUY ", req.CommandNumber)
+	commitBuy(account)
+	glog.Info("\n############################### SUCCESS: COMMIT BUY Successful")
 }
+
 func CancelBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing CANCEL BUY ", req.CommandNumber)
+	cancelBuy(account)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: CANCEL BUY Successful")
 }
+
 func CancelSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing CANCEL SELL ", req.CommandNumber)
+	cancelSell(account)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: CANCEL SELL Successful")
 }
+
 func SetBuyAmountReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing SET BUY AMOUNT ", req.CommandNumber)
+	setBuyAmount(account, req.Stock, req.PriceDollars)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: SET BUY AMOUNT Successful")
 }
+
+func SetSellAmountReq(c *gin.Context) {
+	req := getParams(c)
+	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing SET SELL AMOUNT ", req.CommandNumber)
+	setSellAmount(account, req.Stock, req.PriceDollars)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: SET SELL AMOUNT Successful")
+}
+
 func CancelSetBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing CANCEL SET BUY ", req.CommandNumber)
+	cancelSetBuy(account, req.Stock)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: CANCEL SET BUY Successful")
 }
+
 func CancelSetSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing CANCEL SET SELL ", req.CommandNumber)
+	cancelSetSell(account, req.Stock)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: CANCEL SET SELL Successful")
 }
+
 func SetBuyTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing SET BUY TRIGGER ", req.CommandNumber)
+	setBuyTrigger(account, req.Stock, req.PriceDollars)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 }
+
 func SetSellTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
+
+	glog.Info("\n\n############################### INFO: Executing SET SELL TRIGGER ", req.CommandNumber)
+	setSellTrigger(account, req.Stock, req.PriceDollars)
+	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
+	glog.Info("\n############################### SUCCESS: SET SELL TRIGGER Successful")
 }
+
 func DumplogReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+
+	glog.Info("SAVING XML LOG FILE")
+	c.String(http.StatusOK, "Getting logs...")
 }
-
-// 	//TODO: rewrite this!!
-// 	switch req.Command {
-// 	case "authenticate":
-// 		glog.Info("\n\n############################### INFO: Executing authenticate... ", req.CommandNumber)
-// 		authenticateUser(req.UserId)
-// 		glog.Info("\n############################### SUCCESS: Authentication Successful!")
-// 	case "add":
-// 		glog.Info("\n\n############################### INFO: Executing ADD FOR... ", req.PriceDollars, req.CommandNumber)
-// 		add(account, req.PriceDollars)
-// 		glog.Info("SUCCESS: Account Balance: ", account.Balance, " Available: ", account.Available)
-// 	case "buy":
-// 	case "commit_sell":
-// 		glog.Info("\n\n############################### INFO: Executing COMMIT SELL ", req.CommandNumber)
-// 		commitSell(account)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: COMMIT SELL Successful")
-// 	case "commit_buy":
-// 		glog.Info("\n\n############################### INFO: Executing COMMIT BUY ", req.CommandNumber)
-// 		commitBuy(account)
-// 		glog.Info("\n############################### SUCCESS: COMMIT BUY Successful")
-// 		// glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		// glog.Info("Account Stocks: ", account.StockPortfolio["S"])
-// 	case "cancel_buy":
-// 		glog.Info("\n\n############################### INFO: Executing CANCEL BUY ", req.CommandNumber)
-// 		cancelSell(account)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: CANCEL BUY Successful")
-// 	case "cancel_sell":
-// 		glog.Info("\n\n############################### INFO: Executing CANCEL SELL ", req.CommandNumber)
-// 		cancelSell(account)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("Account Stocks: ", account.StockPortfolio["S"])
-// 		glog.Info("\n############################### SUCCESS: CANCEL SELL Successful")
-// 	case "set_buy_amount":
-// 		glog.Info("\n\n############################### INFO: Executing SET BUY AMOUNT ", req.CommandNumber)
-// 		setSellAmount(account, req.Stock, req.PriceDollars)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: SET BUY AMOUNT Successful")
-// 	case "set_sell_amount":
-// 		glog.Info("\n\n############################### INFO: Executing SET SELL AMOUNT ", req.CommandNumber)
-// 		setSellAmount(account, req.Stock, req.PriceDollars)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: SET SELL AMOUNT Successful")
-// 	case "cancel_set_buy":
-// 		glog.Info("\n\n############################### INFO: Executing CANCEL SET BUY ", req.CommandNumber)
-// 		cancelSetBuy(account, req.Stock)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: CANCEL SET BUY Successful")
-// 	case "cancel_set_sell":
-// 		glog.Info("\n\n############################### INFO: Executing CANCEL SET SELL ", req.CommandNumber)
-// 		cancelSetSell(account, req.Stock)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: CANCEL SET SELL Successful")
-// 	case "set_buy_trigger":
-// 		glog.Info("\n\n############################### INFO: Executing SET BUY TRIGGER ", req.CommandNumber)
-// 		setBuyTrigger(account, req.Stock, req.PriceDollars)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 	case "set_sell_trigger":
-// 		glog.Info("\n\n############################### INFO: Executing SET SELL TRIGGER ", req.CommandNumber)
-// 		setSellTrigger(account, req.Stock, req.PriceDollars)
-// 		glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
-// 		glog.Info("\n############################### SUCCESS: SET SELL TRIGGER Successful")
-// 	case "dumplog":
-// 		glog.Info("SAVING XML LOG FILE")
-// 	default:
-// 		panic("Oh noooo we can't process this request :(")
-
-// 	}
-
-// 	//Set Content-Type header so that clients will know how to read response
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	//Write json response back to response
-// 	// w.Write(reqJson)
-// 	// return req
-// }
 
 func main() {
 	router := gin.Default()
@@ -227,7 +215,7 @@ func main() {
 	router.GET("/api/test", echoString)
 	// routPOSTunc("/getQuote", echoString
 	router.POST("/api/authenticate", authenticateUser)
-	router.POST("/api/add", addRequest)
+	router.POST("/api/add", addReq)
 	// router.POST("/api/sell", parseRequest)
 	// router.POST("/api/buy", parseRequest)
 	// router.POST("/api/commit_sell", parseRequest)
