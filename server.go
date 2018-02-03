@@ -162,7 +162,7 @@ func setSellAmountReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing SET SELL AMOUNT ", req.CommandNumber)
-	setSellAmount(account, req.Stock, req.PriceDollars)
+	setSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: SET SELL AMOUNT Successful")
 }

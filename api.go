@@ -222,14 +222,20 @@ func setBuyTrigger(account *Account, stock string, price float64, transactionNum
 	}
 }
 
-func setSellAmount(account *Account, stock string, amount float64) {
+func setSellAmount(account *Account, stock string, amount float64, transactionNum int) {
 	if account.StockPortfolio[stock] > amount {
 		account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
+
+		log := getSystemEvent(transactionNum, SET_SELL_AMOUNT, account.AccountNumber, stock, amount)
+		logEvent(log)
 		glog.Info("Executed SET SELL AMOUNT for ", amount)
 	} else {
-		glog.Error("User does not have enough stock to sell ", stock)
+		err := "Account does not have enough stock to sell "
+		log := getErrorEvent(transactionNum, SET_SELL_AMOUNT, account.AccountNumber, "", 0, err)
+		logEvent(log)
+		glog.Error(err, " ", stock)
 	}
 }
 
