@@ -9,6 +9,7 @@ const (
 	BUY        = "buy"
 	SELL       = "sell"
 	COMMIT_BUY = "commit_buy"
+	CANCEL_BUY = "cancel_buy"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -106,13 +107,23 @@ func commitBuy(account *Account, transactionNum int) {
 	}
 }
 
-func cancelBuy(account *Account) {
+func cancelBuy(account *Account, transactionNum int) {
 	//TODO: log this
-	i := account.BuyStack.Pop()
-	transaction := i.(Buy)
-	//add money back to Available Balance
-	account.unholdMoney(transaction.MoneyAmount)
-	glog.Info("Executed CANCEL BUY")
+	if account.BuyStack.size > 0 {
+		i := account.BuyStack.Pop()
+		transaction := i.(Buy)
+		//add money back to Available Balance
+		account.unholdMoney(transaction.MoneyAmount)
+		glog.Info("Executed CANCEL BUY")
+
+		log := getSystemEvent(transactionNum, CANCEL_BUY, account.AccountNumber, transaction.Stock, transaction.MoneyAmount)
+		logEvent(log)
+	} else {
+		err := "There are no BUY transcations to cancel for this account"
+		log := getErrorEvent(transactionNum, CANCEL_BUY, account.AccountNumber, "", 0, err)
+		glog.Error(err, " ", account.AccountNumber)
+		logEvent(log)
+	}
 }
 
 func commitSell(account *Account) {
