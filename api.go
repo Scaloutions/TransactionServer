@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	ADD = "add"
+	ADD  = "add"
+	BUY  = "buy"
+	SELL = "sell"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -27,13 +29,15 @@ func getQuote(stock string, userid string) float64 {
 	return quoteObj.Price
 }
 
-func buy(account *Account, stock string, amount float64) {
+func buy(account *Account, stock string, amount float64, transactionNum int) {
 	//get qoute
 	stockNum := amount / getQuote(stock, account.AccountNumber)
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
-		glog.Info("WARNING: Not enough money for account ", account.AccountNumber, " to buy ", stock)
+		err := "Account does not have enough money to execute BUY command"
+		glog.Info("Not enough money on account ", account.AccountNumber, " to buy ", stock)
+		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 	} else {
 		transaction := Buy{
 			Stock:       stock,
@@ -44,11 +48,14 @@ func buy(account *Account, stock string, amount float64) {
 		account.BuyStack.Push(transaction)
 		//hold the money
 		account.holdMoney(amount)
+
+		log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
+		logEvent(log)
 		glog.Info("SUCCESS: Executed BUY for ", amount)
 	}
 }
 
-func sell(account *Account, stock string, amount float64) {
+func sell(account *Account, stock string, amount float64, transactionNum int) {
 	//check if have that # of stocks
 	stockNum := amount / getQuote(stock, account.AccountNumber)
 	if account.hasStock(stock, stockNum) {
@@ -61,11 +68,15 @@ func sell(account *Account, stock string, amount float64) {
 		//which means that the qoute does not change
 		account.SellStack.Push(transaction)
 		account.holdStock(stock, stockNum)
-		glog.Info("Executed SELL for ", amount)
 
+		log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
+		logEvent(log)
+		glog.Info("Executed SELL for ", amount)
 	} else {
 		//TODO: improve logging
+		err := "User doesn not have enough stock to sell."
 		glog.Info("WARNING: Not enough stock ", stock, " to sell.")
+		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 	}
 }
 

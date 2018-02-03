@@ -94,7 +94,7 @@ func buyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing BUY FOR... ", req.PriceDollars, req.CommandNumber)
-	buy(account, req.Stock, req.PriceDollars)
+	buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: BUY Successful")
 }
@@ -104,7 +104,7 @@ func sellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing SELL FOR... ", req.PriceDollars, req.CommandNumber)
-	sell(account, req.Stock, req.PriceDollars)
+	sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: SELL Successful")
 }
