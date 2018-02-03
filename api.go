@@ -14,6 +14,7 @@ const (
 	CANCEL_SELL     = "cancel_sell"
 	SET_BUY_AMOUNT  = "set_buy_amount"
 	SET_SELL_AMOUNT = "set_sell_amount"
+	CANCEL_SET_BUY  = "cancel_set_buy"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -191,14 +192,25 @@ func setBuyAmount(account *Account, stock string, amount float64, transactionNum
    It shouldbe overwritten by the most recent one!
    TODO: fix this.
 */
-func cancelSetBuy(account *Account, stock string) {
-	//put money back
-	account.unholdMoney(account.SetBuyMap[stock])
-	//cancel SET BUYs
-	delete(account.SetBuyMap, stock)
-	//cancel the trigger
-	delete(account.BuyTriggers, stock)
-	glog.Info("Executed CANCEL SET BUY")
+func cancelSetBuy(account *Account, stock string, transactionNum int) {
+	if val, ok := account.SetBuyMap[stock]; ok {
+		//put money back
+		account.unholdMoney(val)
+		//cancel SET BUYs
+		delete(account.SetBuyMap, stock)
+		//cancel the trigger
+		delete(account.BuyTriggers, stock)
+
+		//TODO: check if we need to pass val here for logging
+		log := getSystemEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, stock, val)
+		logEvent(log)
+		glog.Info("Executed CANCEL SET BUY")
+	} else {
+		err := "No SET BUY AMOUNT was previously set for this account"
+		log := getErrorEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, "", 0, err)
+		logEvent(log)
+		glog.Error(err, " ", account.AccountNumber)
+	}
 }
 
 func setBuyTrigger(account *Account, stock string, price float64, transactionNum int) {
