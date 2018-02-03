@@ -15,6 +15,7 @@ const (
 	SET_BUY_AMOUNT  = "set_buy_amount"
 	SET_SELL_AMOUNT = "set_sell_amount"
 	CANCEL_SET_BUY  = "cancel_set_buy"
+	CANCEL_SET_SELL = "cancel_set_sell"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -271,14 +272,24 @@ func setSellTrigger(account *Account, stock string, price float64, transactionNu
 	}
 }
 
-func cancelSetSell(account *Account, stock string) {
-	//put stock back
-	account.unholdStock(stock, account.SetSellMap[stock])
-	//cancel SET SELLs
-	delete(account.SetSellMap, stock)
-	//cancel the trigger
-	delete(account.SellTriggers, stock)
-	glog.Info("Executed CANCEL SET SELL")
+func cancelSetSell(account *Account, stock string, transactionNum int) {
+	if val, ok := account.SetSellMap[stock]; ok {
+		//put stock back
+		account.unholdStock(stock, val)
+		//cancel SET SELLs
+		delete(account.SetSellMap, stock)
+		//cancel the trigger
+		delete(account.SellTriggers, stock)
+
+		log := getSystemEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, stock, val)
+		logEvent(log)
+		glog.Info("Executed CANCEL SET SELL")
+	} else {
+		err := "No SET SELL AMOUNT was previously set for this account"
+		log := getErrorEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, "", 0, err)
+		logEvent(log)
+		glog.Error(err, " ", account.AccountNumber)
+	}
 }
 
 func dumplog(account *Account, filename string) {}

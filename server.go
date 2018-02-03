@@ -182,7 +182,7 @@ func cancelSetSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing CANCEL SET SELL ", req.CommandNumber)
-	cancelSetSell(account, req.Stock)
+	cancelSetSell(account, req.Stock, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: CANCEL SET SELL Successful")
 }
