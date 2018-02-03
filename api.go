@@ -5,13 +5,15 @@ import (
 )
 
 const (
-	ADD         = "add"
-	BUY         = "buy"
-	SELL        = "sell"
-	COMMIT_BUY  = "commit_buy"
-	COMMIT_SELL = "commit_sell"
-	CANCEL_BUY  = "cancel_buy"
-	CANCEL_SELL = "cancel_sell"
+	ADD             = "add"
+	BUY             = "buy"
+	SELL            = "sell"
+	COMMIT_BUY      = "commit_buy"
+	COMMIT_SELL     = "commit_sell"
+	CANCEL_BUY      = "cancel_buy"
+	CANCEL_SELL     = "cancel_sell"
+	SET_BUY_AMOUNT  = "set_buy_amount"
+	SET_SELL_AMOUNT = "set_sell_amount"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -165,16 +167,22 @@ func cancelSell(account *Account, transactionNum int) {
 Sets a defined amount of the given stock to buy when the current stock price
 is less than or equal to the BUY_TRIGGER
 */
-func setBuyAmount(account *Account, stock string, amount float64) {
+func setBuyAmount(account *Account, stock string, amount float64, transactionNum int) {
 	//check if there is enough money in the account
 	if account.Available >= amount {
 		//hold money
 		account.holdMoney(amount)
 		account.SetBuyMap[stock] += amount
+
+		log := getSystemEvent(transactionNum, SET_BUY_AMOUNT, account.AccountNumber, stock, amount)
+		logEvent(log)
 		glog.Info("Executed SET BUY for $", amount, " and stock ", stock)
 		glog.Info("Total SET BUY on stock ", stock, " is now ", account.SetBuyMap[stock])
 	} else {
-		glog.Error("Account does not have enough money to buy stock ", stock)
+		err := "Account does not have enough money to buy stock"
+		log := getErrorEvent(transactionNum, SET_BUY_AMOUNT, account.AccountNumber, "", 0, err)
+		logEvent(log)
+		glog.Error(err, " ", stock)
 	}
 }
 
