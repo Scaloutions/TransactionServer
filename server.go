@@ -114,7 +114,7 @@ func commitSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing COMMIT SELL ", req.CommandNumber)
-	commitSell(account)
+	commitSell(account, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: COMMIT SELL Successful")
 }
@@ -132,7 +132,7 @@ func cancelBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing CANCEL BUY ", req.CommandNumber)
-	cancelBuy(account)
+	cancelBuy(account, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: CANCEL BUY Successful")
 }
@@ -142,7 +142,7 @@ func cancelSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing CANCEL SELL ", req.CommandNumber)
-	cancelSell(account)
+	cancelSell(account, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: CANCEL SELL Successful")
 }
@@ -192,7 +192,7 @@ func setBuyTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing SET BUY TRIGGER ", req.CommandNumber)
-	setBuyTrigger(account, req.Stock, req.PriceDollars)
+	setBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 }
 
@@ -201,7 +201,7 @@ func setSellTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing SET SELL TRIGGER ", req.CommandNumber)
-	setSellTrigger(account, req.Stock, req.PriceDollars)
+	setSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 	glog.Info("Account Balance: ", account.Balance, " Available: ", account.Available)
 	glog.Info("\n############################### SUCCESS: SET SELL TRIGGER Successful")
 }
