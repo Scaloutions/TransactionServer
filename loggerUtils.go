@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+const (
+	SERVER_NAME = "TS0156"
+)
+
 func getFundsAsString(amount float64) string {
 	if amount == 0 {
 		return ""
@@ -17,10 +21,9 @@ func getCurrentTs() int64 {
 }
 
 func getUserCommand(
-	server string,
 	transactionNum int,
 	command string,
-	UserId string,
+	userId string,
 	stockSymbol string,
 	funds float64) UserCommand {
 
@@ -28,17 +31,16 @@ func getUserCommand(
 
 	return UserCommand{
 		Timestamp:      getCurrentTs(),
-		Server:         server,
+		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Command:        command,
-		UserId:         UserId,
+		UserId:         userId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
 	}
 }
 
 func getAccountTransaction(
-	server string,
 	transactionNum int,
 	action string,
 	userId string,
@@ -48,7 +50,7 @@ func getAccountTransaction(
 
 	return AccountTransaction{
 		Timestamp:      getCurrentTs(),
-		Server:         server,
+		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Action:         action,
 		UserId:         userId,
@@ -57,10 +59,9 @@ func getAccountTransaction(
 }
 
 func getSystemEvent(
-	server string,
 	transactionNum int,
 	command string,
-	UserId string,
+	userId string,
 	stockSymbol string,
 	funds float64) SystemEvent {
 
@@ -68,21 +69,20 @@ func getSystemEvent(
 
 	return SystemEvent{
 		Timestamp:      getCurrentTs(),
-		Server:         server,
+		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Command:        command,
-		UserId:         UserId,
+		UserId:         userId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
 	}
 }
 
 func getQuoteServer(
-	server string,
 	transactionNum int,
 	quoteServerTime int64,
 	command string,
-	UserId string,
+	userId string,
 	stockSymbol string,
 	price float64,
 	cryptokey string) QuoteServer {
@@ -91,11 +91,11 @@ func getQuoteServer(
 
 	return QuoteServer{
 		Timestamp:       getCurrentTs(),
-		Server:          server,
+		Server:          SERVER_NAME,
 		TransactionNum:  transactionNum,
 		QuoteServerTime: quoteServerTime,
 		Command:         command,
-		UserId:          UserId,
+		UserId:          userId,
 		StockSymbol:     stockSymbol,
 		Price:           priceAsString,
 		Cryptokey:       cryptokey,
@@ -103,10 +103,9 @@ func getQuoteServer(
 }
 
 func getErrorEvent(
-	server string,
 	transactionNum int,
 	command string,
-	UserId string,
+	userId string,
 	stockSymbol string,
 	funds float64,
 	errorMessage string) ErrorEvent {
@@ -115,10 +114,10 @@ func getErrorEvent(
 
 	return ErrorEvent{
 		Timestamp:      getCurrentTs(),
-		Server:         server,
+		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Command:        command,
-		UserId:         UserId,
+		UserId:         userId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
 		ErrorMessage:   errorMessage,
