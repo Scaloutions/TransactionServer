@@ -43,7 +43,7 @@ func getUserCommand(
 	}
 }
 
-func getAccountTransaction(
+func getTransactionEvent(
 	transactionNum int,
 	action string,
 	userId string,

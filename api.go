@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	ADD  = "add"
-	BUY  = "buy"
-	SELL = "sell"
+	ADD        = "add"
+	BUY        = "buy"
+	SELL       = "sell"
+	COMMIT_BUY = "commit_buy"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -15,7 +16,7 @@ func add(account *Account, amount float64, transactionNum int) {
 		account.addMoney(amount)
 		//TODO: log userid instead of account number
 		//this logs transaction event
-		log := getAccountTransaction(transactionNum, ADD, account.AccountNumber, amount)
+		log := getTransactionEvent(transactionNum, ADD, account.AccountNumber, amount)
 		logEvent(log)
 		glog.Info("SUCCESS: Added ", amount)
 	} else {
@@ -38,6 +39,7 @@ func buy(account *Account, stock string, amount float64, transactionNum int) {
 		err := "Account does not have enough money to execute BUY command"
 		glog.Info("Not enough money on account ", account.AccountNumber, " to buy ", stock)
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
+		logEvent(log)
 	} else {
 		transaction := Buy{
 			Stock:       stock,
@@ -77,10 +79,11 @@ func sell(account *Account, stock string, amount float64, transactionNum int) {
 		err := "User doesn not have enough stock to sell."
 		glog.Info("WARNING: Not enough stock ", stock, " to sell.")
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
+		logEvent(log)
 	}
 }
 
-func commitBuy(account *Account) {
+func commitBuy(account *Account, transactionNum int) {
 	if account.BuyStack.size > 0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
@@ -88,12 +91,18 @@ func commitBuy(account *Account) {
 		//should we check balance here insted? TODO: clarify
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
-		//TODO: refactor this line
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
+
+		log := getTransactionEvent(transactionNum, COMMIT_BUY, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("SUCCESS: Executed COMMIT BUY")
+		logEvent(log)
 
 	} else {
+		err := "No BUY transactions previously set for account"
+		//TODO: figure out if we can simplify this logging with some missing parameters
+		log := getErrorEvent(transactionNum, COMMIT_BUY, account.AccountNumber, "", 0, err)
 		glog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
+		logEvent(log)
 	}
 }
 

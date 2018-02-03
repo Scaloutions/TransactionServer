@@ -123,7 +123,7 @@ func commitBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n\n############################### INFO: Executing COMMIT BUY ", req.CommandNumber)
-	commitBuy(account)
+	commitBuy(account, req.CommandNumber)
 	glog.Info("\n############################### SUCCESS: COMMIT BUY Successful")
 }
 
