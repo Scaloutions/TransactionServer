@@ -1,10 +1,19 @@
 package main
 
-import "github.com/golang/glog"
+import (
+	"github.com/golang/glog"
+)
+
+const (
+	ADD = "ADD"
+)
 
 func add(account *Account, amount float64, transactionNum int) {
 	if amount > 0 {
 		account.addMoney(amount)
+		//TODO: log userid instead of account number
+		log := getUserCommand(transactionNum, ADD, account.AccountNumber, "", amount)
+		logEvent(log)
 		glog.Info("SUCCESS: Added ", amount)
 	} else {
 		glog.Error("ERROR: Cannot add negative amount to balance ", amount)

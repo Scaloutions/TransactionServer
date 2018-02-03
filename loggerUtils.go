@@ -1,12 +1,18 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const (
-	SERVER_NAME = "TS0156"
+	SERVER_NAME  = "TS0156"
+	AUDIT_SERVER = "localhost:9090/log_event"
 )
 
 func getFundsAsString(amount float64) string {
@@ -119,4 +125,23 @@ func getErrorEvent(
 		Funds:          fundsAsString,
 		ErrorMessage:   errorMessage,
 	}
+}
+
+func logEvent(log interface{}) {
+	data, err := json.Marshal(log)
+	if err != nil {
+		glog.Error("Can not parse struct into JSON onject ", data)
+	}
+	req, err := http.NewRequest("POST", AUDIT_SERVER, bytes.NewBuffer(data))
+	if err != nil {
+		glog.Error("Error creating a request for the Audit server")
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		glog.Error("Error sending a POST request to Audit server")
+		panic(err)
+	}
+	defer resp.Body.Close()
 }
