@@ -10,9 +10,6 @@ const (
 )
 
 func getFundsAsString(amount float64) string {
-	if amount == 0 {
-		return ""
-	}
 	return fmt.Sprintf("%.2f", float64(amount))
 }
 
