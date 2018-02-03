@@ -5,14 +5,15 @@ import (
 )
 
 const (
-	ADD = "ADD"
+	ADD = "add"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
 	if amount > 0 {
 		account.addMoney(amount)
 		//TODO: log userid instead of account number
-		log := getUserCommand(transactionNum, ADD, account.AccountNumber, "", amount)
+		//this logs transaction event
+		log := getAccountTransaction(transactionNum, ADD, account.AccountNumber, amount)
 		logEvent(log)
 		glog.Info("SUCCESS: Added ", amount)
 	} else {
