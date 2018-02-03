@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	ADD        = "add"
-	BUY        = "buy"
-	SELL       = "sell"
-	COMMIT_BUY = "commit_buy"
-	CANCEL_BUY = "cancel_buy"
+	ADD         = "add"
+	BUY         = "buy"
+	SELL        = "sell"
+	COMMIT_BUY  = "commit_buy"
+	COMMIT_SELL = "commit_sell"
+	CANCEL_BUY  = "cancel_buy"
 )
 
 func add(account *Account, amount float64, transactionNum int) {
@@ -126,16 +127,19 @@ func cancelBuy(account *Account, transactionNum int) {
 	}
 }
 
-func commitSell(account *Account) {
+func commitSell(account *Account, transactionNum int) {
 	if account.SellStack.size > 0 {
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
 		account.addMoney(transaction.MoneyAmount)
-		//we already holded those stocks before
-		//account.StockPortfolio[transaction.Stock] -= transaction.StockAmount
+
+		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("Executed COMMIT SELL")
+		logEvent(log)
 	} else {
-		glog.Error("No SELL transactions previously set for account: ", account.AccountNumber)
+		err := "No SELL transactions previously set for account"
+		glog.Error(err, " ", account.AccountNumber)
+		log := getErrorEvent(transactionNum, COMMIT_SELL, account.AccountNumber, "", 0, err)
 	}
 }
 
