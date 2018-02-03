@@ -36,7 +36,7 @@ func authenticateUser(c *gin.Context) {
 
 func testLogic() {
 	account := initializeAccount("123")
-	add(&account, 100)
+	add(&account, 100, 1)
 	glog.Info("Balance: ", account.Balance)
 	glog.Info(account.Available)
 }
@@ -86,7 +86,7 @@ func addReq(c *gin.Context) {
 	glog.Info("\n\n############################### INFO: Executing ADD FOR... ", req.PriceDollars, req.CommandNumber)
 	glog.Info(req)
 	glog.Info(account)
-	add(account, req.PriceDollars)
+	add(account, req.PriceDollars, req.CommandNumber)
 }
 
 func buyReq(c *gin.Context) {

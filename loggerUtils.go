@@ -33,14 +33,15 @@ func getUserCommand(
 		Command:        command,
 		UserId:         UserId,
 		StockSymbol:    stockSymbol,
-		Funds:          fundsAsString}
+		Funds:          fundsAsString,
+	}
 }
 
 func getAccountTransaction(
 	server string,
 	transactionNum int,
 	action string,
-	UserId string,
+	userId string,
 	funds float64) AccountTransaction {
 
 	fundsAsString := getFundsAsString(funds)
@@ -50,8 +51,9 @@ func getAccountTransaction(
 		Server:         server,
 		TransactionNum: transactionNum,
 		Action:         action,
-		UserId:         UserId,
-		Funds:          fundsAsString}
+		UserId:         userId,
+		Funds:          fundsAsString,
+	}
 }
 
 func getSystemEvent(
@@ -71,7 +73,8 @@ func getSystemEvent(
 		Command:        command,
 		UserId:         UserId,
 		StockSymbol:    stockSymbol,
-		Funds:          fundsAsString}
+		Funds:          fundsAsString,
+	}
 }
 
 func getQuoteServer(
@@ -95,7 +98,8 @@ func getQuoteServer(
 		UserId:          UserId,
 		StockSymbol:     stockSymbol,
 		Price:           priceAsString,
-		Cryptokey:       cryptokey}
+		Cryptokey:       cryptokey,
+	}
 }
 
 func getErrorEvent(
@@ -117,5 +121,6 @@ func getErrorEvent(
 		UserId:         UserId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
-		ErrorMessage:   errorMessage}
+		ErrorMessage:   errorMessage,
+	}
 }
