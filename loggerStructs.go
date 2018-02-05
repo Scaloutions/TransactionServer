@@ -1,15 +1,5 @@
 package main
 
-type UserCommand struct {
-	Timestamp      int64
-	Server         string
-	TransactionNum int
-	Command        string
-	UserId         string
-	StockSymbol    string
-	Funds          string
-}
-
 type AccountTransaction struct {
 	Timestamp      int64
 	Server         string

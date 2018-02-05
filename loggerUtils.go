@@ -27,26 +27,6 @@ func getCurrentTs() int64 {
 	return time.Now().UnixNano() / 1000000
 }
 
-func getUserCommand(
-	transactionNum int,
-	command string,
-	userId string,
-	stockSymbol string,
-	funds float64) UserCommand {
-
-	fundsAsString := getFundsAsString(funds)
-
-	return UserCommand{
-		Timestamp:      getCurrentTs(),
-		Server:         SERVER_NAME,
-		TransactionNum: transactionNum,
-		Command:        command,
-		UserId:         userId,
-		StockSymbol:    stockSymbol,
-		Funds:          fundsAsString,
-	}
-}
-
 func getTransactionEvent(
 	transactionNum int,
 	action string,
