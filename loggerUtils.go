@@ -11,8 +11,12 @@ import (
 )
 
 const (
-	SERVER_NAME  = "TS0156"
-	AUDIT_SERVER = "localhost:9090/log_event"
+	SERVER_NAME       = "TS0156"
+	AUDIT_SERVER      = "http://localhost:8082"
+	ACCOUNT_EVENT_URL = "/accounttransaction"
+	SYSTEM_EVENT_URL  = "/systemevent"
+	ERROR_EVENT_URL   = "/errorevent"
+	QUOTE_SERVER_URL  = "/quoteserver"
 )
 
 func getFundsAsString(amount float64) string {
@@ -129,10 +133,12 @@ func getErrorEvent(
 
 func logEvent(log interface{}) {
 	data, err := json.Marshal(log)
+	URL := getUrlPath(log)
+
 	if err != nil {
 		glog.Error("Can not parse struct into JSON onject ", data)
 	}
-	req, err := http.NewRequest("POST", AUDIT_SERVER, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(data))
 	if err != nil {
 		glog.Error("Error creating a request for the Audit server")
 	}
@@ -144,4 +150,25 @@ func logEvent(log interface{}) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+}
+
+func getUrlPath(obj interface{}) string {
+	var url bytes.Buffer
+	url.WriteString(AUDIT_SERVER)
+
+	switch obj.(type) {
+	case SystemEvent:
+		url.WriteString(SYSTEM_EVENT_URL)
+	case AccountTransaction:
+		url.WriteString(ACCOUNT_EVENT_URL)
+	case ErrorEvent:
+		url.WriteString(ERROR_EVENT_URL)
+	case QuoteServer:
+		url.WriteString(QUOTE_SERVER_URL)
+	default:
+		glog.Error("Error logging event to the audit server.")
+		panic("Can not recognaize this type of event.")
+	}
+
+	return url.String()
 }
