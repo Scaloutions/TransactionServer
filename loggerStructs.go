@@ -1,6 +1,6 @@
 package main
 
-type AccountTransaction struct {
+type AccountTransactionEvent struct {
 	Timestamp      int64
 	Server         string
 	TransactionNum int
@@ -19,16 +19,16 @@ type SystemEvent struct {
 	Funds          string
 }
 
-type QuoteServer struct {
-	Timestamp       int64
-	Server          string
-	TransactionNum  int
-	QuoteServerTime int64
-	Command         string
-	UserId          string
-	StockSymbol     string
-	Price           string
-	Cryptokey       string
+type QuoteServerEvent struct {
+	Timestamp            int64
+	Server               string
+	TransactionNum       int
+	QuoteServerEventTime int64
+	Command              string
+	UserId               string
+	StockSymbol          string
+	Price                string
+	Cryptokey            string
 }
 
 type ErrorEvent struct {

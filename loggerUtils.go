@@ -31,11 +31,11 @@ func getTransactionEvent(
 	transactionNum int,
 	action string,
 	userId string,
-	funds float64) AccountTransaction {
+	funds float64) AccountTransactionEvent {
 
 	fundsAsString := getFundsAsString(funds)
 
-	return AccountTransaction{
+	return AccountTransactionEvent{
 		Timestamp:      getCurrentTs(),
 		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
@@ -65,27 +65,27 @@ func getSystemEvent(
 	}
 }
 
-func getQuoteServer(
+func getQuoteServerEvent(
 	transactionNum int,
 	quoteServerTime int64,
 	command string,
 	userId string,
 	stockSymbol string,
 	price float64,
-	cryptokey string) QuoteServer {
+	cryptokey string) QuoteServerEvent {
 
 	priceAsString := getFundsAsString(price)
 
-	return QuoteServer{
-		Timestamp:       getCurrentTs(),
-		Server:          SERVER_NAME,
-		TransactionNum:  transactionNum,
-		QuoteServerTime: quoteServerTime,
-		Command:         command,
-		UserId:          userId,
-		StockSymbol:     stockSymbol,
-		Price:           priceAsString,
-		Cryptokey:       cryptokey,
+	return QuoteServerEvent{
+		Timestamp:            getCurrentTs(),
+		Server:               SERVER_NAME,
+		TransactionNum:       transactionNum,
+		QuoteServerEventTime: quoteServerTime,
+		Command:              command,
+		UserId:               userId,
+		StockSymbol:          stockSymbol,
+		Price:                priceAsString,
+		Cryptokey:            cryptokey,
 	}
 }
 
@@ -139,11 +139,11 @@ func getUrlPath(obj interface{}) string {
 	switch obj.(type) {
 	case SystemEvent:
 		url.WriteString(SYSTEM_EVENT_URL)
-	case AccountTransaction:
+	case AccountTransactionEvent:
 		url.WriteString(ACCOUNT_EVENT_URL)
 	case ErrorEvent:
 		url.WriteString(ERROR_EVENT_URL)
-	case QuoteServer:
+	case QuoteServerEvent:
 		url.WriteString(QUOTE_SERVER_URL)
 	default:
 		glog.Error("Error logging event to the audit server.")
