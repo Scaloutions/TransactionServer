@@ -13,6 +13,7 @@ import (
 const (
 	SERVER_NAME       = "TS0156"
 	AUDIT_SERVER      = "http://localhost:8082"
+	API_URL           = "/api"
 	ACCOUNT_EVENT_URL = "/accounttransaction"
 	SYSTEM_EVENT_URL  = "/systemevent"
 	ERROR_EVENT_URL   = "/errorevent"
@@ -135,6 +136,7 @@ func logEvent(log interface{}) {
 func getUrlPath(obj interface{}) string {
 	var url bytes.Buffer
 	url.WriteString(AUDIT_SERVER)
+	url.WriteString(API_URL)
 
 	switch obj.(type) {
 	case SystemEvent:
