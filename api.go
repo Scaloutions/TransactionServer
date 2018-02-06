@@ -37,9 +37,13 @@ func getQuote(stock string, userid string) float64 {
 	return quoteObj.Price
 }
 
-func buy(account *Account, stock string, amount float64, transactionNum int) {
-	//get qoute
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+func buyHelper(
+	account *Account,
+	amount float64,
+	stock string,
+	stockNum float64,
+	transactionNum int) {
+
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
@@ -62,6 +66,13 @@ func buy(account *Account, stock string, amount float64, transactionNum int) {
 		logEvent(log)
 		glog.Info("SUCCESS: Executed BUY for ", amount)
 	}
+
+}
+
+func buy(account *Account, stock string, amount float64, transactionNum int) {
+	//get qoute
+	stockNum := amount / getQuote(stock, account.AccountNumber)
+	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
 func sell(account *Account, stock string, amount float64, transactionNum int) {
