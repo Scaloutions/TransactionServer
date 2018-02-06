@@ -75,9 +75,13 @@ func buy(account *Account, stock string, amount float64, transactionNum int) {
 	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
-func sell(account *Account, stock string, amount float64, transactionNum int) {
-	//check if have that # of stocks
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+func sellHelper(
+	account *Account,
+	stock string,
+	amount float64,
+	transactionNum int,
+	stockNum float64) {
+
 	if account.hasStock(stock, stockNum) {
 		transaction := Sell{
 			Stock:       stock,
@@ -99,6 +103,12 @@ func sell(account *Account, stock string, amount float64, transactionNum int) {
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	}
+}
+
+func sell(account *Account, stock string, amount float64, transactionNum int) {
+	//check if have that # of stocks
+	stockNum := amount / getQuote(stock, account.AccountNumber)
+	sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
 func commitBuy(account *Account, transactionNum int) {
