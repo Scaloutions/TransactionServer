@@ -44,13 +44,17 @@ func initializeAccountForTesting(amount float64) *Account {
 	return &account
 }
 
-func buyStockForTesting(account *Account) *Account {
+func buyStockForTesting(account *Account) {
 	amount := float64(64)
 	stock := "S"
 	transactionNum := 2
 	stockNum := float64(4)
 	buyHelper(account, amount, stock, stockNum, transactionNum)
-	return account
+}
+
+func commitBuyForTesting(account *Account) {
+	buyStockForTesting(account)
+	commitBuy(account, 3)
 }
 
 func TestAdd(t *testing.T) {
@@ -85,6 +89,22 @@ func TestBuyWithoutQS(t *testing.T) {
 
 }
 
+func TestSell(t *testing.T) {
+
+	activateMockAuditServer()
+	defer httpmock.DeactivateAndReset()
+
+	account := initializeAccountForTesting(100)
+	commitBuyForTesting(account)
+	actualBalance := float64(36)
+	assert.True(t, account.hasStock("S", float64(4)))
+	assert.Equal(t, actualBalance, account.Balance)
+	sellHelper(account, "S", float64(64), 4, float64(4))
+	// assert.True(t, account.hasStock("S", float64(4)))
+	assert.Equal(t, actualBalance, account.Balance)
+
+}
+
 func TestCommitBuy(t *testing.T) {
 
 	activateMockAuditServer()
@@ -96,5 +116,6 @@ func TestCommitBuy(t *testing.T) {
 
 	commitBuy(account, 3)
 	assert.Equal(t, float64(36), account.Balance)
+	assert.True(t, account.hasStock("S", float64(4)))
 
 }
