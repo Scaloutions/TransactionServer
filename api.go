@@ -91,7 +91,7 @@ func sell(account *Account, stock string, amount float64, transactionNum int) {
 }
 
 func commitBuy(account *Account, transactionNum int) {
-	if account.BuyStack.size > 0 {
+	if account.BuyStack.Size() > 0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
@@ -114,7 +114,7 @@ func commitBuy(account *Account, transactionNum int) {
 }
 
 func cancelBuy(account *Account, transactionNum int) {
-	if account.BuyStack.size > 0 {
+	if account.BuyStack.Size() > 0 {
 		i := account.BuyStack.Pop()
 		transaction := i.(Buy)
 		//add money back to Available Balance
@@ -132,7 +132,7 @@ func cancelBuy(account *Account, transactionNum int) {
 }
 
 func commitSell(account *Account, transactionNum int) {
-	if account.SellStack.size > 0 {
+	if account.SellStack.Size() > 0 {
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
 		account.addMoney(transaction.MoneyAmount)
@@ -149,7 +149,7 @@ func commitSell(account *Account, transactionNum int) {
 }
 
 func cancelSell(account *Account, transactionNum int) {
-	if account.SellStack.size > 0 {
+	if account.SellStack.Size() > 0 {
 		i := account.SellStack.Pop()
 		transaction := i.(Sell)
 		account.unholdStock(transaction.Stock, transaction.StockAmount)
