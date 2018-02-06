@@ -1,4 +1,4 @@
-package main
+package utils
 
 type Stack struct {
 	size int32
