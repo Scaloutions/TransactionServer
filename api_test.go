@@ -24,6 +24,7 @@ func activateHttpmock(url string) {
 func TestAdd(t *testing.T) {
 
 	activateHttpmock(TEST_ACCOUNT_TRANSACTION_URL)
+	defer httpmock.DeactivateAndReset()
 
 	account := initializeAccount("test123")
 	amount := 100.01
