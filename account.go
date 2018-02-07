@@ -3,8 +3,9 @@ package main
 import (
 	"time"
 
+	"./src/utils"
+
 	"github.com/golang/glog"
-	"utils"
 )
 
 type Account struct {
