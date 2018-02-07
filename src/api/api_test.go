@@ -1,4 +1,4 @@
-package main
+package api
 
 /*
 	TODO:
@@ -37,9 +37,9 @@ func activateMockAuditServer() {
 
 func initializeAccountForTesting(amount float64) *Account {
 
-	account := initializeAccount("test123")
+	account := InitializeAccount("test123")
 	transactionNum := 1
-	add(&account, amount, transactionNum)
+	Add(&account, amount, transactionNum)
 
 	return &account
 }
@@ -54,7 +54,7 @@ func buyStockForTesting(account *Account) {
 
 func commitBuyForTesting(account *Account) {
 	buyStockForTesting(account)
-	commitBuy(account, 3)
+	CommitBuy(account, 3)
 }
 
 func sellStockForTesting(account *Account) {
@@ -123,7 +123,7 @@ func TestCommitBuy(t *testing.T) {
 	assert.Equal(t, float64(100), account.Balance)
 	assert.Equal(t, float64(36), account.Available)
 
-	commitBuy(account, 3)
+	CommitBuy(account, 3)
 	assert.Equal(t, float64(36), account.Balance)
 	assert.True(t, account.hasStock("S", float64(4)))
 
@@ -139,7 +139,7 @@ func TestCanCelBuy(t *testing.T) {
 	assert.Equal(t, float64(100), account.Balance)
 	assert.Equal(t, float64(36), account.Available)
 
-	cancelBuy(account, 5)
+	CancelBuy(account, 5)
 	assert.Equal(t, float64(100), account.Available)
 
 }
@@ -160,7 +160,7 @@ func TestCommitSell(t *testing.T) {
 	assert.Equal(t, float64(36), account.Balance)
 	// assert.Equal(t, float64(100), account.Available)
 
-	commitSell(account, 7)
+	CommitSell(account, 7)
 	assert.False(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(100), account.Available)
 	assert.Equal(t, float64(100), account.Balance)
@@ -183,7 +183,7 @@ func TestCancelSell(t *testing.T) {
 	assert.Equal(t, float64(36), account.Balance)
 	// assert.Equal(t, float64(100), account.Available)
 
-	cancelSell(account, 8)
+	CancelSell(account, 8)
 	assert.True(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(36), account.Available)
 	assert.Equal(t, float64(36), account.Balance)
@@ -199,7 +199,7 @@ func TestSetBuyAmount(t *testing.T) {
 	assert.Equal(t, float64(100), account.Balance)
 	assert.Equal(t, float64(100), account.Available)
 
-	setBuyAmount(account, "S", float64(64), 8)
+	SetBuyAmount(account, "S", float64(64), 8)
 	assert.Equal(t, float64(100), account.Balance)
 	assert.Equal(t, float64(36), account.Available)
 
