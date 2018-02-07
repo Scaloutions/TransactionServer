@@ -90,7 +90,7 @@ func (account *Account) holdStock(stock string, amount float64) {
 }
 
 func (account *Account) unholdStock(stock string, amount float64) {
-	account.StockPortfolio[stock] -= amount
+	account.StockPortfolio[stock] += amount
 }
 
 func (account *Account) addMoney(amount float64) {

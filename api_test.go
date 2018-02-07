@@ -184,8 +184,7 @@ func TestCancelSell(t *testing.T) {
 	// assert.Equal(t, float64(100), account.Available)
 
 	cancelSell(account, 8)
-	// TODO:
-	// assert.True(t, account.hasStock("S", float64(4)))
+	assert.True(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(36), account.Available)
 	assert.Equal(t, float64(36), account.Balance)
 
