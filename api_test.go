@@ -3,6 +3,7 @@ package main
 /*
 	TODO:
 	getQuote
+	cancelSetBuy
 */
 
 import (
@@ -183,8 +184,41 @@ func TestCancelSell(t *testing.T) {
 	// assert.Equal(t, float64(100), account.Available)
 
 	cancelSell(account, 8)
+	// TODO:
 	// assert.True(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(36), account.Available)
 	assert.Equal(t, float64(36), account.Balance)
 
 }
+
+func TestSetBuyAmount(t *testing.T) {
+
+	activateMockAuditServer()
+	defer httpmock.DeactivateAndReset()
+
+	account := initializeAccountForTesting(100)
+	assert.Equal(t, float64(100), account.Balance)
+	assert.Equal(t, float64(100), account.Available)
+
+	setBuyAmount(account, "S", float64(64), 8)
+	assert.Equal(t, float64(100), account.Balance)
+	assert.Equal(t, float64(36), account.Available)
+
+}
+
+// func TestSetBuyTrigger(t *testing.T) {
+
+// 	activateMockAuditServer()
+// 	defer httpmock.DeactivateAndReset()
+
+// 	account := initializeAccountForTesting(100)
+// 	assert.Equal(t, float64(100), account.Balance)
+// 	assert.Equal(t, float64(100), account.Available)
+
+// 	setBuyAmount(account, "S", float64(64), 8)
+// 	assert.Equal(t, float64(100), account.Balance)
+// 	assert.Equal(t, float64(36), account.Available)
+
+// 	setBuyTrigger(account, "S", )
+
+// }
