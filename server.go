@@ -19,8 +19,7 @@ func usage() {
 }
 
 func echoString(c *gin.Context) {
-	c.String(http.StatusOK, "Welcome to DayTrading Inc! \n Running some tests...")
-	testLogic()
+	c.String(http.StatusOK, "Welcome to DayTrading Inc!")
 }
 
 // User map
@@ -33,13 +32,6 @@ func authenticateUser(c *gin.Context) {
 	UserMap[req.UserId] = &account
 	glog.Info("\n############################### SUCCESS: Authentication Successful!")
 	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
-}
-
-func testLogic() {
-	account := api.InitializeAccount("123")
-	api.Add(&account, 100, 1)
-	glog.Info("Balance: ", account.Balance)
-	glog.Info(account.Available)
 }
 
 type Request struct {
