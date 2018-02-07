@@ -113,7 +113,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		glog.Info(">>>>>>>>>>>>>>>>>>>TRIGGER CHECK: >>>>>> limit: ", limit, " current: ", price)
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
-			time.Sleep(60 * time.Millisecond)
+			time.Sleep(60 * time.Second)
 			price = GetQuote(stock, account.AccountNumber)
 			//sleep for 60 sec
 		}
@@ -141,7 +141,7 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		glog.Info(">>>>>>>>>>>>>>>>>>>SELL TRIGGER CHECK: >>>>>> limit: ", min, " current: ", price)
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
-			time.Sleep(60 * time.Millisecond)
+			time.Sleep(60 * time.Second)
 			price = GetQuote(stock, account.AccountNumber)
 			//sleep for 60 sec
 		}
