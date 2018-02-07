@@ -3,7 +3,6 @@ package main
 /*
 	TODO:
 	getQuote
-	sell
 */
 
 import (
@@ -111,11 +110,27 @@ func TestCommitBuy(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	account := initializeAccountForTesting(100)
-	buyHelper(account, float64(64), "S", float64(4), 2)
+	buyStockForTesting(account)
 	assert.Equal(t, float64(100), account.Balance)
+	assert.Equal(t, float64(36), account.Available)
 
 	commitBuy(account, 3)
 	assert.Equal(t, float64(36), account.Balance)
 	assert.True(t, account.hasStock("S", float64(4)))
+
+}
+
+func TestCanCelBuy(t *testing.T) {
+
+	activateMockAuditServer()
+	defer httpmock.DeactivateAndReset()
+
+	account := initializeAccountForTesting(100)
+	buyStockForTesting(account)
+	assert.Equal(t, float64(100), account.Balance)
+	assert.Equal(t, float64(36), account.Available)
+
+	cancelBuy(account, 5)
+	assert.Equal(t, float64(100), account.Available)
 
 }
