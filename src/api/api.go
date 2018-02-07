@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"github.com/golang/glog"
@@ -18,7 +18,7 @@ const (
 	CANCEL_SET_SELL = "cancel_set_sell"
 )
 
-func add(account *Account, amount float64, transactionNum int) {
+func Add(account *Account, amount float64, transactionNum int) {
 	if amount > 0 {
 		account.addMoney(amount)
 		//TODO: log userid instead of account number
@@ -31,7 +31,7 @@ func add(account *Account, amount float64, transactionNum int) {
 	}
 }
 
-func getQuote(stock string, userid string) float64 {
+func GetQuote(stock string, userid string) float64 {
 	quoteObj := getQuoteFromQS(userid, stock)
 	//TODO: log quote server hit here
 	return quoteObj.Price
@@ -52,7 +52,7 @@ func buyHelper(
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	} else {
-		transaction := Buy{
+		transaction := BuyObj{
 			Stock:       stock,
 			MoneyAmount: amount,
 			StockAmount: stockNum,
@@ -69,9 +69,9 @@ func buyHelper(
 
 }
 
-func buy(account *Account, stock string, amount float64, transactionNum int) {
+func Buy(account *Account, stock string, amount float64, transactionNum int) {
 	//get qoute
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber)
 	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
@@ -83,7 +83,7 @@ func sellHelper(
 	stockNum float64) {
 
 	if account.hasStock(stock, stockNum) {
-		transaction := Sell{
+		transaction := SellObj {
 			Stock:       stock,
 			MoneyAmount: amount,
 			StockAmount: stockNum,
@@ -105,17 +105,17 @@ func sellHelper(
 	}
 }
 
-func sell(account *Account, stock string, amount float64, transactionNum int) {
+func Sell(account *Account, stock string, amount float64, transactionNum int) {
 	//check if have that # of stocks
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber)
 	sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
-func commitBuy(account *Account, transactionNum int) {
+func CommitBuy(account *Account, transactionNum int) {
 	if account.BuyStack.Size() > 0 {
 		//weird go casting
 		i := account.BuyStack.Pop()
-		transaction := i.(Buy)
+		transaction := i.(BuyObj)
 		//should we check balance here insted? TODO: clarify
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
@@ -134,10 +134,10 @@ func commitBuy(account *Account, transactionNum int) {
 	}
 }
 
-func cancelBuy(account *Account, transactionNum int) {
+func CancelBuy(account *Account, transactionNum int) {
 	if account.BuyStack.Size() > 0 {
 		i := account.BuyStack.Pop()
-		transaction := i.(Buy)
+		transaction := i.(BuyObj)
 		//add money back to Available Balance
 		account.unholdMoney(transaction.MoneyAmount)
 		glog.Info("Executed CANCEL BUY")
@@ -152,10 +152,10 @@ func cancelBuy(account *Account, transactionNum int) {
 	}
 }
 
-func commitSell(account *Account, transactionNum int) {
+func CommitSell(account *Account, transactionNum int) {
 	if account.SellStack.Size() > 0 {
 		i := account.SellStack.Pop()
-		transaction := i.(Sell)
+		transaction := i.(SellObj)
 		account.addMoney(transaction.MoneyAmount)
 
 		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
@@ -169,10 +169,10 @@ func commitSell(account *Account, transactionNum int) {
 	}
 }
 
-func cancelSell(account *Account, transactionNum int) {
+func CancelSell(account *Account, transactionNum int) {
 	if account.SellStack.Size() > 0 {
 		i := account.SellStack.Pop()
-		transaction := i.(Sell)
+		transaction := i.(SellObj)
 		account.unholdStock(transaction.Stock, transaction.StockAmount)
 		glog.Info("Executed CANCEL SELL")
 
@@ -190,7 +190,7 @@ func cancelSell(account *Account, transactionNum int) {
 Sets a defined amount of the given stock to buy when the current stock price
 is less than or equal to the BUY_TRIGGER
 */
-func setBuyAmount(account *Account, stock string, amount float64, transactionNum int) {
+func SetBuyAmount(account *Account, stock string, amount float64, transactionNum int) {
 	//check if there is enough money in the account
 	if account.Available >= amount {
 		//hold money
@@ -214,7 +214,7 @@ func setBuyAmount(account *Account, stock string, amount float64, transactionNum
    It shouldbe overwritten by the most recent one!
    TODO: fix this.
 */
-func cancelSetBuy(account *Account, stock string, transactionNum int) {
+func CancelSetBuy(account *Account, stock string, transactionNum int) {
 	if val, ok := account.SetBuyMap[stock]; ok {
 		//put money back
 		account.unholdMoney(val)
@@ -235,7 +235,7 @@ func cancelSetBuy(account *Account, stock string, transactionNum int) {
 	}
 }
 
-func setBuyTrigger(account *Account, stock string, price float64, transactionNum int) {
+func SetBuyTrigger(account *Account, stock string, price float64, transactionNum int) {
 	//check for set buy on that stock
 	if _, ok := account.SetBuyMap[stock]; ok {
 		//TODO: this is hacky we need to properly check for the key here
@@ -256,7 +256,7 @@ func setBuyTrigger(account *Account, stock string, price float64, transactionNum
 	}
 }
 
-func setSellAmount(account *Account, stock string, amount float64, transactionNum int) {
+func SetSellAmount(account *Account, stock string, amount float64, transactionNum int) {
 	if account.StockPortfolio[stock] > amount {
 		account.SetSellMap[stock] += amount
 		//hold stock
@@ -273,7 +273,7 @@ func setSellAmount(account *Account, stock string, amount float64, transactionNu
 	}
 }
 
-func setSellTrigger(account *Account, stock string, price float64, transactionNum int) {
+func SetSellTrigger(account *Account, stock string, price float64, transactionNum int) {
 	//check for set buy on that stock
 	if _, ok := account.SetSellMap[stock]; ok {
 		//TODO: this is hacky we need to properly check for the key here
@@ -293,7 +293,7 @@ func setSellTrigger(account *Account, stock string, price float64, transactionNu
 	}
 }
 
-func cancelSetSell(account *Account, stock string, transactionNum int) {
+func CancelSetSell(account *Account, stock string, transactionNum int) {
 	if val, ok := account.SetSellMap[stock]; ok {
 		//put stock back
 		account.unholdStock(stock, val)
@@ -313,6 +313,6 @@ func cancelSetSell(account *Account, stock string, transactionNum int) {
 	}
 }
 
-func dumplog(account *Account, filename string) {}
+func Dumplog(account *Account, filename string) {}
 
-func dumplogAll(filename string) {}
+func DumplogAll(filename string) {}

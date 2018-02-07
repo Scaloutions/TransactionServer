@@ -1,9 +1,9 @@
-package main
+package api
 
 import (
 	"time"
 
-	"./src/utils"
+	"utils"
 
 	"github.com/golang/glog"
 )
@@ -21,7 +21,7 @@ type Account struct {
 	SellTriggers   map[string]float64
 }
 
-type Buy struct {
+type BuyObj struct {
 	Stock       string
 	StockAmount float64
 	MoneyAmount float64
@@ -32,7 +32,7 @@ type SetBuy struct {
 	MoneyAmount float64
 }
 
-type Sell struct {
+type SellObj struct {
 	Stock       string
 	StockAmount float64
 	MoneyAmount float64
@@ -43,7 +43,7 @@ type SetSell struct {
 	StockAmount float64
 }
 
-func initializeAccount(value string) Account {
+func InitializeAccount(value string) Account {
 	return Account{
 		AccountNumber:  value,
 		Balance:        0.0,
@@ -105,7 +105,7 @@ func (account *Account) addMoney(amount float64) {
 // unix.Nono timestamp
 // FOR NOW JUST DO IT ON STOCK SYMBOL
 func (account *Account) startBuyTrigger(stock string, transactionNum int) {
-	price := getQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber)
 	limit := account.BuyTriggers[stock]
 
 	//if there is still trigger in the map
@@ -114,13 +114,13 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Millisecond)
-			price = getQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber)
 			//sleep for 60 sec
 		}
 
 		stockNum := account.SetBuyMap[stock]
-		buy(account, stock, stockNum, transactionNum)
-		commitBuy(account, transactionNum)
+		Buy(account, stock, stockNum, transactionNum)
+		CommitBuy(account, transactionNum)
 		//hacky:
 		//put money back
 		account.Available = account.Balance
@@ -132,7 +132,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 }
 
 func (account *Account) startSellTrigger(stock string, transactionNum int) {
-	price := getQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber)
 	//limit := trigger.MoneyAmount
 	min := account.SellTriggers[stock]
 
@@ -142,13 +142,13 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Millisecond)
-			price = getQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber)
 			//sleep for 60 sec
 		}
 
 		stockNum := account.SetSellMap[stock]
-		sell(account, stock, stockNum, transactionNum)
-		commitSell(account, transactionNum)
+		Sell(account, stock, stockNum, transactionNum)
+		CommitSell(account, transactionNum)
 		//hacky:
 		//put stock back
 		account.StockPortfolio[stock] += stockNum
