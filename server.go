@@ -25,11 +25,9 @@ func echoString(c *gin.Context) {
 // User map
 var UserMap = make(map[string]*api.Account)
 
-func authenticateUser(c *gin.Context) {
-	req := getParams(c)
-	glog.Info("\n\n############################### INFO: Executing authenticate... ", req.CommandNumber)
-	account := api.InitializeAccount(req.UserId)
-	UserMap[req.UserId] = &account
+func authenticateUser(userId string) {
+	account := api.InitializeAccount(userId)
+	UserMap[userId] = &account
 	glog.Info("\n############################### SUCCESS: Authentication Successful!")
 	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
 }
@@ -61,6 +59,12 @@ func getParams(c *gin.Context) Request {
 	}
 
 	return request
+}
+
+func authReq(c *gin.Context) {
+	req := getParams(c)
+	glog.Info("\n\n############################### INFO: Executing authenticate... ", req.CommandNumber)
+	go authenticateUser(req.UserId)
 }
 
 func getQuoteReq(c *gin.Context) {
@@ -194,7 +198,7 @@ func main() {
 		api.GET("/test", echoString)
 		api.GET("/dumplog", dumplogReq)
 		api.GET("/get_quote", getQuoteReq)
-		api.POST("/authenticate", authenticateUser)
+		api.POST("/authenticate", authReq)
 		api.POST("/add", addReq)
 		api.POST("/buy", buyReq)
 		api.POST("/sell", sellReq)
