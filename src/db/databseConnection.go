@@ -11,13 +11,21 @@ const (
 	DB_PASSWORD = "mypassw"
 )
 
+var (
+	DB *sql.DB
+)
+
 struct User {
 	UserId string,
 	Name string,
 	AccountNumber string
 }
 
-func databaseConnection() (db *sql.DB){
+func InitializeDB() {
+	DB = databaseConnection()
+}
+
+func databaseConnection() (db *sql.DB) {
 	db, err := sql.Open(DB_NAME, DB_PASSWORD)
 
 	if err != nil {
@@ -27,26 +35,26 @@ func databaseConnection() (db *sql.DB){
 	return db
 }
 
+func Close() {
+	DB.Close()
+}
+
 func GetUser(userId string) {
-	db = databaseConnection()
 	user User
 	user.UserId = userId
 
-	res, error db.Query("SELECT name, accountNumber FROM users WHERE useId = ?", 
+	res, error DB.Query("SELECT name, accountNumber FROM users WHERE useId = ?", 
 		userId).Scan(&user.Name, &user.AccountNumber)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
 		panic(err)
 	}
-	defer db.Close()
 
 	return User
 }
 
 func CreateNewUser(userId string, name string, email string, address string, accId string, uuid string) {
-	db = databaseConnection()
-
-	stmt, err := db.Prepare("INSERT users(user_id, user_name, account_number, user_address, user_email)
+	stmt, err := DB.Prepare("INSERT users(user_id, user_name, account_number, user_address, user_email)
 				VALUES(?,?,?,?,?)")
 	
 	if err != nil {
