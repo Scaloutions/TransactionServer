@@ -4,14 +4,15 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"utils"
 )
 
 type Account struct {
 	AccountNumber  string
 	Balance        float64
 	Available      float64
-	SellStack      Stack
-	BuyStack       Stack
+	SellStack      utils.Stack
+	BuyStack       utils.Stack
 	StockPortfolio map[string]float64
 	SetBuyMap      map[string]float64
 	BuyTriggers    map[string]float64
@@ -46,8 +47,8 @@ func initializeAccount(value string) Account {
 		AccountNumber:  value,
 		Balance:        0.0,
 		Available:      0.0,
-		SellStack:      Stack{},
-		BuyStack:       Stack{},
+		SellStack:      utils.Stack{},
+		BuyStack:       utils.Stack{},
 		StockPortfolio: make(map[string]float64),
 		SetBuyMap:      make(map[string]float64),
 		BuyTriggers:    make(map[string]float64),
