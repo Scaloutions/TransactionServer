@@ -37,9 +37,13 @@ func getQuote(stock string, userid string) float64 {
 	return quoteObj.Price
 }
 
-func buy(account *Account, stock string, amount float64, transactionNum int) {
-	//get qoute
-	stockNum := amount / getQuote(stock, account.AccountNumber)
+func buyHelper(
+	account *Account,
+	amount float64,
+	stock string,
+	stockNum float64,
+	transactionNum int) {
+
 	//check balance
 	if account.getBalance() < amount {
 		//TODO: improve logging
@@ -62,11 +66,22 @@ func buy(account *Account, stock string, amount float64, transactionNum int) {
 		logEvent(log)
 		glog.Info("SUCCESS: Executed BUY for ", amount)
 	}
+
 }
 
-func sell(account *Account, stock string, amount float64, transactionNum int) {
-	//check if have that # of stocks
+func buy(account *Account, stock string, amount float64, transactionNum int) {
+	//get qoute
 	stockNum := amount / getQuote(stock, account.AccountNumber)
+	buyHelper(account, amount, stock, stockNum, transactionNum)
+}
+
+func sellHelper(
+	account *Account,
+	stock string,
+	amount float64,
+	transactionNum int,
+	stockNum float64) {
+
 	if account.hasStock(stock, stockNum) {
 		transaction := Sell{
 			Stock:       stock,
@@ -88,6 +103,12 @@ func sell(account *Account, stock string, amount float64, transactionNum int) {
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	}
+}
+
+func sell(account *Account, stock string, amount float64, transactionNum int) {
+	//check if have that # of stocks
+	stockNum := amount / getQuote(stock, account.AccountNumber)
+	sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
 func commitBuy(account *Account, transactionNum int) {
