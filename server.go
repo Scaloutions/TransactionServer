@@ -22,15 +22,7 @@ func echoString(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome to DayTrading Inc!")
 }
 
-// User map
 var UserMap = make(map[string]*api.Account)
-
-func authenticateUser(userId string) {
-	account := api.InitializeAccount(userId)
-	UserMap[userId] = &account
-	glog.Info("\n############################### SUCCESS: Authentication Successful!")
-	glog.Info("##### Account Balance: ", account.Balance, " Available: ", account.Available)
-}
 
 type Request struct {
 	UserId        string
@@ -39,6 +31,13 @@ type Request struct {
 	Command       string
 	CommandNumber int
 	Stock         string
+}
+
+func authenticateUser(userId string) {
+	account := api.InitializeAccount(userId)
+	UserMap[userId] = &account
+	glog.Info("\nSUCCESS: Authentication Successful!")
+	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 }
 
 func getUser(userId string) *api.Account {
@@ -63,14 +62,14 @@ func getParams(c *gin.Context) Request {
 
 func authReq(c *gin.Context) {
 	req := getParams(c)
-	glog.Info("\n\n############################### INFO: Executing authenticate... ", req.CommandNumber)
+	glog.Info("\n Executing AUTHENTICATE for user: ", req.UserId)
 	go authenticateUser(req.UserId)
 }
 
 func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
 
-	glog.Info("\n\n############################### INFO: Executing QUOTE FOR... ", req.Stock)
+	glog.Info("\n Executing QUOTE: ", req)
 	go api.GetQuote(req.Stock, req.UserId)
 }
 
@@ -79,9 +78,7 @@ func addReq(c *gin.Context) {
 
 	var account *api.Account
 	account = getUser(req.UserId)
-	glog.Info("\n\n############################### INFO: Executing ADD FOR... ", req.PriceDollars, req.CommandNumber)
-	glog.Info(req)
-	glog.Info(account)
+	glog.Info("\n Executing ADD: ", req)
 	go api.Add(account, req.PriceDollars, req.CommandNumber)
 }
 
@@ -89,7 +86,7 @@ func buyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing BUY FOR... ", req.PriceDollars, req.CommandNumber)
+	glog.Info("\n Executing BUY ", req)
 	go api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 
@@ -97,7 +94,7 @@ func sellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing SELL FOR... ", req.PriceDollars, req.CommandNumber)
+	glog.Info("\n Executing SELL ", req)
 	go api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 
@@ -105,14 +102,14 @@ func commitSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing COMMIT SELL ", req.CommandNumber)
+	glog.Info("\n Executing COMMIT SELL ", req)
 	go api.CommitSell(account, req.CommandNumber)
 }
 func commitBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing COMMIT BUY ", req.CommandNumber)
+	glog.Info("\n Executing COMMIT BUY ", req)
 	go api.CommitBuy(account, req.CommandNumber)
 }
 
@@ -120,7 +117,7 @@ func cancelBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing CANCEL BUY ", req.CommandNumber)
+	glog.Info("\n Executing CANCEL BUY ", req)
 	go api.CancelBuy(account, req.CommandNumber)
 }
 
@@ -128,7 +125,7 @@ func cancelSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing CANCEL SELL ", req.CommandNumber)
+	glog.Info("\n Executing CANCEL SELL ", req)
 	go api.CancelSell(account, req.CommandNumber)
 }
 
@@ -136,7 +133,7 @@ func setBuyAmountReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing SET BUY AMOUNT ", req.CommandNumber)
+	glog.Info("\n Executing SET BUY AMOUNT ", req)
 	go api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 
@@ -144,7 +141,7 @@ func setSellAmountReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing SET SELL AMOUNT ", req.CommandNumber)
+	glog.Info("\n Executing SET SELL AMOUNT ", req)
 	go api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 
@@ -152,7 +149,7 @@ func cancelSetBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing CANCEL SET BUY ", req.CommandNumber)
+	glog.Info("\n Executing CANCEL SET BUY ", req)
 	go api.CancelSetBuy(account, req.Stock, req.CommandNumber)
 }
 
@@ -160,7 +157,7 @@ func cancelSetSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing CANCEL SET SELL ", req.CommandNumber)
+	glog.Info("\n Executing CANCEL SET SELL ", req)
 	go api.CancelSetSell(account, req.Stock, req.CommandNumber)
 }
 
@@ -168,7 +165,7 @@ func setBuyTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing SET BUY TRIGGER ", req.CommandNumber)
+	glog.Info("\n Executing SET BUY TRIGGER ", req)
 	go api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 
@@ -176,7 +173,7 @@ func setSellTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
-	glog.Info("\n\n############################### INFO: Executing SET SELL TRIGGER ", req.CommandNumber)
+	glog.Info("\n Executing SET SELL TRIGGER ", req)
 	go api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 }
 

@@ -21,8 +21,7 @@ const (
 func Add(account *Account, amount float64, transactionNum int) {
 	if amount > 0 {
 		account.addMoney(amount)
-		//TODO: log userid instead of account number
-		//this logs transaction event
+		//log transaction event
 		log := getTransactionEvent(transactionNum, ADD, account.AccountNumber, amount)
 		logEvent(log)
 		glog.Info("SUCCESS: Added ", amount)
@@ -70,7 +69,7 @@ func buyHelper(
 }
 
 func Buy(account *Account, stock string, amount float64, transactionNum int) {
-	//get qoute
+	//get quote and calculate number of stock
 	stockNum := amount / GetQuote(stock, account.AccountNumber)
 	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
@@ -97,9 +96,8 @@ func sellHelper(
 		logEvent(log)
 		glog.Info("Executed SELL for ", amount)
 	} else {
-		//TODO: improve logging
 		err := "User doesn not have enough stock to sell."
-		glog.Info("WARNING: Not enough stock ", stock, " to sell.")
+		glog.Info("Not enough stock ", stock, " to sell.")
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	}
@@ -113,10 +111,9 @@ func Sell(account *Account, stock string, amount float64, transactionNum int) {
 
 func CommitBuy(account *Account, transactionNum int) {
 	if account.BuyStack.Size() > 0 {
-		//weird go casting
+		//go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(BuyObj)
-		//should we check balance here insted? TODO: clarify
 		account.Balance -= transaction.MoneyAmount
 		//add number of stocks to user
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
@@ -238,12 +235,11 @@ func CancelSetBuy(account *Account, stock string, transactionNum int) {
 func SetBuyTrigger(account *Account, stock string, price float64, transactionNum int) {
 	//check for set buy on that stock
 	if _, ok := account.SetBuyMap[stock]; ok {
-		//TODO: this is hacky we need to properly check for the key here
 		if _, exists := account.BuyTriggers[stock]; exists {
 			glog.Info("Trigger is already running!")
 		} else {
 			//spin up go routine trigger
-			glog.Info("Spinning up go routine")
+			glog.Info("Spinning up SetBuy Trigger")
 			//prevent race condition here TODO: rewrite
 			account.BuyTriggers[stock] = price
 			go account.startBuyTrigger(stock, transactionNum)
@@ -276,12 +272,11 @@ func SetSellAmount(account *Account, stock string, amount float64, transactionNu
 func SetSellTrigger(account *Account, stock string, price float64, transactionNum int) {
 	//check for set buy on that stock
 	if _, ok := account.SetSellMap[stock]; ok {
-		//TODO: this is hacky we need to properly check for the key here
 		if _, exists := account.SellTriggers[stock]; exists {
 			glog.Info("Sell Trigger is already running!")
 		} else {
 			//spin up go routine trigger
-			glog.Info("Spinning up go routine SEll trigger")
+			glog.Info("Spinning up SEll trigger")
 			account.SellTriggers[stock] = price
 			go account.startSellTrigger(stock, transactionNum)
 		}
@@ -289,6 +284,7 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 		account.SellTriggers[stock] = price
 		glog.Info("Set SELL trigger for ", stock, " at price ", price)
 	} else {
+		//TODO: properly log this error
 		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
 	}
 }
