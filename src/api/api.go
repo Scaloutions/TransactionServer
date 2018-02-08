@@ -237,6 +237,7 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 	if _, ok := account.SetBuyMap[stock]; ok {
 		if _, exists := account.BuyTriggers[stock]; exists {
 			glog.Info("Trigger is already running!")
+			account.BuyTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up SetBuy Trigger")
@@ -245,7 +246,6 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 			go account.startBuyTrigger(stock, transactionNum)
 		}
 
-		account.BuyTriggers[stock] = price
 		glog.Info("Set BUY trigger for ", stock, " at price ", price)
 	} else {
 		glog.Error("You have to SET BUY AMOUNT on stock ", stock, " first.")
@@ -274,6 +274,7 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 	if _, ok := account.SetSellMap[stock]; ok {
 		if _, exists := account.SellTriggers[stock]; exists {
 			glog.Info("Sell Trigger is already running!")
+			account.SellTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up SEll trigger")
@@ -281,7 +282,6 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 			go account.startSellTrigger(stock, transactionNum)
 		}
 
-		account.SellTriggers[stock] = price
 		glog.Info("Set SELL trigger for ", stock, " at price ", price)
 	} else {
 		//TODO: properly log this error
