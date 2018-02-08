@@ -158,7 +158,6 @@ func TestCommitSell(t *testing.T) {
 	sellStockForTesting(account)
 	assert.False(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(36), account.Balance)
-	// assert.Equal(t, float64(100), account.Available)
 
 	CommitSell(account, 7)
 	assert.False(t, account.hasStock("S", float64(4)))
@@ -181,7 +180,6 @@ func TestCancelSell(t *testing.T) {
 	sellStockForTesting(account)
 	assert.False(t, account.hasStock("S", float64(4)))
 	assert.Equal(t, float64(36), account.Balance)
-	// assert.Equal(t, float64(100), account.Available)
 
 	CancelSell(account, 8)
 	assert.True(t, account.hasStock("S", float64(4)))
