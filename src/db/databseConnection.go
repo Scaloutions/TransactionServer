@@ -29,8 +29,8 @@ func databaseConnection() (db *sql.DB) {
 	db, err := sql.Open(DB_NAME, DB_PASSWORD)
 
 	if err != nil {
+		glog.Error("Failed to establish connection with the Quote Server.")
 		glog.Error(err)
-		panic(err)
 	}
 	return db
 }
@@ -43,11 +43,11 @@ func GetUser(userId string) {
 	user User
 	user.UserId = userId
 
-	res, error DB.Query("SELECT name, accountNumber FROM users WHERE useId = ?", 
+	res, err DB.Query("SELECT name, account_number FROM users WHERE useId = ?", 
 		userId).Scan(&user.Name, &user.AccountNumber)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
-		panic(err)
+		return nil
 	}
 
 	return User
@@ -58,12 +58,14 @@ func CreateNewUser(userId string, name string, email string, address string, acc
 				VALUES(?,?,?,?,?)")
 	
 	if err != nil {
-		panic(err)
+		glog.Erron(err)
+		return
 	}
 
 	_, err = stmt.Exec(useId, name, email, address, accId, uuid)
 
 	if err != nil {
-		panic(err)
+		glog.Error(err)
+		return
 	}
 }
