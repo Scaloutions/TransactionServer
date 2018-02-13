@@ -11,7 +11,7 @@ import (
 
 const (
 	QUOTE_SERVER_API = "quoteserve.seng"
-	PORT             = "444430"
+	PORT             = "44430"
 	CONNECTION_TYPE  = "tcp"
 )
 
