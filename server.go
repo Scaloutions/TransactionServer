@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"api"
+
+	"./src/api"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"

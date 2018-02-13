@@ -5,7 +5,7 @@ type AccountTransactionEvent struct {
 	Server         string
 	TransactionNum int
 	Action         string
-	UserId         string
+	UserName       string
 	Funds          string
 }
 
@@ -14,7 +14,7 @@ type SystemEvent struct {
 	Server         string
 	TransactionNum int
 	Command        string
-	UserId         string
+	UserName       string
 	StockSymbol    string
 	Funds          string
 }
@@ -25,7 +25,7 @@ type QuoteServerEvent struct {
 	TransactionNum       int
 	QuoteServerEventTime int64
 	Command              string
-	UserId               string
+	UserName             string
 	StockSymbol          string
 	Price                string
 	Cryptokey            string
@@ -36,7 +36,7 @@ type ErrorEvent struct {
 	Server         string
 	TransactionNum int
 	Command        string
-	UserId         string
+	UserName       string
 	StockSymbol    string
 	Funds          string
 	ErrorMessage   string
