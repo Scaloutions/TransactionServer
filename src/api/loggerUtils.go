@@ -41,7 +41,7 @@ func getTransactionEvent(
 		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Action:         action,
-		UserId:         userId,
+		UserName:       userId,
 		Funds:          fundsAsString,
 	}
 }
@@ -60,7 +60,7 @@ func getSystemEvent(
 		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Command:        command,
-		UserId:         userId,
+		UserName:       userId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
 	}
@@ -83,7 +83,7 @@ func getQuoteServerEvent(
 		TransactionNum:       transactionNum,
 		QuoteServerEventTime: quoteServerTime,
 		Command:              command,
-		UserId:               userId,
+		UserName:             userId,
 		StockSymbol:          stockSymbol,
 		Price:                priceAsString,
 		Cryptokey:            cryptokey,
@@ -105,7 +105,7 @@ func getErrorEvent(
 		Server:         SERVER_NAME,
 		TransactionNum: transactionNum,
 		Command:        command,
-		UserId:         userId,
+		UserName:       userId,
 		StockSymbol:    stockSymbol,
 		Funds:          fundsAsString,
 		ErrorMessage:   errorMessage,
