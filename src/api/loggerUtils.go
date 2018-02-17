@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/golang/glog"
@@ -113,6 +115,16 @@ func getErrorEvent(
 }
 
 func logEvent(log interface{}) {
+	absPath, _ := filepath.Abs("./config.json")
+	var data []byte
+	data, _ = ioutil.ReadFile(absPath)
+	var configSettings Config
+	_ = json.Unmarshal(data, &configSettings)
+
+	if configSettings.AuditServer == false {
+		return
+	}
+
 	data, err := json.Marshal(log)
 	URL := getUrlPath(log)
 
