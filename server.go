@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 
-	"./src/api"
+	"api"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 )
