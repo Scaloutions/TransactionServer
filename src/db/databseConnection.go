@@ -6,18 +6,20 @@ import (
 	"github.com/golang/glog"
 )
 
-const (
-	DB_NAME = "mysql"
-	DB_PASSWORD = "mypassw"
-)
-
 var (
 	DB *sql.DB
 )
 
-struct User {
-	UserId string,
-	Name string,
+const (
+	DB_URL = "localhost://127.0.0.1"
+	DB_NAME = "mysql"
+	DB_USER = "root"
+	DB_PASSWORD = "root"
+)
+
+type User struct {
+	UserId string
+	Name string
 	AccountNumber string
 }
 
@@ -26,7 +28,8 @@ func InitializeDB() {
 }
 
 func databaseConnection() (db *sql.DB) {
-	db, err := sql.Open(DB_NAME, DB_PASSWORD)
+	connectionStr := DB_NAME+":"+DB_PASSWORD+"@tcp("+DB_URL+")"
+	db, err := sql.Open(DB_NAME, connectionStr)
 
 	if err != nil {
 		glog.Error("Failed to establish connection with the Quote Server.")
@@ -38,7 +41,7 @@ func databaseConnection() (db *sql.DB) {
 func Close() {
 	DB.Close()
 }
-
+/*
 func GetUser(userId string) {
 	user User
 	user.UserId = userId
@@ -69,3 +72,4 @@ func CreateNewUser(userId string, name string, email string, address string, acc
 		return
 	}
 }
+*/
