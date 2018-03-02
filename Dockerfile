@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:1.9.2
 
 RUN mkdir -p /src
 
@@ -13,4 +13,6 @@ ADD . /src
 RUN go build ./server.go
 
 CMD [ "./server" ]
+
+EXPOSE  9090
 
