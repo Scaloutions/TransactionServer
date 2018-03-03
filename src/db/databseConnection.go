@@ -15,12 +15,6 @@ var (
 	DB_AUTHENTICATION string
 )
 
-// const (
-// 	// DB_URL = "localhost://127.0.0.1"
-// 	DB_NAME = "DAYTRADING"
-// 	DB_AUTHENTICATION = "root:root"
-// )
-
 type User struct {
 	UserId string
 	Name string
@@ -44,8 +38,6 @@ func loadCredentials() {
 }
 
 func databaseConnection() (db *sql.DB) {
-	// connectionStr := DB_NAME+":"+DB_PASSWORD+"@tcp("+DB_URL+")"
-	// db, err := sql.Open(DB_NAME, connectionStr)
 	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@/" + DB_NAME)
 
 	if err != nil {
@@ -59,34 +51,28 @@ func Close() {
 	DB.Close()
 }
 
-func GetUser(userId string) User {
+func GetUser(userId string) (User, error) {
 	user := User { UserId: userId }
 
-	err := DB.QueryRow("SELECT name, account_number FROM users WHERE useId = ?", userId).Scan(&user.Name, &user.AccountNumber)
+	err := DB.QueryRow("SELECT name FROM users WHERE useId = ?", userId).Scan(&user.Name, &user.AccountNumber)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
+		return user, errors.New("User does not exist.")
 		//TODO: is there a way to return nil here?
 	}
 
-	return user
+	return user, nil
 }
 
-func getAccount(accId string) api.Account {
-	account := api.Account { AccountNumber: accId }
-
-	//TODO: pull from the db
-	return account
-}
-
-func CreateNewUser(userId string, name string, email string, address string, accId string) {
-	stmt, err := DB.Prepare("INSERT users(user_id, user_name, account_number, user_address, user_email) VALUES(?,?,?,?,?)")
+func CreateNewUser(userId string, name string, email string, address string) {
+	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
 	
 	if err != nil {
 		glog.Error(err)
 		return
 	}
 
-	_, err = stmt.Exec(userId, name, accId, address, email)
+	_, err = stmt.Exec(userId, name, address, email)
 
 	if err != nil {
 		glog.Error(err)

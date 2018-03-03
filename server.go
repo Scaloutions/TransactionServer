@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"db"
 	"api"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
@@ -34,6 +35,15 @@ type Request struct {
 }
 
 func authenticateUser(userId string) {
+	user, err := db.getUser(userId)
+	/*
+		FOR THE PROJECT XML requirements
+		automatically create users for testing
+	*/
+	if err!=nil {
+		accId := "1234"
+		db.CreateNewUser(userId, "", "", "", accId)
+	}
 	account := api.InitializeAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("\nSUCCESS: Authentication Successful!")
@@ -42,6 +52,11 @@ func authenticateUser(userId string) {
 
 func getUser(userId string) *api.Account {
 	return UserMap[userId]
+}
+
+func createUser(userID string, name string, email string, address string) {
+	accId := "khjsa989713ams"
+	db.CreateNewUser(userId, name, email, address, accId)
 }
 
 func getParams(c *gin.Context) Request {
@@ -189,6 +204,11 @@ func main() {
 	//glog initialization flags
 	flag.Usage = usage
 	flag.Parse()
+
+	//db connection
+	db.InitializeDB()
+
+	createUser("John Snow", "js@gofthr.com", "LA, USA", "12344")
 
 	api := router.Group("/api")
 	{
