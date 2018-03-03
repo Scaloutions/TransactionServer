@@ -95,9 +95,24 @@ func updateAccountBalance(account Account, val float64) error {
 	return nil
 }
 
-// func updateAvailableAccountBalance() error {
+func updateAvailableAccountBalance(account Account, val float64) error {
+	stmt, err := DB.Prepare("UPDATE accounts SET available_balance=? where user_id =?")
 
-// }
+	if err != nil {
+		glog.Error(err)
+		return errors.New("Cannot create an update query")
+	}
+
+	_, err = stmt.Exec(val, account.AccountNumber)
+
+	if err != nil {
+		glog.Error(err)
+		return errors.New("Cannot execute an update query")
+	}
+
+	return nil
+
+}
 
 func CreateNewUser(userId string, name string, email string, address string) {
 	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
