@@ -64,6 +64,19 @@ func GetUser(userId string) (User, error) {
 	return user, nil
 }
 
+func GetAccount(userId string) (Account, error) {
+	account := Account{}
+	err := DB.QueryRow("SELECT user_Id, balance, available_balance FROM accounts").Scan(&account.AccountNumber, &account.Balance, &account.Available)
+
+	if err != nil {
+		glog.Error("Can not find the user account in the database: ", userId)
+		return account, errors.New("User account does not exist.")
+	}
+
+	return account, nil
+
+}
+
 func CreateNewUser(userId string, name string, email string, address string) {
 	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
 	
