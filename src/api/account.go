@@ -117,7 +117,7 @@ func (account *Account) addMoney(amount float64) {
 	account.Available += amount
 	db.UpdateAccountBalance(account.AccountNumber, account.Balance)
 	db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
-	glog.Info("This account now has ", account.Balance, account.Available)
+	glog.Info("This account now has ", account.Balance, " available: ", account.Available)
 }
 
 func (account *Account) substractBalance(amount float64) {
