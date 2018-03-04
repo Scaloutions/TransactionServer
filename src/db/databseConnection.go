@@ -56,6 +56,22 @@ func Close() {
 	DB.Close()
 }
 
+func CreateNewUser(userId string, name string, email string, address string) {
+	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
+	
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+
+	_, err = stmt.Exec(userId, name, address, email)
+
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+}
+
 func GetUser(userId string) (User, error) {
 	user := User { UserId: userId }
 
@@ -86,14 +102,14 @@ func UpdateAccountBalance(userId string, val float64) error {
 	stmt, err := DB.Prepare("UPDATE accounts SET balance=? where user_id =?")
 
 	if err != nil {
-		glog.Error(err)
+		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update query")
 	}
 
 	_, err = stmt.Exec(val, userId)
 
 	if err != nil {
-		glog.Error(err)
+		glog.Error(err, " ", userId)
 		return errors.New("Cannot execute an update query")
 	}
 
@@ -104,14 +120,14 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 	stmt, err := DB.Prepare("UPDATE accounts SET available_balance=? where user_id =?")
 
 	if err != nil {
-		glog.Error(err)
+		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update query")
 	}
 
 	_, err = stmt.Exec(val, userId)
 
 	if err != nil {
-		glog.Error(err)
+		glog.Error(err, " ", userId)
 		return errors.New("Cannot execute an update query")
 	}
 
@@ -119,18 +135,20 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 
 }
 
-func CreateNewUser(userId string, name string, email string, address string) {
-	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
-	
-	if err != nil {
-		glog.Error(err)
-		return
-	}
-
-	_, err = stmt.Exec(userId, name, address, email)
+func UpdateUserStock(userId string, stock string, amount float64) error {
+	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount=?")
 
 	if err != nil {
-		glog.Error(err)
-		return
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot create an update stock query")
 	}
+
+	_, err = stmt.Exec(userId, stock, amount, amount)
+
+	if err != nil {
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot execute an update stock query")
+	}
+
+	return nil
 }
