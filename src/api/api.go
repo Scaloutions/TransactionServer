@@ -32,10 +32,10 @@ func Add(account *Account, amount float64, transactionNum int) {
 	}
 }
 
-func GetQuote(stock string, userid string) float64 {
+func GetQuote(stock string, userid string, transactionNum int) float64 {
 	quoteObj := getQuoteFromQS(userid, stock)
 	//TODO: figure out correct transaction number here
-	log := getQuoteServerEvent(0, quoteObj.Timestamp, QUOTE, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, QUOTE, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
 	logEvent(log)
 	return quoteObj.Price
 }
@@ -58,7 +58,7 @@ func buyHelper(
 		// pull curr stock value for that user
 		currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
 		account.StockPortfolio[stock] = currAmount
-		//TODO: check for error here
+
 		if err!=nil {
 			glog.Error(err, " ", account)
 			return
@@ -83,7 +83,7 @@ func buyHelper(
 
 func Buy(account *Account, stock string, amount float64, transactionNum int) {
 	//get quote and calculate number of stock
-	stockNum := amount / GetQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
 	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
@@ -109,7 +109,7 @@ func sellHelper(
 		logEvent(log)
 		glog.Info("Executed SELL for ", amount)
 	} else {
-		err := "User doesn not have enough stock to sell."
+		err := "User does not have enough stock to sell."
 		glog.Info("Not enough stock ", stock, " to sell.")
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		logEvent(log)
@@ -118,7 +118,7 @@ func sellHelper(
 
 func Sell(account *Account, stock string, amount float64, transactionNum int) {
 	//check if have that # of stocks
-	stockNum := amount / GetQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
 	sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
@@ -325,7 +325,3 @@ func CancelSetSell(account *Account, stock string, transactionNum int) {
 		glog.Error(err, " ", account.AccountNumber)
 	}
 }
-
-func Dumplog(account *Account, filename string) {}
-
-func DumplogAll(filename string) {}

@@ -152,7 +152,7 @@ func (account *Account) unholdStock(stock string, amount float64) {
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 func (account *Account) startBuyTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber, transactionNum)
 	limit := account.BuyTriggers[stock]
 
 	//if there is still trigger in the map
@@ -161,7 +161,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber, transactionNum)
 		}
 
 		stockNum := account.SetBuyMap[stock]
@@ -177,7 +177,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 }
 
 func (account *Account) startSellTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber, transactionNum)
 	min := account.SellTriggers[stock]
 
 	//if there is still trigger in the map
@@ -186,7 +186,7 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber, transactionNum)
 		}
 
 		stockNum := account.SetSellMap[stock]

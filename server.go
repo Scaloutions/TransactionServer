@@ -95,7 +95,7 @@ func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
 
 	glog.Info("\n Executing QUOTE: ", req)
-	go api.GetQuote(req.Stock, req.UserId)
+	go api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 }
 
 func addReq(c *gin.Context) {
