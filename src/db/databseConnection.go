@@ -135,6 +135,9 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 
 }
 
+/*
+	Updates or creates a new stock record for a user
+*/
 func UpdateUserStock(userId string, stock string, amount float64) error {
 	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount=?")
 
@@ -151,4 +154,18 @@ func UpdateUserStock(userId string, stock string, amount float64) error {
 	}
 
 	return nil
+}
+
+func GetUserStockValue(userId string, stock string) (float64, error){
+	var stockAmount float64 = 0.0
+
+	err := DB.QueryRow("SELECT amount FROM stock WHERE use_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
+	if err != nil {
+		glog.Error("Can not find user stock in the database: ", userId, " ", stock)
+		return stockAmount, errors.New("User does not exist.")
+		//TODO: is there a way to return nil here?
+	}
+
+	return stockAmount, nil
+
 }
