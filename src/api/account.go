@@ -3,6 +3,7 @@ package api
 import (
 	"time"
 	"utils"
+	"db"
 
 	"github.com/golang/glog"
 )
@@ -71,17 +72,30 @@ func (account *Account) holdMoney(amount float64) {
 	if amount > 0 {
 		account.Available -= amount
 		//update db
-		UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
 	} else {
 		glog.Error("Cannot hold negative account for the account ", amount)
 	}
+}
+
+func (account *Account) addMoney(amount float64) {
+	account.Balance += amount
+	account.Available += amount
+	db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+	db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	glog.Info("This account now has ", account.Balance, account.Available)
+}
+
+func (account *Account) substractBalance(amount float64) {
+	account.Balance -= amount
+	db.UpdateAccountBalance(account.AccountNumber, account.Balance)
 }
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
 		account.Available += amount
 		//update db
-		UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
 	} else {
 		glog.Error("Cannot unhold negative account for the account ", amount)
 	}
@@ -98,12 +112,6 @@ func (account *Account) holdStock(stock string, amount float64) {
 
 func (account *Account) unholdStock(stock string, amount float64) {
 	account.StockPortfolio[stock] += amount
-}
-
-func (account *Account) addMoney(amount float64) {
-	account.Balance += amount
-	account.Available += amount
-	glog.Info("This account now has ", account.Balance, account.Available)
 }
 
 // Start a trigger

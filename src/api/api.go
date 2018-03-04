@@ -114,7 +114,7 @@ func CommitBuy(account *Account, transactionNum int) {
 		//go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(BuyObj)
-		account.Balance -= transaction.MoneyAmount
+		account.substractBalance(transaction.MoneyAmount)
 		//add number of stocks to user
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 

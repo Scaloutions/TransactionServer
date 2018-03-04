@@ -5,8 +5,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
+	"errors"
 	"os"
-	"api"
 )
 
 var (
@@ -18,7 +18,12 @@ var (
 type User struct {
 	UserId string
 	Name string
-	AccountNumber string
+}
+
+type UserAccountDB struct {
+	UserId string
+	Balance        float64
+	Available      float64
 }
 
 func InitializeDB() {
@@ -54,7 +59,7 @@ func Close() {
 func GetUser(userId string) (User, error) {
 	user := User { UserId: userId }
 
-	err := DB.QueryRow("SELECT name FROM users WHERE useId = ?", userId).Scan(&user.Name, &user.AccountNumber)
+	err := DB.QueryRow("SELECT name FROM users WHERE use_id = ?", userId).Scan(&user.Name, &user.UserId)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
 		return user, errors.New("User does not exist.")
@@ -64,9 +69,9 @@ func GetUser(userId string) (User, error) {
 	return user, nil
 }
 
-func GetAccount(userId string) (Account, error) {
-	account := Account{}
-	err := DB.QueryRow("SELECT user_Id, balance, available_balance FROM accounts").Scan(&account.AccountNumber, &account.Balance, &account.Available)
+func GetAccount(userId string) (UserAccountDB, error) {
+	account := UserAccountDB{}
+	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts").Scan(&account.UserId, &account.Balance, &account.Available)
 
 	if err != nil {
 		glog.Error("Can not find the user account in the database: ", userId)
