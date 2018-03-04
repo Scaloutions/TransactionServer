@@ -131,7 +131,12 @@ func CommitBuy(account *Account, transactionNum int) {
 		//add number of stocks to user
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 		//update db record
-		db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+
+		if err!=nil {
+			glog.Error(err, " for account:", account)
+			return
+		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_BUY, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("SUCCESS: Executed COMMIT BUY")
@@ -170,7 +175,12 @@ func CommitSell(account *Account, transactionNum int) {
 		transaction := i.(SellObj)
 		account.addMoney(transaction.MoneyAmount)
 		//update db record
-		db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+
+		if err!=nil {
+			glog.Error(err, " for account:", account)
+			return
+		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("Executed COMMIT SELL")

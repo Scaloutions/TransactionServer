@@ -115,21 +115,34 @@ func (account *Account) holdMoney(amount float64) {
 func (account *Account) addMoney(amount float64) {
 	account.Balance += amount
 	account.Available += amount
-	db.UpdateAccountBalance(account.AccountNumber, account.Balance)
-	db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+	err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		
+	if err1!=nil || err2!=nil {
+		glog.Error(err1, err2, " for account:", account)
+		return
+	}
+
 	glog.Info("This account now has ", account.Balance, " available: ", account.Available)
 }
 
 func (account *Account) substractBalance(amount float64) {
 	account.Balance -= amount
-	db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+	err := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+
+	if err!=nil {
+		glog.Error(err)
+	}
 }
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
 		account.Available += amount
 		//update db
-		db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		err := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		if err!=nil {
+			glog.Error(err)
+		}
 	} else {
 		glog.Error("Cannot unhold negative account for the account ", amount)
 	}
