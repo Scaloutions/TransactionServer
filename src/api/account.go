@@ -70,12 +70,20 @@ func (account *Account) getBalance() float64 {
 func (account *Account) holdMoney(amount float64) {
 	if amount > 0 {
 		account.Available -= amount
+		//update db
+		UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	} else {
+		glog.Error("Cannot hold negative account for the account ", amount)
 	}
 }
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
 		account.Available += amount
+		//update db
+		UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	} else {
+		glog.Error("Cannot unhold negative account for the account ", amount)
 	}
 }
 

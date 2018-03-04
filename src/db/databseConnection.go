@@ -77,7 +77,7 @@ func GetAccount(userId string) (Account, error) {
 
 }
 
-func updateAccountBalance(account Account, val float64) error {
+func UpdateAccountBalance(userId string, val float64) error {
 	stmt, err := DB.Prepare("UPDATE accounts SET balance=? where user_id =?")
 
 	if err != nil {
@@ -85,7 +85,7 @@ func updateAccountBalance(account Account, val float64) error {
 		return errors.New("Cannot create an update query")
 	}
 
-	_, err = stmt.Exec(val, account.AccountNumber)
+	_, err = stmt.Exec(val, userId)
 
 	if err != nil {
 		glog.Error(err)
@@ -95,7 +95,7 @@ func updateAccountBalance(account Account, val float64) error {
 	return nil
 }
 
-func updateAvailableAccountBalance(account Account, val float64) error {
+func UpdateAvailableAccountBalance(userId string, val float64) error {
 	stmt, err := DB.Prepare("UPDATE accounts SET available_balance=? where user_id =?")
 
 	if err != nil {
@@ -103,7 +103,7 @@ func updateAvailableAccountBalance(account Account, val float64) error {
 		return errors.New("Cannot create an update query")
 	}
 
-	_, err = stmt.Exec(val, account.AccountNumber)
+	_, err = stmt.Exec(val, userId)
 
 	if err != nil {
 		glog.Error(err)
