@@ -218,8 +218,6 @@ func main() {
 	//db connection
 	db.InitializeDB()
 
-	createUser("John Snow", "js@gofthr.com", "LA, USA", "12344")
-
 	api := router.Group("/api")
 	{
 		api.GET("/test", echoString)

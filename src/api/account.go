@@ -60,7 +60,7 @@ func InitializeAccount(value string) Account {
 
 func GetAccount(userId string) Account {
 	dbAccount, err := db.GetAccount(userId)
-	//TODO: check for error here
+
 	if err!=nil {
 		glog.Error(err, " ", userId)
 	}
@@ -83,7 +83,7 @@ func (account *Account) hasStock(stock string, amount float64) bool {
 	//check if the user holds the amount of stock he/she is trying to sell
 	currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
 	account.StockPortfolio[stock] = currAmount
-	//TODO: check for error here
+
 	if err!=nil {
 		glog.Error(err, " ", account)
 	}
@@ -94,7 +94,7 @@ func (account *Account) hasStock(stock string, amount float64) bool {
 // returns the amount that is available to the user (i.e not on hold for any transactions)
 func (account *Account) getBalance() float64 {
 	dbAccount, err := db.GetAccount(account.AccountNumber)
-	//TODO: check for error here
+
 	if err!=nil {
 		glog.Error(err, " ", account)
 	}
