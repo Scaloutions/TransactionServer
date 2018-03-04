@@ -12,13 +12,13 @@ CREATE TABLE IF NOT EXISTS users (
 */
 CREATE TABLE IF NOT EXISTS accounts (
   user_id        VARCHAR(32) PRIMARY KEY,
-  balance           FLOAT(10,8),
-  available_balance FLOAT(10,8)
+  balance           FLOAT(18,8),
+  available_balance FLOAT(18,8)
 );
 
 CREATE TABLE IF NOT EXISTS stock (
   user_id        VARCHAR(32),
   symbol            VARCHAR(50),
-  amount            FLOAT(10,8),
+  amount            FLOAT(18,8),
   PRIMARY KEY (user_id, symbol)
-)
+);

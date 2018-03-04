@@ -75,9 +75,10 @@ func CreateNewUser(userId string, name string, email string, address string) {
 func GetUser(userId string) (User, error) {
 	user := User { UserId: userId }
 
-	err := DB.QueryRow("SELECT name FROM users WHERE use_id = ?", userId).Scan(&user.Name, &user.UserId)
+	err := DB.QueryRow("SELECT user_name FROM users WHERE user_id =?", userId).Scan(&user.Name)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
+		glog.Info("Error from authentication: ", err)
 		return user, errors.New("User does not exist.")
 		//TODO: is there a way to return nil here?
 	}
@@ -98,7 +99,24 @@ func GetAccount(userId string) (UserAccountDB, error) {
 
 }
 
+func CreateNewAccount(userId string) {
+	stmt, err := DB.Prepare("INSERT accounts(user_id, balance, available_balance) VALUES(?,?,?)")
+	
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+
+	_, err = stmt.Exec(userId, 0, 0)
+
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+}
+
 func UpdateAccountBalance(userId string, val float64) error {
+	glog.Info("Updating balance for user: ", userId, " with value ", val)
 	stmt, err := DB.Prepare("UPDATE accounts SET balance=? where user_id =?")
 
 	if err != nil {
@@ -156,10 +174,10 @@ func UpdateUserStock(userId string, stock string, amount float64) error {
 	return nil
 }
 
-func GetUserStockValue(userId string, stock string) (float64, error){
+func GetUserStockAmount(userId string, stock string) (float64, error){
 	var stockAmount float64 = 0.0
 
-	err := DB.QueryRow("SELECT amount FROM stock WHERE use_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
+	err := DB.QueryRow("SELECT amount FROM stock WHERE user_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
 	if err != nil {
 		glog.Error("Can not find user stock in the database: ", userId, " ", stock)
 		return stockAmount, errors.New("User does not exist.")
@@ -167,5 +185,4 @@ func GetUserStockValue(userId string, stock string) (float64, error){
 	}
 
 	return stockAmount, nil
-
 }

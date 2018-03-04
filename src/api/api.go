@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/golang/glog"
+	"db"
 )
 
 const (
@@ -51,6 +52,15 @@ func buyHelper(
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	} else {
+		// pull curr stock value for that user
+		currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
+		account.StockPortfolio[stock] = currAmount
+		//TODO: check for error here
+		if err!=nil {
+			glog.Error(err, " ", account)
+			return
+		}
+
 		transaction := BuyObj{
 			Stock:       stock,
 			MoneyAmount: amount,
@@ -117,6 +127,8 @@ func CommitBuy(account *Account, transactionNum int) {
 		account.substractBalance(transaction.MoneyAmount)
 		//add number of stocks to user
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
+		//update db record
+		db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
 
 		log := getTransactionEvent(transactionNum, COMMIT_BUY, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("SUCCESS: Executed COMMIT BUY")
@@ -154,6 +166,8 @@ func CommitSell(account *Account, transactionNum int) {
 		i := account.SellStack.Pop()
 		transaction := i.(SellObj)
 		account.addMoney(transaction.MoneyAmount)
+		//update db record
+		db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
 
 		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("Executed COMMIT SELL")
