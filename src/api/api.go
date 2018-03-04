@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/golang/glog"
+	"db"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 	SET_SELL_AMOUNT = "set_sell_amount"
 	CANCEL_SET_BUY  = "cancel_set_buy"
 	CANCEL_SET_SELL = "cancel_set_sell"
+	QUOTE			= "get_quote"
 )
 
 func Add(account *Account, amount float64, transactionNum int) {
@@ -30,9 +32,11 @@ func Add(account *Account, amount float64, transactionNum int) {
 	}
 }
 
-func GetQuote(stock string, userid string) float64 {
+func GetQuote(stock string, userid string, transactionNum int) float64 {
 	quoteObj := getQuoteFromQS(userid, stock)
-	//TODO: log quote server hit here
+	//TODO: figure out correct transaction number here
+	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, QUOTE, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	logEvent(log)
 	return quoteObj.Price
 }
 
@@ -51,6 +55,15 @@ func buyHelper(
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 		logEvent(log)
 	} else {
+		// pull curr stock value for that user
+		currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
+		account.StockPortfolio[stock] = currAmount
+
+		if err!=nil {
+			glog.Error(err, " ", account)
+			return
+		}
+
 		transaction := BuyObj{
 			Stock:       stock,
 			MoneyAmount: amount,
@@ -70,7 +83,7 @@ func buyHelper(
 
 func Buy(account *Account, stock string, amount float64, transactionNum int) {
 	//get quote and calculate number of stock
-	stockNum := amount / GetQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
 	buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
@@ -96,7 +109,7 @@ func sellHelper(
 		logEvent(log)
 		glog.Info("Executed SELL for ", amount)
 	} else {
-		err := "User doesn not have enough stock to sell."
+		err := "User does not have enough stock to sell."
 		glog.Info("Not enough stock ", stock, " to sell.")
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		logEvent(log)
@@ -105,7 +118,7 @@ func sellHelper(
 
 func Sell(account *Account, stock string, amount float64, transactionNum int) {
 	//check if have that # of stocks
-	stockNum := amount / GetQuote(stock, account.AccountNumber)
+	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
 	sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
@@ -114,9 +127,16 @@ func CommitBuy(account *Account, transactionNum int) {
 		//go casting
 		i := account.BuyStack.Pop()
 		transaction := i.(BuyObj)
-		account.Balance -= transaction.MoneyAmount
+		account.substractBalance(transaction.MoneyAmount)
 		//add number of stocks to user
 		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
+		//update db record
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+
+		if err!=nil {
+			glog.Error(err, " for account:", account)
+			return
+		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_BUY, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("SUCCESS: Executed COMMIT BUY")
@@ -154,6 +174,13 @@ func CommitSell(account *Account, transactionNum int) {
 		i := account.SellStack.Pop()
 		transaction := i.(SellObj)
 		account.addMoney(transaction.MoneyAmount)
+		//update db record
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+
+		if err!=nil {
+			glog.Error(err, " for account:", account)
+			return
+		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("Executed COMMIT SELL")
@@ -308,7 +335,3 @@ func CancelSetSell(account *Account, stock string, transactionNum int) {
 		glog.Error(err, " ", account.AccountNumber)
 	}
 }
-
-func Dumplog(account *Account, filename string) {}
-
-func DumplogAll(filename string) {}

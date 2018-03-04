@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"db"
 	"api"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
@@ -34,14 +35,38 @@ type Request struct {
 }
 
 func authenticateUser(userId string) {
-	account := api.InitializeAccount(userId)
+	_, err := db.GetUser(userId)
+	/*
+		FOR THE PROJECT XML requirements
+		automatically create users for testing
+	*/
+	if err!=nil {
+		db.CreateNewUser(userId, "", "", "")
+		db.CreateNewAccount(userId)
+	}
+
+	account := api.GetAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("\nSUCCESS: Authentication Successful!")
 	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 }
 
+// Gets user from the memory: assumes we authenticate user first
 func getUser(userId string) *api.Account {
-	return UserMap[userId]
+	if user, ok := UserMap[userId]; ok {
+		//do something here
+		return user
+	} else {
+		authenticateUser(userId)
+		return UserMap[userId]
+	}
+}
+
+/*
+	TODO: add API point for creating user record with personal info
+*/
+func createUser(userId string, name string, email string, address string) {
+	db.CreateNewUser(userId, name, email, address)
 }
 
 func getParams(c *gin.Context) Request {
@@ -70,7 +95,7 @@ func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
 
 	glog.Info("\n Executing QUOTE: ", req)
-	go api.GetQuote(req.Stock, req.UserId)
+	go api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 }
 
 func addReq(c *gin.Context) {
@@ -189,6 +214,9 @@ func main() {
 	//glog initialization flags
 	flag.Usage = usage
 	flag.Parse()
+
+	//db connection
+	db.InitializeDB()
 
 	api := router.Group("/api")
 	{

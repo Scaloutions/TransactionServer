@@ -3,6 +3,7 @@ package api
 import (
 	"time"
 	"utils"
+	"db"
 
 	"github.com/golang/glog"
 )
@@ -57,25 +58,93 @@ func InitializeAccount(value string) Account {
 	}
 }
 
+func GetAccount(userId string) Account {
+	dbAccount, err := db.GetAccount(userId)
+
+	if err!=nil {
+		glog.Error(err, " ", userId)
+	}
+
+	return Account{
+		AccountNumber:  dbAccount.UserId,
+		Balance:        dbAccount.Balance,
+		Available:      dbAccount.Available,
+		SellStack:      utils.Stack{},
+		BuyStack:       utils.Stack{},
+		StockPortfolio: make(map[string]float64),
+		SetBuyMap:      make(map[string]float64),
+		BuyTriggers:    make(map[string]float64),
+		SetSellMap:     make(map[string]float64),
+		SellTriggers:   make(map[string]float64),
+	}
+}
+
 func (account *Account) hasStock(stock string, amount float64) bool {
 	//check if the user holds the amount of stock he/she is trying to sell
-	return account.StockPortfolio[stock] >= amount
+	currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
+	account.StockPortfolio[stock] = currAmount
+
+	if err!=nil {
+		glog.Error(err, " ", account)
+	}
+	return currAmount >= amount
+	// return account.StockPortfolio[stock] >= amount
 }
 
 // returns the amount that is available to the user (i.e not on hold for any transactions)
 func (account *Account) getBalance() float64 {
-	return account.Available
+	dbAccount, err := db.GetAccount(account.AccountNumber)
+
+	if err!=nil {
+		glog.Error(err, " ", account)
+	}
+	return dbAccount.Available
+	// return account.Available
 }
 
 func (account *Account) holdMoney(amount float64) {
 	if amount > 0 {
 		account.Available -= amount
+		//update db
+		db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	} else {
+		glog.Error("Cannot hold negative account for the account ", amount)
+	}
+}
+
+func (account *Account) addMoney(amount float64) {
+	account.Balance += amount
+	account.Available += amount
+	err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+	err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		
+	if err1!=nil || err2!=nil {
+		glog.Error(err1, err2, " for account:", account)
+		return
+	}
+
+	glog.Info("This account now has ", account.Balance, " available: ", account.Available)
+}
+
+func (account *Account) substractBalance(amount float64) {
+	account.Balance -= amount
+	err := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+
+	if err!=nil {
+		glog.Error(err)
 	}
 }
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
 		account.Available += amount
+		//update db
+		err := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		if err!=nil {
+			glog.Error(err)
+		}
+	} else {
+		glog.Error("Cannot unhold negative account for the account ", amount)
 	}
 }
 
@@ -92,17 +161,11 @@ func (account *Account) unholdStock(stock string, amount float64) {
 	account.StockPortfolio[stock] += amount
 }
 
-func (account *Account) addMoney(amount float64) {
-	account.Balance += amount
-	account.Available += amount
-	glog.Info("This account now has ", account.Balance, account.Available)
-}
-
 // Start a trigger
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
 func (account *Account) startBuyTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber, transactionNum)
 	limit := account.BuyTriggers[stock]
 
 	//if there is still trigger in the map
@@ -111,7 +174,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber, transactionNum)
 		}
 
 		stockNum := account.SetBuyMap[stock]
@@ -127,7 +190,7 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 }
 
 func (account *Account) startSellTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber)
+	price := GetQuote(stock, account.AccountNumber, transactionNum)
 	min := account.SellTriggers[stock]
 
 	//if there is still trigger in the map
@@ -136,7 +199,7 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber)
+			price = GetQuote(stock, account.AccountNumber, transactionNum)
 		}
 
 		stockNum := account.SetSellMap[stock]
