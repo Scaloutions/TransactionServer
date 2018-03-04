@@ -35,28 +35,38 @@ type Request struct {
 }
 
 func authenticateUser(userId string) {
-	user, err := db.getUser(userId)
+	_, err := db.GetUser(userId)
 	/*
 		FOR THE PROJECT XML requirements
 		automatically create users for testing
 	*/
 	if err!=nil {
-		accId := "1234"
-		db.CreateNewUser(userId, "", "", "", accId)
+		db.CreateNewUser(userId, "", "", "")
+		db.CreateNewAccount(userId)
 	}
-	account := api.InitializeAccount(userId)
+
+	account := api.GetAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("\nSUCCESS: Authentication Successful!")
 	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 }
 
+// Gets user from the memory: assumes we authenticate user first
 func getUser(userId string) *api.Account {
-	return UserMap[userId]
+	if user, ok := UserMap[userId]; ok {
+		//do something here
+		return user
+	} else {
+		authenticateUser(userId)
+		return UserMap[userId]
+	}
 }
 
-func createUser(userID string, name string, email string, address string) {
-	accId := "khjsa989713ams"
-	db.CreateNewUser(userId, name, email, address, accId)
+/*
+	TODO: add API point for creating user record with personal info
+*/
+func createUser(userId string, name string, email string, address string) {
+	db.CreateNewUser(userId, name, email, address)
 }
 
 func getParams(c *gin.Context) Request {
