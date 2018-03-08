@@ -113,15 +113,23 @@ func errorResponse(c *gin.Context, tranNum int, userId string) {
 
 func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
+	// TODO:
+	// This doesn't work because it is a GET request so we need to obtain params differently!!
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	glog.Info("Request params for get quote: ", req)
 
 	glog.Info("\n Executing QUOTE: ", req)
-	api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
+	quote, err := api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 
-	// TODO: add error checking here
-	c.JSON(200, gin.H{
-		"transaction_num": req.CommandNumber,
-		"user_id": req.UserId,
-	})
+	if err!=nil {
+		errorResponse(c,req.CommandNumber, req.UserId)
+	} else {
+		c.JSON(200, gin.H{
+			"transaction_num": req.CommandNumber,
+			"user_id": req.UserId,
+			"quote": quote,
+		})
+	}
 }
 
 func addReq(c *gin.Context) {
