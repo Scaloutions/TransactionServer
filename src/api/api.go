@@ -30,7 +30,7 @@ func Add(account *Account, amount float64, transactionNum int) error {
 		glog.Info("SUCCESS: Added ", amount)
 		return nil
 	} else {
-		glog.Error("ERROR: Cannot add negative amount to balance ", amount)
+		glog.Error("ERROR: Cannot add zero or negative amount to balance ", amount)
 		return errors.New("Cannot execute ADD")
 	}
 }
