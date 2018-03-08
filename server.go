@@ -88,14 +88,24 @@ func getParams(c *gin.Context) Request {
 func authReq(c *gin.Context) {
 	req := getParams(c)
 	glog.Info("\n Executing AUTHENTICATE for user: ", req.UserId)
-	go authenticateUser(req.UserId)
+	authenticateUser(req.UserId)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
 
 	glog.Info("\n Executing QUOTE: ", req)
-	go api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
+	api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func addReq(c *gin.Context) {
@@ -104,7 +114,12 @@ func addReq(c *gin.Context) {
 	var account *api.Account
 	account = getUser(req.UserId)
 	glog.Info("\n Executing ADD: ", req)
-	go api.Add(account, req.PriceDollars, req.CommandNumber)
+	api.Add(account, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func buyReq(c *gin.Context) {
@@ -112,7 +127,12 @@ func buyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing BUY ", req)
-	go api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func sellReq(c *gin.Context) {
@@ -120,7 +140,12 @@ func sellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SELL ", req)
-	go api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func commitSellReq(c *gin.Context) {
@@ -128,14 +153,25 @@ func commitSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing COMMIT SELL ", req)
-	go api.CommitSell(account, req.CommandNumber)
+	
+	api.CommitSell(account, req.CommandNumber)
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})	
 }
+
 func commitBuyReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing COMMIT BUY ", req)
-	go api.CommitBuy(account, req.CommandNumber)
+	api.CommitBuy(account, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func cancelBuyReq(c *gin.Context) {
@@ -143,7 +179,12 @@ func cancelBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL BUY ", req)
-	go api.CancelBuy(account, req.CommandNumber)
+	api.CancelBuy(account, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func cancelSellReq(c *gin.Context) {
@@ -151,7 +192,12 @@ func cancelSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL SELL ", req)
-	go api.CancelSell(account, req.CommandNumber)
+	api.CancelSell(account, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func setBuyAmountReq(c *gin.Context) {
@@ -159,7 +205,12 @@ func setBuyAmountReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET BUY AMOUNT ", req)
-	go api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func setSellAmountReq(c *gin.Context) {
@@ -167,7 +218,12 @@ func setSellAmountReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET SELL AMOUNT ", req)
-	go api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func cancelSetBuyReq(c *gin.Context) {
@@ -175,7 +231,12 @@ func cancelSetBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL SET BUY ", req)
-	go api.CancelSetBuy(account, req.Stock, req.CommandNumber)
+	api.CancelSetBuy(account, req.Stock, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func cancelSetSellReq(c *gin.Context) {
@@ -183,7 +244,12 @@ func cancelSetSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL SET SELL ", req)
-	go api.CancelSetSell(account, req.Stock, req.CommandNumber)
+	api.CancelSetSell(account, req.Stock, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func setBuyTriggerReq(c *gin.Context) {
@@ -191,7 +257,12 @@ func setBuyTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET BUY TRIGGER ", req)
-	go api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func setSellTriggerReq(c *gin.Context) {
@@ -199,7 +270,12 @@ func setSellTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET SELL TRIGGER ", req)
-	go api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
+	api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
+
+	c.JSON(200, gin.H{
+		"transaction_num": req.CommandNumber,
+		"user_id": req.UserId,
+	})
 }
 
 func dumplogReq(c *gin.Context) {
@@ -211,11 +287,12 @@ func dumplogReq(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
+
 	//glog initialization flags
 	flag.Usage = usage
 	flag.Parse()
 
-	//db connection
+	// db connection
 	db.InitializeDB()
 
 	api := router.Group("/api")
