@@ -114,7 +114,8 @@ func errorResponse(c *gin.Context, tranNum int, userId string) {
 func getQuoteReq(c *gin.Context) {
 	req := getParams(c)
 	// TODO:
-	// This doesn't work because it is a GET request so we need to obtain params differently!!
+	// HACKY
+	// This doesn't work for GET request so we need to obtain params differently!!
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	glog.Info("Request params for get quote: ", req)
 
@@ -327,7 +328,8 @@ func main() {
 	api := router.Group("/api")
 	{
 		api.GET("/test", echoString)
-		api.GET("/get_quote", getQuoteReq)
+		// api.GET("/get_quote", getQuoteReq)
+		api.POST("/get_quote", getQuoteReq)
 		api.POST("/authenticate", authReq)
 		api.POST("/add", addReq)
 		api.POST("/buy", buyReq)
