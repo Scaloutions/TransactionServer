@@ -35,12 +35,18 @@ func Add(account *Account, amount float64, transactionNum int) error {
 	}
 }
 
-func GetQuote(stock string, userid string, transactionNum int) float64 {
-	quoteObj := getQuoteFromQS(userid, stock)
-	//TODO: figure out correct transaction number here
+func GetQuote(stock string, userid string, transactionNum int) (float64, error) {
+	quoteObj, err := getQuoteFromQS(userid, stock)
+	if err!= nil {
+		//TODO : log error event here
+		// log := getErrorEvent()
+		glog.Error("Failed to get Quote from the QS")
+		return 0.0, err
+	}
+
 	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, QUOTE, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
 	logEvent(log)
-	return quoteObj.Price
+	return quoteObj.Price, nil
 }
 
 func buyHelper(
@@ -88,7 +94,11 @@ func buyHelper(
 
 func Buy(account *Account, stock string, amount float64, transactionNum int) error {
 	//get quote and calculate number of stock
-	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
+	quote, err := GetQuote(stock, account.AccountNumber, transactionNum)
+	if err!= nil {
+		return err
+	}
+	stockNum := amount / quote
 	return buyHelper(account, amount, stock, stockNum, transactionNum)
 }
 
@@ -124,8 +134,12 @@ func sellHelper(
 }
 
 func Sell(account *Account, stock string, amount float64, transactionNum int) error {
+	quote, err := GetQuote(stock, account.AccountNumber, transactionNum)
+	if err!= nil {
+		return err
+	}
 	//check if have that # of stocks
-	stockNum := amount / GetQuote(stock, account.AccountNumber, transactionNum)
+	stockNum := amount / quote
 	return sellHelper(account, stock, amount, transactionNum, stockNum)
 }
 
@@ -289,6 +303,7 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 			glog.Info("Spinning up SetBuy Trigger")
 			//prevent race condition here TODO: rewrite
 			account.BuyTriggers[stock] = price
+			//TODO: check for error and backpropogate it
 			go account.startBuyTrigger(stock, transactionNum)
 		}
 
@@ -329,6 +344,7 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 			//spin up go routine trigger
 			glog.Info("Spinning up SEll trigger")
 			account.SellTriggers[stock] = price
+			//TODO: check for error and backpropogate it
 			go account.startSellTrigger(stock, transactionNum)
 		}
 		// assuming running trigger is not an error
