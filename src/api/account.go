@@ -164,8 +164,11 @@ func (account *Account) unholdStock(stock string, amount float64) {
 // Start a trigger
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
-func (account *Account) startBuyTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber, transactionNum)
+func (account *Account) startBuyTrigger(stock string, transactionNum int) error {
+	price, err := GetQuote(stock, account.AccountNumber, transactionNum)
+	if err!= nil {
+		return err
+	}
 	limit := account.BuyTriggers[stock]
 
 	//if there is still trigger in the map
@@ -174,7 +177,10 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber, transactionNum)
+			price, err = GetQuote(stock, account.AccountNumber, transactionNum)
+			if err!= nil {
+				return err
+			}
 		}
 
 		stockNum := account.SetBuyMap[stock]
@@ -187,10 +193,15 @@ func (account *Account) startBuyTrigger(stock string, transactionNum int) {
 		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
 		delete(account.SetBuyMap, stock)
 	}
+
+	return nil
 }
 
-func (account *Account) startSellTrigger(stock string, transactionNum int) {
-	price := GetQuote(stock, account.AccountNumber, transactionNum)
+func (account *Account) startSellTrigger(stock string, transactionNum int) error {
+	price, err := GetQuote(stock, account.AccountNumber, transactionNum)
+	if err!= nil {
+		return err
+	}
 	min := account.SellTriggers[stock]
 
 	//if there is still trigger in the map
@@ -199,7 +210,10 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
-			price = GetQuote(stock, account.AccountNumber, transactionNum)
+			price, err = GetQuote(stock, account.AccountNumber, transactionNum)
+			if err!= nil {
+				return err
+			}
 		}
 
 		stockNum := account.SetSellMap[stock]
@@ -213,4 +227,5 @@ func (account *Account) startSellTrigger(stock string, transactionNum int) {
 		glog.Info("Stock balance: ", account.StockPortfolio[stock])
 		delete(account.SetSellMap, stock)
 	}
+	return nil
 }
