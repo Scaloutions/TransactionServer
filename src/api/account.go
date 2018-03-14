@@ -2,8 +2,8 @@ package api
 
 import (
 	"time"
-	"utils"
-	"db"
+	"../utils"
+	"../db"
 
 	"github.com/golang/glog"
 )

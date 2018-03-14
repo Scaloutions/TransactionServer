@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/golang/glog"
-	"db"
+	"../db"
 	"errors"
 )
 

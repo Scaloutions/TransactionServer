@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 
-	"db"
-	"api"
+	"./src/db"
+	"./src/api"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 )
