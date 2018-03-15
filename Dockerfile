@@ -1,6 +1,12 @@
 FROM golang:1.9.2
 
-RUN mkdir -p /src
+RUN mkdir -p /app
+
+ADD . /app/
+
+WORKDIR /app
+
+#RUN go get ./
 
 RUN go get "github.com/golang/glog"
 
@@ -10,12 +16,9 @@ RUN go get "github.com/go-sql-driver/mysql"
 
 RUN go get "github.com/joho/godotenv"
 
-WORKDIR /src
 
-ADD . /src
+RUN go build -o server .
 
-RUN go build ./server.go
-
-CMD [ "./server" ]
+CMD [ "/app/server" ]
 
 EXPOSE 9090
