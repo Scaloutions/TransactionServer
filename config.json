@@ -1,3 +1,4 @@
 {
-  "AuditServer": false
+  "AuditServer": false,
+  "QuoteServer": false
 }

@@ -6,7 +6,9 @@ import (
 	"strconv"
 	"strings"
 	"errors"
-
+	"path/filepath"
+	"io/ioutil"
+	"encoding/json"
 	"github.com/golang/glog"
 )
 
@@ -25,6 +27,24 @@ type Quote struct {
 }
 
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
+
+	absPath, _ := filepath.Abs("./config.json")
+	var data []byte
+	data, _ = ioutil.ReadFile(absPath)
+	var configSettings Config
+	_ = json.Unmarshal(data, &configSettings)
+
+	// Mock QuoteServer hit for local testing
+	if configSettings.QuoteServer == false {
+		return Quote{
+			Price:     1,
+			Stock:     "S",
+			UserId:    "Agent007",
+			Timestamp: 1516925116307,
+			CryptoKey: "PXdxruf7H5p9Br19Si5hq",
+		}, nil
+	}
+
 	quote := Quote{}
 	// Get connection to the quote server
 	conn, err := getConnection()
@@ -75,16 +95,7 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 		CryptoKey: quoteArgs[4],
 	}, nil
 
-	//** Uncomment this to mock QuoteServer hit for local testing **//
-	/*
-		return Quote{
-			Price:     1,
-			Stock:     "S",
-			UserId:    "Agent007",
-			Timestamp: 1516925116307,
-			CryptoKey: "PXdxruf7H5p9Br19Si5hq",
-		}, nil
-	*/
+
 
 }
 
