@@ -33,6 +33,10 @@ This will build a new docker image named <transactionserver>.
 2. `mysql -u root -p` enter password
 3. Now you can execute queries
 
+*DB Initialization*
+To run initial sql script that will set up the tables you can execute inside mysql container:
+`mysql -u user -p < dbSetup.sql`
+
 # Running tests
 
 To run tests for all packages run `go test ./...`
