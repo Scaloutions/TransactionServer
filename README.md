@@ -28,6 +28,11 @@ This will build a new docker image named <transactionserver>.
 *Running Docker image*
 `docker run -p 9090:9090 transactionserver`
 
+*Accessing MYSQL database container*
+1. `docker exec -it <CONTAINER ID> bash`
+2. `mysql -u root -p` enter password
+3. Now you can execute queries
+
 # Running tests
 
 To run tests for all packages run `go test ./...`
