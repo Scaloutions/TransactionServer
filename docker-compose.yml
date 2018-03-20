@@ -3,14 +3,14 @@ version: '3.4'
 services:
     db:
       image: mysql:5.7
+      # try using this for db inialization
+      # command: --init-file /data/application/init.sql
       volumes:
           - dbdata:/var/lib/mysql
       restart: always
       environment:
-        MYSQL_DATABASE: DAYTRADING
-        MYSQL_USER: root
-        MYSQL_PASSWORD: root
-    transaction-server:
+        MYSQL_ROOT_PASSWORD: root
+    transactionserver:
       build: .
       restart: always
       ports: 

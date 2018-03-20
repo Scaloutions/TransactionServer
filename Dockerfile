@@ -1,6 +1,6 @@
 FROM golang:1.9.2-alpine3.6 AS build
 
-#RUN apk add --no-cache git
+RUN apk add --no-cache git
 
 RUN mkdir -p /app
 
@@ -21,6 +21,7 @@ RUN go get "github.com/joho/godotenv"
 
 RUN go build -o server .
 
-CMD [ "/app/server -logtostderr=true" ]
+#CMD [ "/app/server -logtostderr=true" ]
+CMD [ "/app/server" ]
 
 EXPOSE 9090
