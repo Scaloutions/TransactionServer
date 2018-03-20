@@ -43,7 +43,8 @@ func loadCredentials() {
 }
 
 func databaseConnection() (db *sql.DB) {
-	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@/" + DB_NAME)
+	// make sure we're accessing mysql running in a docker container
+	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp(172.18.0.2:3306)/" + DB_NAME)
 
 	if err != nil {
 		glog.Error("Failed to establish connection with the Quote Server.")
