@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+    db:
+      image: mysql:5.7
+      # try using this for db inialization
+      # command: --init-file /data/application/init.sql
+      volumes:
+          - dbdata:/var/lib/mysql
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+    transactionserver:
+      build: .
+      restart: always
+      ports: 
+        - "9090:9090"
+      depends_on:
+        - db
+      links:
+        - db 
+
+volumes:
+  dbdata:
