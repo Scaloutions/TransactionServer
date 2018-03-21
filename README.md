@@ -26,6 +26,8 @@ This will build a new docker image named <transactionserver>.
 `docker load < PATH/dockerTS.tar`
 
 *Running Docker image*
+You can run `docker-compose up` inside the directory and that will bring two docker containers MySQL and transcation server.
+Alternatively you can build two images separately with `docker build` command and then run
 `docker run -p 9090:9090 transactionserver`
 
 *Accessing MYSQL database container*
