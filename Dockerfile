@@ -21,7 +21,6 @@ RUN go get "github.com/joho/godotenv"
 
 RUN go build -o server .
 
-#CMD [ "/app/server -logtostderr=true" ]
-CMD [ "/app/server" ]
+CMD [ "/app/server", "-logtostderr=true" ]
 
 EXPOSE 9090
