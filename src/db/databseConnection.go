@@ -9,6 +9,10 @@ import (
 	"os"
 )
 
+const (
+	DB_SERVER_ADDRESS       = "dbserver"
+)
+
 var (
 	DB *sql.DB
 	DB_NAME string
@@ -44,7 +48,8 @@ func loadCredentials() {
 
 func databaseConnection() (db *sql.DB) {
 	// make sure we're accessing mysql running in a docker container
-	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp(172.18.0.2:3306)/" + DB_NAME)
+	// db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp(172.18.0.2:3306)/" + DB_NAME)
+	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp("+DB_SERVER_ADDRESS+")/" + DB_NAME)
 
 	if err != nil {
 		glog.Error("Failed to establish connection with the Quote Server.")
@@ -89,7 +94,7 @@ func GetUser(userId string) (User, error) {
 
 func GetAccount(userId string) (UserAccountDB, error) {
 	account := UserAccountDB{}
-	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts").Scan(&account.UserId, &account.Balance, &account.Available)
+	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts WHERE user_id").Scan(&account.UserId, &account.Balance, &account.Available, &account.UserId)
 
 	if err != nil {
 		glog.Error("Can not find the user account in the database: ", userId)
