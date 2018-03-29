@@ -125,6 +125,7 @@ func logEvent(log interface{}) {
 	if configSettings.AuditServer == false {
 		return
 	}
+	glog.Info("############## LOGGING REQUST: ", log)
 
 	data, err := json.Marshal(log)
 	URL := getUrlPath(log)

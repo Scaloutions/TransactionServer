@@ -123,7 +123,7 @@ func (account *Account) addMoney(amount float64) {
 		return
 	}
 
-	glog.Info("This account now has ", account.Balance, " available: ", account.Available)
+	glog.Info("This account "+ account.AccountNumber +" now has ", account.Balance, " available: ", account.Available)
 }
 
 func (account *Account) substractBalance(amount float64) {

@@ -37,6 +37,7 @@ func Add(account *Account, amount float64, transactionNum int) error {
 
 func GetQuote(stock string, userid string, transactionNum int) (float64, error) {
 	quoteObj, err := getQuoteFromQS(userid, stock)
+	glog.Info("Getting quote for: ", stock, " user: ", userid)
 	if err!= nil {
 		//TODO : log error event here
 		// log := getErrorEvent()
