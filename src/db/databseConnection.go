@@ -63,6 +63,7 @@ func Close() {
 }
 
 func CreateNewUser(userId string, name string, email string, address string) {
+	glog.Info("DB:\tExecuting INSERT user for:", userId, " ", name, " ", address, " ", email)
 	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
 	
 	if err != nil {
@@ -81,6 +82,7 @@ func CreateNewUser(userId string, name string, email string, address string) {
 func GetUser(userId string) (User, error) {
 	user := User { UserId: userId }
 
+	glog.Info("DB:\tExecuting SELECT username for:", userId)
 	err := DB.QueryRow("SELECT user_name FROM users WHERE user_id =?", userId).Scan(&user.Name)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
@@ -94,6 +96,7 @@ func GetUser(userId string) (User, error) {
 
 func GetAccount(userId string) (UserAccountDB, error) {
 	account := UserAccountDB{}
+	glog.Info("DB:\tExecuting SELECT account for:", userId)
 	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts WHERE user_id").Scan(&account.UserId, &account.Balance, &account.Available, &account.UserId)
 
 	if err != nil {
@@ -106,6 +109,7 @@ func GetAccount(userId string) (UserAccountDB, error) {
 }
 
 func CreateNewAccount(userId string) {
+	glog.Info("DB:\tExecuting INSERT account for:", userId)
 	stmt, err := DB.Prepare("INSERT accounts(user_id, balance, available_balance) VALUES(?,?,?)")
 	
 	if err != nil {
@@ -122,7 +126,7 @@ func CreateNewAccount(userId string) {
 }
 
 func UpdateAccountBalance(userId string, val float64) error {
-	glog.Info("Updating balance for user: ", userId, " with value ", val)
+	glog.Info("DB:\tUpdating balance for user: ", userId, " with value ", val)
 	stmt, err := DB.Prepare("UPDATE accounts SET balance=? where user_id =?")
 
 	if err != nil {
@@ -141,6 +145,7 @@ func UpdateAccountBalance(userId string, val float64) error {
 }
 
 func UpdateAvailableAccountBalance(userId string, val float64) error {
+	glog.Info("DB:\tExecuting UPDATE for ", userId, " available balance: ", val)
 	stmt, err := DB.Prepare("UPDATE accounts SET available_balance=? where user_id =?")
 
 	if err != nil {
@@ -163,6 +168,7 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 	Updates or creates a new stock record for a user
 */
 func UpdateUserStock(userId string, stock string, amount float64) error {
+	glog.Info("DB:\tExecuting INSERT for ", userId, " stock: ", stock, " amount: ", amount)
 	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount=?")
 
 	if err != nil {
@@ -182,12 +188,13 @@ func UpdateUserStock(userId string, stock string, amount float64) error {
 
 func GetUserStockAmount(userId string, stock string) (float64, error){
 	var stockAmount float64 = 0.0
-
+	glog.Info("DB:\tExecuting SELECT amount on stock for ", userId, " and stock symbol: ", stock)
 	err := DB.QueryRow("SELECT amount FROM stock WHERE user_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
 	if err != nil {
+		// Do not return error since it only means that the user does not have that stock so 
+		// stockAmount is just zero because there is not entry in the db
 		glog.Error("Can not find user stock in the database: ", userId, " ", stock)
-		return stockAmount, errors.New("User does not exist.")
-		//TODO: is there a way to return nil here?
+		// return stockAmount, errors.New("User does not exist.")
 	}
 
 	return stockAmount, nil
