@@ -21,6 +21,8 @@ services:
         - db 
       extra_hosts:
         quoteserve.seng: 192.168.1.135
+        auditserver: 192.168.1.139
+        dbserver: 192.168.1.138
 
 volumes:
   dbdata:
