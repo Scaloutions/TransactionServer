@@ -115,6 +115,7 @@ func (account *Account) holdMoney(amount float64) {
 func (account *Account) addMoney(amount float64) {
 	account.Balance += amount
 	account.Available += amount
+	glog.Info("Updating account balance in the DB for user: ", account.AccountNumber)
 	err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
 	err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
 		

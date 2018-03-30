@@ -97,7 +97,7 @@ func GetUser(userId string) (User, error) {
 func GetAccount(userId string) (UserAccountDB, error) {
 	account := UserAccountDB{}
 	glog.Info("DB:\tExecuting SELECT account for:", userId)
-	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts WHERE user_id").Scan(&account.UserId, &account.Balance, &account.Available, &account.UserId)
+	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts WHERE user_id=?", userId).Scan(&account.UserId, &account.Balance, &account.Available)
 
 	if err != nil {
 		glog.Error("Can not find the user account in the database: ", userId)

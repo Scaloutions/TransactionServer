@@ -53,6 +53,7 @@ func authenticateUser(userId string) {
 
 // Gets user from the memory: assumes we authenticate user first
 func getUser(userId string) *api.Account {
+	glog.Info("Getting User account for userId: ", userId)
 	if user, ok := UserMap[userId]; ok {
 		//do something here
 		return user
