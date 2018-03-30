@@ -324,6 +324,7 @@ func main() {
 
 	// db connection
 	db.InitializeDB()
+	api.InitializeQSConn()
 
 	api := router.Group("/api")
 	{

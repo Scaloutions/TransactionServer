@@ -18,6 +18,10 @@ const (
 	CONNECTION_TYPE  = "tcp"
 )
 
+var (
+	QS_CONNECTION net.Conn
+)
+
 type Quote struct {
 	Price     float64
 	Stock     string
@@ -25,6 +29,16 @@ type Quote struct {
 	Timestamp int64
 	CryptoKey string
 }
+
+func InitializeQSConn(){
+	conn, err := getConnection() 
+	QS_CONNECTION = conn
+
+	if err!=nil {
+		glog.Error("Cannot establish connection with the Quote Server ", err)
+	}
+}
+
 
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
@@ -47,14 +61,16 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	quote := Quote{}
 	// Get connection to the quote server
-	conn, err := getConnection()
+	// conn, err := getConnection()
 
-	if err!=nil {
-		return quote, err
+	// if err!=nil {
+	if QS_CONNECTION == nil {
+		// return quote, err
+		InitializeQSConn()
 	}
 
 	cstr := stock + "," + userid + "\n"
-	_, err = conn.Write([]byte(cstr))
+	_, err := QS_CONNECTION.Write([]byte(cstr))
 
 	if err!=nil {
 		return quote, err
@@ -62,7 +78,7 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// //TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
-	len, err := conn.Read(buff)
+	len, err := QS_CONNECTION.Read(buff)
 
 	if err != nil {
 		glog.Error("Error reading data from the Quote Server")
