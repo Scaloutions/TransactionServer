@@ -30,14 +30,14 @@ type Quote struct {
 	CryptoKey string
 }
 
-func InitializeQSConn(){
+/*func InitializeQSConn(){
 	conn, err := getConnection() 
 	QS_CONNECTION = conn
 
 	if err!=nil {
 		glog.Error("Cannot establish connection with the Quote Server ", err)
 	}
-}
+}*/
 
 
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
@@ -64,13 +64,16 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	// conn, err := getConnection()
 
 	// if err!=nil {
-	if QS_CONNECTION == nil {
-		// return quote, err
-		InitializeQSConn()
+	// QS_CONNECTION
+	conn, err := getConnection()
+	// if QS_CONNECTION == nil {
+	if err!=nil {
+		return quote, err
+		// InitializeQSConn()
 	}
 
 	cstr := stock + "," + userid + "\n"
-	_, err := QS_CONNECTION.Write([]byte(cstr))
+	_, err = conn.Write([]byte(cstr))
 
 	if err!=nil {
 		return quote, err
@@ -78,7 +81,8 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// //TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
-	len, err := QS_CONNECTION.Read(buff)
+	// len, err := QS_CONNECTION.Read(buff)
+	len, err := conn.Read(buff)
 
 	if err != nil {
 		glog.Error("Error reading data from the Quote Server")
@@ -102,6 +106,7 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 		glog.Error("Cannot parse QS timestamp into int64 ", quoteArgs[3])
 	 	return quote, errors.New("Error parsing the Quote.")
 	}
+	conn.Close()
 
 	return Quote{
 		Price:     price,
