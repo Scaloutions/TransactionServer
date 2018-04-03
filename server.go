@@ -49,10 +49,6 @@ func authenticateUser(userId string) {
 	account := api.GetAccount(userId)
 	UserMap[userId] = &account
 	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
-	// else {
-	// 	account := UserMap[userId]
-	// 	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
-	// }
 
 	glog.Info("\nSUCCESS: Authentication Successful!")
 }
