@@ -18,7 +18,6 @@ const (
 	SET_SELL_AMOUNT = "set_sell_amount"
 	CANCEL_SET_BUY  = "cancel_set_buy"
 	CANCEL_SET_SELL = "cancel_set_sell"
-	QUOTE			= "get_quote"
 )
 
 func Add(account *Account, amount float64, transactionNum int) error {
@@ -45,7 +44,7 @@ func GetQuote(stock string, userid string, transactionNum int) (float64, error) 
 		return 0.0, err
 	}
 
-	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, QUOTE, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
 	logEvent(log)
 	return quoteObj.Price, nil
 }
