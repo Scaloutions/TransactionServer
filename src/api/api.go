@@ -7,17 +7,17 @@ import (
 )
 
 const (
-	ADD             = "add"
-	BUY             = "buy"
-	SELL            = "sell"
-	COMMIT_BUY      = "commit_buy"
-	COMMIT_SELL     = "commit_sell"
-	CANCEL_BUY      = "cancel_buy"
-	CANCEL_SELL     = "cancel_sell"
-	SET_BUY_AMOUNT  = "set_buy_amount"
-	SET_SELL_AMOUNT = "set_sell_amount"
-	CANCEL_SET_BUY  = "cancel_set_buy"
-	CANCEL_SET_SELL = "cancel_set_sell"
+	ADD             = "ADD"
+	BUY             = "BUY"
+	SELL            = "SELL"
+	COMMIT_BUY      = "COMMIT_BUY"
+	COMMIT_SELL     = "COMMIT_SELL"
+	CANCEL_BUY      = "CANCEL_BUY"
+	CANCEL_SELL     = "CANCEL_SELL"
+	SET_BUY_AMOUNT  = "SET_BUY_AMOUNT"
+	SET_SELL_AMOUNT = "SET_SELL_AMOUNT"
+	CANCEL_SET_BUY  = "CANCEL_SET_BUY"
+	CANCEL_SET_SELL = "CANCEL_SET_SELL"
 )
 
 func Add(account *Account, amount float64, transactionNum int) error {
