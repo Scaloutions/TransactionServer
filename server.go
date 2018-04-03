@@ -44,28 +44,30 @@ func authenticateUser(userId string) {
 		glog.Info("Can't find user, creating new user and user account.......")
 		db.CreateNewUser(userId, "", "", "")
 		db.CreateNewAccount(userId)
-		account := api.GetAccount(userId)
-		UserMap[userId] = &account
-		glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
-	} else {
-		account := UserMap[userId]
-		glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
-	}
+	} 
+	glog.Info("User ", userId, " is already in the map!")
+	account := api.GetAccount(userId)
+	UserMap[userId] = &account
+	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
+	// else {
+	// 	account := UserMap[userId]
+	// 	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
+	// }
 
 	glog.Info("\nSUCCESS: Authentication Successful!")
 }
 
 // Gets user from the memory: assumes we authenticate user first
-func getUser(userId string) *api.Account {
+func authenticateAccount(userId string) *api.Account {
 	glog.Info("Getting User account for userId: ", userId)
-	if user, ok := UserMap[userId]; ok {
+	if account, ok := UserMap[userId]; ok {
 		//do something here
 		glog.Info("Getting user account from the map: ")
-		return user
+		glog.Info("\n Account Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 	} else {
 		authenticateUser(userId)
-		return UserMap[userId]
 	}
+	return UserMap[userId]
 }
 
 /*
@@ -143,7 +145,7 @@ func addReq(c *gin.Context) {
 	req := getParams(c)
 
 	var account *api.Account
-	account = getUser(req.UserId)
+	account = authenticateAccount(req.UserId)
 	glog.Info("\n Executing ADD: ", req)
 	glog.Info("\n Current user account: ", account)
 	err := api.Add(account, req.PriceDollars, req.CommandNumber)
@@ -157,7 +159,7 @@ func addReq(c *gin.Context) {
 
 func buyReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing BUY ", req)
 	glog.Info("\n Current user account: ", account)
@@ -172,7 +174,7 @@ func buyReq(c *gin.Context) {
 
 func sellReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing SELL ", req)
 	glog.Info("\n Current user account: ", account)
@@ -187,7 +189,7 @@ func sellReq(c *gin.Context) {
 
 func commitSellReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 	glog.Info("\n Executing COMMIT SELL ", req)
 	glog.Info("\n Current user account: ", account)
 	err := api.CommitSell(account, req.CommandNumber)
@@ -201,7 +203,7 @@ func commitSellReq(c *gin.Context) {
 
 func commitBuyReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing COMMIT BUY ", req)
 	glog.Info("\n Current user account: ", account)
@@ -216,7 +218,7 @@ func commitBuyReq(c *gin.Context) {
 
 func cancelBuyReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing CANCEL BUY ", req)
 	glog.Info("\n Current user account: ", account)
@@ -231,7 +233,7 @@ func cancelBuyReq(c *gin.Context) {
 
 func cancelSellReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing CANCEL SELL ", req)
 	glog.Info("\n Current user account: ", account)
@@ -246,7 +248,7 @@ func cancelSellReq(c *gin.Context) {
 
 func setBuyAmountReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing SET BUY AMOUNT ", req)
 	glog.Info("\n Current user account: ", account)
@@ -261,7 +263,7 @@ func setBuyAmountReq(c *gin.Context) {
 
 func setSellAmountReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing SET SELL AMOUNT ", req)
 	glog.Info("\n Current user account: ", account)
@@ -276,7 +278,7 @@ func setSellAmountReq(c *gin.Context) {
 
 func cancelSetBuyReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing CANCEL SET BUY ", req)
 	err := api.CancelSetBuy(account, req.Stock, req.CommandNumber)
@@ -290,7 +292,7 @@ func cancelSetBuyReq(c *gin.Context) {
 
 func cancelSetSellReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing CANCEL SET SELL ", req)
 	glog.Info("\n Current user account: ", account)
@@ -305,7 +307,7 @@ func cancelSetSellReq(c *gin.Context) {
 
 func setBuyTriggerReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing SET BUY TRIGGER ", req)
 	glog.Info("\n Current user account: ", account)
@@ -320,7 +322,7 @@ func setBuyTriggerReq(c *gin.Context) {
 
 func setSellTriggerReq(c *gin.Context) {
 	req := getParams(c)
-	account := getUser(req.UserId)
+	account := authenticateAccount(req.UserId)
 
 	glog.Info("\n Executing SET SELL TRIGGER ", req)
 	glog.Info("\n Current user account: ", account)

@@ -14,8 +14,8 @@ import (
 
 const (
 	SERVER_NAME       = "TS0156"
-	AUDIT_SERVER      = "http://localhost:8082"
-	// AUDIT_SERVER      = "http://auditserver:8082"
+	// AUDIT_SERVER      = "http://localhost:8082"
+	AUDIT_SERVER      = "http://auditserver:8082"
 	API_URL           = "/api"
 	ACCOUNT_EVENT_URL = "/accounttransaction"
 	SYSTEM_EVENT_URL  = "/systemevent"
@@ -72,7 +72,6 @@ func getSystemEvent(
 func getQuoteServerEvent(
 	transactionNum int,
 	quoteServerTime int64,
-	command string,
 	userId string,
 	stockSymbol string,
 	price float64,
