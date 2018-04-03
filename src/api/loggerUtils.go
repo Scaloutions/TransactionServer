@@ -72,7 +72,6 @@ func getSystemEvent(
 func getQuoteServerEvent(
 	transactionNum int,
 	quoteServerTime int64,
-	command string,
 	userId string,
 	stockSymbol string,
 	price float64,
@@ -85,7 +84,6 @@ func getQuoteServerEvent(
 		Server:               SERVER_NAME,
 		TransactionNum:       transactionNum,
 		QuoteServerEventTime: quoteServerTime,
-		Command:              command,
 		UserId:               userId,
 		StockSymbol:          stockSymbol,
 		Price:                priceAsString,

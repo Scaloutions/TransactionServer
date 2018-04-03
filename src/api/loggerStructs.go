@@ -24,7 +24,6 @@ type QuoteServerEvent struct {
 	Server               string
 	TransactionNum       int
 	QuoteServerEventTime int64
-	Command              string
 	UserId               string
 	StockSymbol          string
 	Price                string

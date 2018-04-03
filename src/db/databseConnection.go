@@ -11,6 +11,7 @@ import (
 
 const (
 	DB_SERVER_ADDRESS       = "dbserver"
+	// DB_SERVER_ADDRESS       = "localhost"
 )
 
 var (
@@ -95,7 +96,7 @@ func GetUser(userId string) (User, error) {
 }
 
 func GetAccount(userId string) (UserAccountDB, error) {
-	account := UserAccountDB{}
+	var account UserAccountDB
 	glog.Info("DB:\tExecuting SELECT account for:", userId)
 	err := DB.QueryRow("SELECT user_id, balance, available_balance FROM accounts WHERE user_id=?", userId).Scan(&account.UserId, &account.Balance, &account.Available)
 
