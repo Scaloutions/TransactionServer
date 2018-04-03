@@ -113,7 +113,7 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 		Stock:     quoteArgs[1],
 		UserId:    quoteArgs[2],
 		Timestamp: timestamp,
-		CryptoKey: quoteArgs[4],
+		CryptoKey: strings.TrimSpace(quoteArgs[4]),
 	}, nil
 
 
