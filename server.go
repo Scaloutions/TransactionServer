@@ -54,13 +54,13 @@ func authenticateUser(userId string) {
 // Gets user from the memory: assumes we authenticate user first
 func getUser(userId string) *api.Account {
 	glog.Info("Getting User account for userId: ", userId)
-	if user, ok := UserMap[userId]; ok {
+	// if user, ok := UserMap[userId]; ok {
 		//do something here
-		return user
-	} else {
+		// return user
+	// } else {
 		authenticateUser(userId)
 		return UserMap[userId]
-	}
+	// }
 }
 
 /*
@@ -121,6 +121,7 @@ func getQuoteReq(c *gin.Context) {
 	glog.Info("Request params for get quote: ", req)
 
 	glog.Info("\n Executing QUOTE: ", req)
+	glog.Info("\n Current user account: ", account)
 	quote, err := api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 
 	if err!=nil {
@@ -140,6 +141,7 @@ func addReq(c *gin.Context) {
 	var account *api.Account
 	account = getUser(req.UserId)
 	glog.Info("\n Executing ADD: ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.Add(account, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -154,6 +156,7 @@ func buyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing BUY ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -168,6 +171,7 @@ func sellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SELL ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -181,6 +185,7 @@ func commitSellReq(c *gin.Context) {
 	req := getParams(c)
 	account := getUser(req.UserId)
 	glog.Info("\n Executing COMMIT SELL ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.CommitSell(account, req.CommandNumber)
 
 	if err != nil {
@@ -195,6 +200,7 @@ func commitBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing COMMIT BUY ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.CommitBuy(account, req.CommandNumber)
 
 	if err != nil {
@@ -209,6 +215,7 @@ func cancelBuyReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL BUY ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.CancelBuy(account, req.CommandNumber)
 
 	if err != nil {
@@ -223,6 +230,7 @@ func cancelSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL SELL ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.CancelSell(account, req.CommandNumber)
 
 	if err != nil {
@@ -237,6 +245,7 @@ func setBuyAmountReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET BUY AMOUNT ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -251,6 +260,7 @@ func setSellAmountReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET SELL AMOUNT ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -279,6 +289,7 @@ func cancelSetSellReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing CANCEL SET SELL ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.CancelSetSell(account, req.Stock, req.CommandNumber)
 
 	if err != nil {
@@ -293,6 +304,7 @@ func setBuyTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET BUY TRIGGER ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
@@ -307,6 +319,7 @@ func setSellTriggerReq(c *gin.Context) {
 	account := getUser(req.UserId)
 
 	glog.Info("\n Executing SET SELL TRIGGER ", req)
+	glog.Info("\n Current user account: ", account)
 	err := api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
