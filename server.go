@@ -41,26 +41,31 @@ func authenticateUser(userId string) {
 		automatically create users for testing
 	*/
 	if err!=nil {
+		glog.Info("Can't find user, creating new user and user account.......")
 		db.CreateNewUser(userId, "", "", "")
 		db.CreateNewAccount(userId)
+		account := api.GetAccount(userId)
+		UserMap[userId] = &account
+		glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
+	} else {
+		account := UserMap[userId]
+		glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 	}
 
-	account := api.GetAccount(userId)
-	UserMap[userId] = &account
 	glog.Info("\nSUCCESS: Authentication Successful!")
-	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
 }
 
 // Gets user from the memory: assumes we authenticate user first
 func getUser(userId string) *api.Account {
 	glog.Info("Getting User account for userId: ", userId)
-	// if user, ok := UserMap[userId]; ok {
+	if user, ok := UserMap[userId]; ok {
 		//do something here
-		// return user
-	// } else {
+		glog.Info("Getting user account from the map: ")
+		return user
+	} else {
 		authenticateUser(userId)
 		return UserMap[userId]
-	// }
+	}
 }
 
 /*
@@ -121,7 +126,6 @@ func getQuoteReq(c *gin.Context) {
 	glog.Info("Request params for get quote: ", req)
 
 	glog.Info("\n Executing QUOTE: ", req)
-	glog.Info("\n Current user account: ", account)
 	quote, err := api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 
 	if err!=nil {
