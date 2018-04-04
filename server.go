@@ -333,13 +333,14 @@ func setSellTriggerReq(c *gin.Context) {
 
 func displaySumaryReq(c *gin.Context) {
 	req := getParams(c)
-	glog.INFO("Getting DISPLAY SUMMARY for user: ", req.UserId)
+	glog.Info("Getting DISPLAY SUMMARY for user: ", req.UserId)
 	api.DisplaySummary(req.CommandNumber, req.UserId, req.Stock, req.PriceDollars)
 }
 
 func dumplogReq(c *gin.Context) {
 	req := getParams(c)
 	glog.Info("Creating XML DUMPLOG file ... ", req)
+	api.Dumplog(req.CommandNumber, req.UserId)
 
 }
 

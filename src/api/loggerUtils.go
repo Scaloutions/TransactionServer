@@ -14,14 +14,15 @@ import (
 
 const (
 	SERVER_NAME       = "TS0156"
-	// AUDIT_SERVER      = "http://localhost:8082"
-	AUDIT_SERVER      = "http://auditserver:8082"
+	AUDIT_SERVER      = "http://localhost:8082"
+	// AUDIT_SERVER      = "http://auditserver:8082"
 	API_URL           = "/api"
 	ACCOUNT_EVENT_URL = "/accounttransaction"
 	SYSTEM_EVENT_URL  = "/systemevent"
 	ERROR_EVENT_URL   = "/errorevent"
 	QUOTE_SERVER_URL  = "/quoteserver"
 	USER_COMMAND_URL  = "/usercommand"
+	GET_DUMPLOG		  = "/api/log"
 )
 
 func getFundsAsString(amount float64) string {
@@ -119,8 +120,7 @@ func getUserCmndEvent(
 	command string,
 	userId string,
 	stockSymbol string,
-	funds float64
-) UserCommand {
+	funds float64) UserCommand {
 	fundsAsString := getFundsAsString(funds)
 
 	return UserCommand {
@@ -162,6 +162,15 @@ func logEvent(log interface{}) {
 	if err != nil {
 		glog.Error("Error sending a POST request to Audit server")
 		panic(err)
+	}
+	defer resp.Body.Close()
+}
+
+func getDumplog() {
+	resp, err := http.Get(AUDIT_SERVER+GET_DUMPLOG)
+	if err != nil {
+		glog.Error("Error Sending DUMPLOG request to the Audit server")
+		return
 	}
 	defer resp.Body.Close()
 }

@@ -122,7 +122,7 @@ func sellHelper(
 		account.SellStack.Push(transaction)
 		account.holdStock(stock, stockNum)
 
-		log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
+		log := getSystemEvent(transactionNum, SELL, account.AccountNumber, stock, amount)
 		go logEvent(log)
 		glog.Info("Executed SELL for ", amount)
 		return nil
@@ -381,9 +381,14 @@ func CancelSetSell(account *Account, stock string, transactionNum int) error {
 	}
 }
 
-// func Dumplog() {
+func Dumplog(transactionNum int, userId string) {
 
-// }
+	glog.Info("Processing Display DUMPLOG Request....")
+	log := getUserCmndEvent(transactionNum, DUMPLOG, userId, "NONE", 0.0)
+	go logEvent(log)
+	// send dumplog request
+	go getDumplog()
+}
 
 func DisplaySummary(transactionNum int,
 	userId string,
