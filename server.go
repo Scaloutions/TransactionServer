@@ -334,7 +334,7 @@ func setSellTriggerReq(c *gin.Context) {
 func displaySumaryReq(c *gin.Context) {
 	req := getParams(c)
 	glog.INFO("Getting DISPLAY SUMMARY for user: ", req.UserId)
-
+	api.DisplaySummary(req.CommandNumber, req.UserId, req.Stock, req.PriceDollars)
 }
 
 func dumplogReq(c *gin.Context) {

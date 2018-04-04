@@ -380,3 +380,17 @@ func CancelSetSell(account *Account, stock string, transactionNum int) error {
 		return errors.New("Cannot execute CANCEL SET SELL")		
 	}
 }
+
+// func Dumplog() {
+
+// }
+
+func DisplaySummary(transactionNum int,
+	userId string,
+	stockSymbol string,
+	funds float64) {
+
+	glog.Info("Processing Display Summary Request....")
+	log := getUserCmndEvent(transactionNum, DISPLAY_SUMMARY, userId, stockSymbol, funds)
+	go logEvent(log)
+}

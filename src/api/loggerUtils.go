@@ -119,7 +119,7 @@ func getUserCmndEvent(
 	command string,
 	userId string,
 	stockSymbol string,
-	funds float64,
+	funds float64
 ) UserCommand {
 	fundsAsString := getFundsAsString(funds)
 
