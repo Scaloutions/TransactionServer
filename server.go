@@ -331,6 +331,18 @@ func setSellTriggerReq(c *gin.Context) {
 	}
 }
 
+func displaySumaryReq(c *gin.Context) {
+	req := getParams(c)
+	glog.INFO("Getting DISPLAY SUMMARY for user: ", req.UserId)
+
+}
+
+func dumplogReq(c *gin.Context) {
+	req := getParams(c)
+	glog.Info("Creating XML DUMPLOG file ... ", req)
+
+}
+
 func main() {
 	router := gin.Default()
 
@@ -345,7 +357,7 @@ func main() {
 	{
 		api.GET("/test", echoString)
 		// api.GET("/get_quote", getQuoteReq)
-		api.POST("/get_quote", getQuoteReq)
+		api.POST("/quote", getQuoteReq)
 		api.POST("/authenticate", authReq)
 		api.POST("/add", addReq)
 		api.POST("/buy", buyReq)
@@ -360,6 +372,8 @@ func main() {
 		api.POST("/cancel_set_sell", cancelSetSellReq)
 		api.POST("/set_buy_trigger", setBuyTriggerReq)
 		api.POST("/set_sell_trigger", setSellTriggerReq)
+		api.POST("/display_summary", displaySumaryReq)
+		api.POST("/dumplog", dumplogReq)
 	}
 
 	log.Fatal(router.Run(":9090"))
