@@ -21,6 +21,7 @@ const (
 	SYSTEM_EVENT_URL  = "/systemevent"
 	ERROR_EVENT_URL   = "/errorevent"
 	QUOTE_SERVER_URL  = "/quoteserver"
+	USER_COMMAND_URL  = "/usercommand"
 )
 
 func getFundsAsString(amount float64) string {
@@ -113,6 +114,26 @@ func getErrorEvent(
 	}
 }
 
+func getUserCmndEvent(
+	transactionNum int,
+	command string,
+	userId string,
+	stockSymbol string,
+	funds float64,
+) UserCommand {
+	fundsAsString := getFundsAsString(funds)
+
+	return UserCommand {
+		Timestamp:		getCurrentTs(),       
+		Server:			SERVER_NAME,         
+		TransactionNum: transactionNum, 
+		Command: 		command,        
+		UserId: 		userId,         
+		StockSymbol: 	stockSymbol,    
+		Funds: 			fundsAsString,          
+	}
+}
+
 func logEvent(log interface{}) {
 	absPath, _ := filepath.Abs("./config.json")
 	var data []byte
@@ -159,6 +180,8 @@ func getUrlPath(obj interface{}) string {
 		url.WriteString(ERROR_EVENT_URL)
 	case QuoteServerEvent:
 		url.WriteString(QUOTE_SERVER_URL)
+	case UserCommand:
+		url.WriteString(USER_COMMAND_URL)
 	default:
 		glog.Error("Error logging event to the audit server.")
 		panic("Can not recognaize this type of event.")

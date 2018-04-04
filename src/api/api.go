@@ -18,6 +18,8 @@ const (
 	SET_SELL_AMOUNT = "SET_SELL_AMOUNT"
 	CANCEL_SET_BUY  = "CANCEL_SET_BUY"
 	CANCEL_SET_SELL = "CANCEL_SET_SELL"
+	DUMPLOG 		= "DUMPLOG"
+	DISPLAY_SUMMARY = "DISPLAY_SUMMARY"
 )
 
 func Add(account *Account, amount float64, transactionNum int) error {
