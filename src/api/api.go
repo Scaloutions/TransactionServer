@@ -4,6 +4,7 @@ import (
 	"github.com/golang/glog"
 	"../db"
 	"errors"
+	"fmt"
 )
 
 const (
@@ -15,6 +16,8 @@ const (
 	CANCEL_BUY      = "CANCEL_BUY"
 	CANCEL_SELL     = "CANCEL_SELL"
 	SET_BUY_AMOUNT  = "SET_BUY_AMOUNT"
+	SET_SELL_TRIGGER = "SET_SELL_TRIGGER"
+	SET_BUY_TRIGGER = "SET_BUY_TRIGGER"
 	SET_SELL_AMOUNT = "SET_SELL_AMOUNT"
 	CANCEL_SET_BUY  = "CANCEL_SET_BUY"
 	CANCEL_SET_SELL = "CANCEL_SET_SELL"
@@ -31,8 +34,9 @@ func Add(account *Account, amount float64, transactionNum int) error {
 		glog.Info("SUCCESS: Added ", amount)
 		return nil
 	} else {
-		glog.Error("ERROR: Cannot add zero or negative amount to balance ", amount)
-		return errors.New("Cannot execute ADD")
+		err := fmt.Sprintf("ERROR: Cannot add zero or negative amount to balance %s", amount)
+		glog.Error(err)
+		return errors.New("Cannot execute ADD: " + err)
 	}
 }
 
@@ -65,7 +69,7 @@ func buyHelper(
 		glog.Info("Not enough money on account ", account.AccountNumber, " to buy ", stock)
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 		go logEvent(log)
-		return errors.New("Cannot execute BUY")
+		return errors.New("Cannot execute BUY: " + err)
 	} else {
 		// pull curr stock value for that user
 		currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
@@ -73,7 +77,7 @@ func buyHelper(
 
 		if err!=nil {
 			glog.Error(err, " ", account)
-			return errors.New("Cannot execute BUY")
+			return errors.New("Cannot execute BUY: " + err.Error())
 		}
 
 		transaction := BuyObj{
@@ -127,11 +131,11 @@ func sellHelper(
 		glog.Info("Executed SELL for ", amount)
 		return nil
 	} else {
-		err := "User does not have enough stock to sell."
-		glog.Info("Not enough stock ", stock, " to sell.")
+		err := "User does not have enough stock " + stock + " to sell."
+		glog.Info(err)
 		log := getErrorEvent(transactionNum, SELL, account.AccountNumber, stock, amount, err)
 		go logEvent(log)
-		return errors.New("Cannot execute SELL")
+		return errors.New("Cannot execute SELL: " + err)
 	}
 }
 
@@ -158,7 +162,7 @@ func CommitBuy(account *Account, transactionNum int) error {
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)
-			return errors.New("Cannot execute COMMIT BUY")
+			return errors.New("Cannot execute COMMIT BUY: " + err.Error())
 		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_BUY, account.AccountNumber, transaction.MoneyAmount)
@@ -167,12 +171,12 @@ func CommitBuy(account *Account, transactionNum int) error {
 		return nil
 
 	} else {
-		err := "No BUY transactions previously set for account"
+		err := "No BUY transactions previously set for account."
 		//TODO: figure out if we can simplify this logging with some missing parameters
 		log := getErrorEvent(transactionNum, COMMIT_BUY, account.AccountNumber, "", 0, err)
 		glog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
 		go logEvent(log)
-		return errors.New("Cannot execute COMMIT BUY")
+		return errors.New("Cannot execute COMMIT BUY: " + err)
 	}
 }
 
@@ -188,11 +192,11 @@ func CancelBuy(account *Account, transactionNum int) error {
 		go logEvent(log)
 		return nil
 	} else {
-		err := "There are no BUY transcations to cancel for this account"
+		err := "There are no BUY transcations to cancel for account " + account.AccountNumber
 		log := getErrorEvent(transactionNum, CANCEL_BUY, account.AccountNumber, "", 0, err)
-		glog.Error(err, " ", account.AccountNumber)
+		glog.Error(err)
 		go logEvent(log)
-		return errors.New("Cannot execute CANCEL BUY")
+		return errors.New("Cannot execute CANCEL BUY: " + err)
 	}
 }
 
@@ -206,7 +210,7 @@ func CommitSell(account *Account, transactionNum int) error {
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)
-			return errors.New("Cannot execute COMMIT SELL")
+			return errors.New("Cannot execute COMMIT SELL" + err.Error())
 		}
 
 		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
@@ -218,7 +222,7 @@ func CommitSell(account *Account, transactionNum int) error {
 		glog.Error(err, " ", account.AccountNumber)
 		log := getErrorEvent(transactionNum, COMMIT_SELL, account.AccountNumber, "", 0, err)
 		go logEvent(log)
-		return errors.New("Cannot execute COMMIT SELL")
+		return errors.New("Cannot execute COMMIT SELL: " + err)
 	}
 }
 
@@ -233,11 +237,11 @@ func CancelSell(account *Account, transactionNum int) error {
 		go logEvent(log)
 		return nil
 	} else {
-		err := "There are no SELL transcations to cancel for this account"
-		glog.Error(err, " ", account.AccountNumber)
+		err := "There are no SELL transcations to cancel for account " + account.AccountNumber
+		glog.Error(err)
 		log := getErrorEvent(transactionNum, CANCEL_SELL, account.AccountNumber, "", 0, err)
 		go logEvent(log)
-		return errors.New("Cannot execute CANCEL SELL")		
+		return errors.New("Cannot execute CANCEL SELL: " + err)		
 	}
 }
 
@@ -262,7 +266,7 @@ func SetBuyAmount(account *Account, stock string, amount float64, transactionNum
 		log := getErrorEvent(transactionNum, SET_BUY_AMOUNT, account.AccountNumber, "", 0, err)
 		go logEvent(log)
 		glog.Error(err, " ", stock)
-		return errors.New("Cannot execute SET BUY")
+		return errors.New("Cannot execute SET BUY: " + err)
 	}
 }
 
@@ -290,7 +294,7 @@ func CancelSetBuy(account *Account, stock string, transactionNum int) error {
 		log := getErrorEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, "", 0, err)
 		go logEvent(log)
 		glog.Error(err, " ", account.AccountNumber)
-		return errors.New("Cannot execute CANCEL SET BUY")
+		return errors.New("Cannot execute CANCEL SET BUY: " + err)
 	}
 }
 
@@ -310,10 +314,15 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 		}
 
 		glog.Info("Set BUY trigger for ", stock, " at price ", price)
+		log := getUserCmndEvent(transactionNum, SET_BUY_TRIGGER, account.AccountNumber, stock, price)
+		go logEvent(log)
 		return nil
 	} else {
-		glog.Error("You have to SET BUY AMOUNT on stock ", stock, " first.")
-		return errors.New("Cannot execute SET BUY TRIGGER")		
+		err := "You have to SET BUY AMOUNT on stock " + stock + " first."
+		glog.Error(err)
+		log := getErrorEvent(transactionNum, SET_BUY_TRIGGER, account.AccountNumber, stock, price, err)
+		go logEvent(log)
+		return errors.New("Cannot execute SET BUY TRIGGER: " + err)		
 	}
 }
 
@@ -332,7 +341,7 @@ func SetSellAmount(account *Account, stock string, amount float64, transactionNu
 		log := getErrorEvent(transactionNum, SET_SELL_AMOUNT, account.AccountNumber, "", 0, err)
 		go logEvent(log)
 		glog.Error(err, " ", stock)
-		return errors.New("Cannot execute SET SELL")		
+		return errors.New("Cannot execute SET SELL: " + err)		
 	}
 }
 
@@ -351,11 +360,16 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 		}
 		// assuming running trigger is not an error
 		glog.Info("Set SELL trigger for ", stock, " at price ", price)
+		log := getUserCmndEvent(transactionNum, SET_SELL_TRIGGER, account.AccountNumber, stock, price)
+		go logEvent(log)
 		return nil
 	} else {
 		//TODO: properly log this error
-		glog.Error("You have to SET SELL AMOUNT on stock ", stock, " first.")
-		return errors.New("Cannot execute SET SELL TRIGGER")		
+		err := "You have to SET SELL AMOUNT on stock " + stock + " first."
+		glog.Error(err)
+		log := getErrorEvent(transactionNum, SET_SELL_TRIGGER, account.AccountNumber, stock, price, err)
+		go logEvent(log)
+		return errors.New("Cannot execute SET SELL TRIGGER: " + err)		
 	}
 }
 
@@ -377,7 +391,7 @@ func CancelSetSell(account *Account, stock string, transactionNum int) error {
 		log := getErrorEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, "", 0, err)
 		go logEvent(log)
 		glog.Error(err, " ", account.AccountNumber)
-		return errors.New("Cannot execute CANCEL SET SELL")		
+		return errors.New("Cannot execute CANCEL SET SELL: " + err)		
 	}
 }
 
