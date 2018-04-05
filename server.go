@@ -108,10 +108,13 @@ func successfulResponse(c *gin.Context, tranNum int, userId string) {
 	})
 }
 
-func errorResponse(c *gin.Context, tranNum int, userId string) {
+func errorResponse(c *gin.Context, tranNum int, userId string, command string, err error) {
+	glog.Info("Responding with error: ", err)
 	c.JSON(500, gin.H{
 		"transaction_num": tranNum,
+		"command": command,
 		"user_id": userId,
+		"error": err.Error(),
 	})
 }
 
@@ -127,7 +130,7 @@ func getQuoteReq(c *gin.Context) {
 	quote, err := api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 
 	if err!=nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		c.JSON(200, gin.H{
 			"transaction_num": req.CommandNumber,
@@ -147,7 +150,7 @@ func addReq(c *gin.Context) {
 	err := api.Add(account, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -162,7 +165,7 @@ func buyReq(c *gin.Context) {
 	err := api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -177,7 +180,7 @@ func sellReq(c *gin.Context) {
 	err := api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -191,7 +194,7 @@ func commitSellReq(c *gin.Context) {
 	err := api.CommitSell(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -206,7 +209,7 @@ func commitBuyReq(c *gin.Context) {
 	err := api.CommitBuy(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -221,7 +224,7 @@ func cancelBuyReq(c *gin.Context) {
 	err := api.CancelBuy(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -236,7 +239,7 @@ func cancelSellReq(c *gin.Context) {
 	err := api.CancelSell(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -251,7 +254,7 @@ func setBuyAmountReq(c *gin.Context) {
 	err := api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -266,7 +269,7 @@ func setSellAmountReq(c *gin.Context) {
 	err := api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -280,7 +283,7 @@ func cancelSetBuyReq(c *gin.Context) {
 	err := api.CancelSetBuy(account, req.Stock, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -295,7 +298,7 @@ func cancelSetSellReq(c *gin.Context) {
 	err := api.CancelSetSell(account, req.Stock, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -310,7 +313,7 @@ func setBuyTriggerReq(c *gin.Context) {
 	err := api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
@@ -325,10 +328,23 @@ func setSellTriggerReq(c *gin.Context) {
 	err := api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId)
+		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		successfulResponse(c,req.CommandNumber, req.UserId)
 	}
+}
+
+func displaySumaryReq(c *gin.Context) {
+	req := getParams(c)
+	glog.Info("Getting DISPLAY SUMMARY for user: ", req.UserId)
+	api.DisplaySummary(req.CommandNumber, req.UserId, req.Stock, req.PriceDollars)
+}
+
+func dumplogReq(c *gin.Context) {
+	req := getParams(c)
+	glog.Info("Creating XML DUMPLOG file ... ", req)
+	api.Dumplog(req.CommandNumber, req.UserId)
+
 }
 
 func main() {
@@ -345,7 +361,7 @@ func main() {
 	{
 		api.GET("/test", echoString)
 		// api.GET("/get_quote", getQuoteReq)
-		api.POST("/get_quote", getQuoteReq)
+		api.POST("/quote", getQuoteReq)
 		api.POST("/authenticate", authReq)
 		api.POST("/add", addReq)
 		api.POST("/buy", buyReq)
@@ -360,6 +376,8 @@ func main() {
 		api.POST("/cancel_set_sell", cancelSetSellReq)
 		api.POST("/set_buy_trigger", setBuyTriggerReq)
 		api.POST("/set_sell_trigger", setSellTriggerReq)
+		api.POST("/display_summary", displaySumaryReq)
+		api.POST("/dumplog", dumplogReq)
 	}
 
 	log.Fatal(router.Run(":9090"))

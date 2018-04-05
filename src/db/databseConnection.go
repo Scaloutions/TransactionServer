@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	DB_SERVER_ADDRESS       = "dbserver"
-	// DB_SERVER_ADDRESS       = "localhost"
+	// DB_SERVER_ADDRESS       = "dbserver"
+	DB_SERVER_ADDRESS       = "localhost"
 )
 
 var (

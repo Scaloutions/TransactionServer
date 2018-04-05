@@ -40,3 +40,13 @@ type ErrorEvent struct {
 	Funds          string
 	ErrorMessage   string
 }
+
+type UserCommand struct {
+	Timestamp      int64
+	Server         string
+	TransactionNum int
+	Command        string
+	UserId         string
+	StockSymbol    string
+	Funds          string
+}
