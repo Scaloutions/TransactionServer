@@ -4,17 +4,28 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/glog"
 	"encoding/json"
+	"strconv"
 	"errors"
 	"time"
+	"os"
 )
 
 var (
 	Pool   *redis.Pool
+	CACHE_SERVER string
 )
 
 func InitializeRedisCache() {
-	host := "localhost" + ":6379"
+	host := CACHE_SERVER + ":6379"
 	Pool = newRedisPool(host)
+
+	// Get Cache server address
+	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	if testMode {
+		CACHE_SERVER = os.Getenv("REDIS_CACHE_LOCAL")
+	} else {
+		CACHE_SERVER = os.Getenv("REDIS_CACHE_PROD")
+	}
 }
 
 type RedisQuote struct {
