@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"errors"
+	"math/rand"
 	"github.com/golang/glog"
 	"os"
 )
@@ -43,11 +44,13 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	// Mock QuoteServer hit for local testing
 	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
 	if testMode {
+		r := rand.New(rand.NewSource(getCurrentTs()))
+
 		return Quote{
-			Price:     1,
+			Price:     r.Float64(),
 			Stock:     stock,
 			UserId:    userid,
-			Timestamp: 1516925116307,
+			Timestamp: getCurrentTs(),
 			CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 		}, nil
 	}
