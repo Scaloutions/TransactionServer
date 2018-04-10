@@ -357,6 +357,7 @@ func main() {
 	// db connection
 	db.InitializeDB()
 	api.InitializeAuditLogging()
+	api.InitializeRedisCache()
 
 	api := router.Group("/api")
 	{
