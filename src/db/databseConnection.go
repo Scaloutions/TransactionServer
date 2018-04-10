@@ -5,19 +5,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
+	"strconv"
 	"errors"
 	"os"
-)
-
-const (
-	// DB_SERVER_ADDRESS       = "dbserver"
-	DB_SERVER_ADDRESS       = "localhost"
 )
 
 var (
 	DB *sql.DB
 	DB_NAME string
 	DB_AUTHENTICATION string
+	DB_SERVER_ADDRESS string
 )
 
 type User struct {
@@ -44,6 +41,14 @@ func loadCredentials() {
 	
 	DB_NAME = os.Getenv("DB_NAME")
 	DB_AUTHENTICATION = os.Getenv("DB_USER_NAME") + ":" + os.Getenv("DB_PASSWORD")
+
+	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	if testMode {
+		DB_SERVER_ADDRESS = os.Getenv("DB_SERVER_ADDRESS_DEV")
+	} else {
+		DB_SERVER_ADDRESS = os.Getenv("DB_SERVER_ADDRESS_PROD")
+	}
+	
 	glog.Info(DB_NAME, " ", DB_AUTHENTICATION)
 }
 

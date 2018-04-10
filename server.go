@@ -356,6 +356,7 @@ func main() {
 
 	// db connection
 	db.InitializeDB()
+	api.InitializeAuditLogging()
 
 	api := router.Group("/api")
 	{

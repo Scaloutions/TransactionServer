@@ -6,10 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"errors"
-	"path/filepath"
-	"io/ioutil"
-	"encoding/json"
 	"github.com/golang/glog"
+	"os"
 )
 
 const (
@@ -42,18 +40,13 @@ type Quote struct {
 
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
-	absPath, _ := filepath.Abs("./config.json")
-	var data []byte
-	data, _ = ioutil.ReadFile(absPath)
-	var configSettings Config
-	_ = json.Unmarshal(data, &configSettings)
-
 	// Mock QuoteServer hit for local testing
-	if configSettings.QuoteServer == false {
+	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	if testMode {
 		return Quote{
 			Price:     1,
-			Stock:     "S",
-			UserId:    "Agent007",
+			Stock:     stock,
+			UserId:    userid,
 			Timestamp: 1516925116307,
 			CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 		}, nil
