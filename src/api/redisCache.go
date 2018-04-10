@@ -1,7 +1,6 @@
 package api
 
 import (
-	// "github.com/go-redis/redis"
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/glog"
 	"encoding/json"
@@ -25,16 +24,6 @@ type RedisQuote struct {
 	// Timestamp int64
 	CryptoKey string
 }
-// func NewRedisClient() {
-// 	client := redis.NewClient(&redis.Options{
-// 		Addr:     "localhost:6379",
-// 		Password: "", // no password set
-// 		DB:       0,  // use default DB
-// 	})
-
-// 	pong, err := client.Ping().Result()
-// 	glog.Info(pong, err)
-// }
 
 func newRedisPool(server string) *redis.Pool {
 
@@ -55,7 +44,7 @@ func newRedisPool(server string) *redis.Pool {
 	}
 }
 
-func SetToCache(userId string, qt Quote) error {
+func SetToCache(qt Quote) error {
 
 	c := Pool.Get()
 	defer c.Close()
@@ -108,7 +97,7 @@ func GetFromCache(stock string) (Quote, error){
 	q.Timestamp = getCurrentTs()
 	// q.UserId = userId
 
-	glog.Info("Returnig quote from Redis: ", q)
+	glog.Info("Returnig quote from Redis Cache: ", q)
 
 	return q, nil
 }

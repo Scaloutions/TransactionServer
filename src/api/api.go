@@ -11,6 +11,7 @@ const (
 	ADD             = "ADD"
 	BUY             = "BUY"
 	SELL            = "SELL"
+	QUOTE			= "QUOTE"
 	COMMIT_BUY      = "COMMIT_BUY"
 	COMMIT_SELL     = "COMMIT_SELL"
 	CANCEL_BUY      = "CANCEL_BUY"
@@ -40,9 +41,34 @@ func Add(account *Account, amount float64, transactionNum int) error {
 	}
 }
 
-func GetQuote(stock string, userid string, transactionNum int) (float64, error) {
-	quoteObj, err := getQuoteFromQS(userid, stock)
-	glog.Info("Getting quote for: ", stock, " user: ", userid)
+func GetQuote(stock string, userId string, transactionNum int) (float64, error) {
+	//check cache
+	cacheq, err := GetFromCache(stock)
+
+	// found stock in the cache
+	if err == nil {
+		glog.Info("Got QUOTE from Redis: ", cacheq)
+		// log system event
+		log := getSystemEvent(transactionNum, QUOTE, userId, stock, cacheq.Price)
+		go logEvent(log)
+		glog.Info("LOGGING ######## ", log)
+
+		return cacheq.Price, nil
+
+	}
+
+	quoteObj, err := getQuoteFromQS(userId, stock)
+
+	// put it in CACHE
+	glog.Info("Putting new Stock Quote into Redis Cache ", quoteObj)
+	err = SetToCache(quoteObj)
+	if err != nil {
+		glog.Error("Error putting QUOTE into Redist cache ", quoteObj)
+	}
+	//LOG event as system
+
+
+	glog.Info("Getting quote for: ", stock, " user: ", userId)
 	if err!= nil {
 		//TODO : log error event here
 		// log := getErrorEvent()
