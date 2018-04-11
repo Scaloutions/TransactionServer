@@ -16,9 +16,6 @@ var (
 )
 
 func InitializeRedisCache() {
-	host := CACHE_SERVER + ":6379"
-	Pool = newRedisPool(host)
-
 	// Get Cache server address
 	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
 	if testMode {
@@ -26,6 +23,9 @@ func InitializeRedisCache() {
 	} else {
 		CACHE_SERVER = os.Getenv("REDIS_CACHE_PROD")
 	}
+
+	host := CACHE_SERVER + ":6379"
+	Pool = newRedisPool(host)
 }
 
 type RedisQuote struct {

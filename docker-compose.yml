@@ -10,6 +10,14 @@ services:
       restart: always
       environment:
         MYSQL_ROOT_PASSWORD: root
+    redis:
+      image: redis:scaloutions
+    ports:
+      - 6379
+    restart: always
+    environment:
+      - REDIS_EXTRA_FLAGS=--maxmemory 256mb, --maxmemory-policy volatile-lru
+      - ALLOW_EMPTY_PASSWORD=yes
     transactionserver:
       build: .
       restart: always
@@ -17,12 +25,15 @@ services:
         - "9090:9090"
       depends_on:
         - db
+        - redis
       links:
         - db 
+        - redis
       extra_hosts:
         quoteserve.seng: 192.168.1.135
         auditserver: 192.168.1.139
         dbserver: 192.168.1.138
+        rediscache: localhost
 
 volumes:
   dbdata:

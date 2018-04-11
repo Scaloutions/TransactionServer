@@ -18,6 +18,8 @@ RUN go get "github.com/go-sql-driver/mysql"
 
 RUN go get "github.com/joho/godotenv"
 
+RUN go get "github.com/garyburd/redigo/redis"
+
 
 RUN go build -o server .
 
