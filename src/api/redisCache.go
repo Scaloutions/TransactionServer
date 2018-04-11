@@ -25,6 +25,7 @@ func InitializeRedisCache() {
 	}
 
 	host := CACHE_SERVER + ":6379"
+	glog.Info(">>>>>>> Connecting to Redis through ", host)
 	Pool = newRedisPool(host)
 }
 
