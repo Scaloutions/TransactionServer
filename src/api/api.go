@@ -197,15 +197,18 @@ func Sell(account *Account, stock string, amount float64, transactionNum int) er
 }
 
 func CommitBuy(account *Account, transactionNum int) error {
-	if account.BuyStack.Size() > 0 {
+	transaction, err := db.GetBuy(account.AccountNumber)
+	// if account.BuyStack.Size() > 0 {
+	if err==nil {
 		//go casting
-		i := account.BuyStack.Pop()
-		transaction := i.(BuyObj)
+		// i := account.BuyStack.Pop()
+		// transaction := i.(BuyObj)
 		account.substractBalance(transaction.MoneyAmount)
 		//add number of stocks to user
-		account.StockPortfolio[transaction.Stock] += transaction.StockAmount
+		// account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 		//update db record
-		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+		db.DeleteBuy(account.AccountNumber)
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount)
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)

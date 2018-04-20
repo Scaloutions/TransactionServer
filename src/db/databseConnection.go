@@ -184,7 +184,7 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 */
 func UpdateUserStock(userId string, stock string, amount float64) error {
 	glog.Info("DB:\tExecuting INSERT for ", userId, " stock: ", stock, " amount: ", amount)
-	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount=?")
+	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount= amount + ?")
 
 	if err != nil {
 		glog.Error(err, " ", userId)
