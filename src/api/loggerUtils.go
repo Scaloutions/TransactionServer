@@ -146,7 +146,7 @@ func getUserCmndEvent(
 }
 
 func logEvent(log interface{}) {
-	
+
 	sendLogs, _ := strconv.ParseBool(os.Getenv("LOG_EVENTS"))
 	if !sendLogs {
 		return

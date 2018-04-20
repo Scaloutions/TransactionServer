@@ -59,6 +59,14 @@ func GetQuote(stock string, userId string, transactionNum int) (float64, error) 
 
 	quoteObj, err := getQuoteFromQS(userId, stock)
 
+	glog.Info("Getting quote for: ", stock, " user: ", userId)
+	if err!= nil {
+		//TODO : log error event here
+		// log := getErrorEvent()
+		glog.Error("Failed to get Quote from the QS")
+		return 0.0, err
+	}
+
 	// put it in CACHE
 	glog.Info("Putting new Stock Quote into Redis Cache ", quoteObj)
 	err = SetToCache(quoteObj)
@@ -68,16 +76,12 @@ func GetQuote(stock string, userId string, transactionNum int) (float64, error) 
 	//LOG event as system
 
 
-	glog.Info("Getting quote for: ", stock, " user: ", userId)
-	if err!= nil {
-		//TODO : log error event here
-		// log := getErrorEvent()
-		glog.Error("Failed to get Quote from the QS")
-		return 0.0, err
-	}
 
-	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	log := getSystemEvent(transactionNum, QUOTE, userId, stock, quoteObj.Price)
 	go logEvent(log)
+	glog.Info("LOGGING ######## ", log)
+	// log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	// go logEvent(log)
 	return quoteObj.Price, nil
 }
 

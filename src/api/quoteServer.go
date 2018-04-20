@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"github.com/golang/glog"
 	"os"
+	"time"
 )
 
 const (
@@ -43,11 +44,18 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// Mock QuoteServer hit for local testing
 	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	testMode = true
 	if testMode {
 		r := rand.New(rand.NewSource(getCurrentTs()))
 
+		sleepT := rand.Intn(4)
+		glog.Info("Sleeping for: ", sleepT)
+		time.Sleep(time.Duration(sleepT) * time.Second)
+		price := r.Float64()
+		price = float64(int(price*100)) / 100
+
 		return Quote{
-			Price:     r.Float64(),
+			Price:     price,
 			Stock:     stock,
 			UserId:    userid,
 			Timestamp: getCurrentTs(),
