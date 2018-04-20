@@ -21,12 +21,6 @@ type Account struct {
 	SellTriggers   map[string]float64
 }
 
-type BuyObj struct {
-	Stock       string
-	StockAmount float64
-	MoneyAmount float64
-}
-
 type SetBuy struct {
 	Stock       string
 	MoneyAmount float64

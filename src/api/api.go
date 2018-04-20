@@ -26,6 +26,14 @@ const (
 	DISPLAY_SUMMARY = "DISPLAY_SUMMARY"
 )
 
+
+type BuyObj struct {
+	Stock       string
+	StockAmount float64
+	MoneyAmount float64
+}
+
+
 func Add(account *Account, amount float64, transactionNum int) error {
 	if amount > 0 {
 		account.addMoney(amount)
@@ -110,14 +118,23 @@ func buyHelper(
 			return errors.New("Cannot execute BUY: " + err.Error())
 		}
 
-		transaction := BuyObj{
+		transaction := db.BuyObj{
+			UserId:		 account.AccountNumber,
 			Stock:       stock,
 			MoneyAmount: amount,
 			StockAmount: stockNum,
+			TransactionNum: transactionNum,
 		}
 		//add buy transcation to the stack
-		account.BuyStack.Push(transaction)
+		// account.BuyStack.Push(transaction)
 		//hold the money
+		err = db.CreateNewBuy(transaction)
+		if err!=nil {
+			//TODO: log error to audit server
+			glog.Error(err, " ", account)
+			return errors.New("Cannot execute BUY in the DB: " + err.Error())
+		}
+
 		account.holdMoney(amount)
 
 		log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
@@ -211,15 +228,23 @@ func CommitBuy(account *Account, transactionNum int) error {
 }
 
 func CancelBuy(account *Account, transactionNum int) error {
-	if account.BuyStack.Size() > 0 {
-		i := account.BuyStack.Pop()
-		transaction := i.(BuyObj)
+	buy, err := db.GetBuy(account.AccountNumber)
+	// if account.BuyStack.Size() > 0 {
+	if err==nil {
+		// i := account.BuyStack.Pop()
+		// transaction := i.(BuyObj)
 		//add money back to Available Balance
-		account.unholdMoney(transaction.MoneyAmount)
+		err = db.DeleteBuy(account.AccountNumber)
+		account.unholdMoney(buy.MoneyAmount)
+		if err!=nil {
+			msg := "Cannot execute CANCEL BUY: " + err.Error()
+			glog.Error(msg)
+			return errors.New(msg)
+		}
 		glog.Info("Executed CANCEL BUY")
 
-		log := getSystemEvent(transactionNum, CANCEL_BUY, account.AccountNumber, transaction.Stock, transaction.MoneyAmount)
-		go logEvent(log)
+		// log := getSystemEvent(transactionNum, CANCEL_BUY, account.AccountNumber, transaction.Stock, transaction.MoneyAmount)
+		// go logEvent(log)
 		return nil
 	} else {
 		err := "There are no BUY transcations to cancel for account " + account.AccountNumber

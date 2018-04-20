@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.buy_triggers (
   user_id         VARCHAR(32),
   stock           VARCHAR(10),
   stock_amount    FLOAT(18,8),
-  --command_num     INT(),
+  --transaction_num     INT(),
   PRIMARY KEY (user_id, stock),
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.sell_triggers (
   user_id         VARCHAR(32),
   stock           VARCHAR(10),
   stock_amount    FLOAT(18,8),
-  --command_num     INT(),
+  --transaction_num     INT(),
   PRIMARY KEY (user_id, stock),
 );
 
@@ -50,16 +50,17 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.sell (
   user_id         VARCHAR(32),
   stock           VARCHAR(10),
   stock_amount    FLOAT(18,8),
-  command_num     INT()
+  transaction_num     INT
 );
 
-CREATE INDEX sell_cmd ON DAYTRADING.sell (user_id, command_num);
+CREATE INDEX sell_cmd ON DAYTRADING.sell (user_id, transaction_num);
 
 CREATE TABLE IF NOT EXISTS DAYTRADING.buy (
   user_id         VARCHAR(32),
   stock           VARCHAR(10),
   stock_amount    FLOAT(18,8),
-  command_num     INT()
+  money_amount    FLOAT(18,8),
+  transaction_num     INT
 );
 
-CREATE INDEX buy_cmd ON DAYTRADING.sell (user_id, command_num);
+CREATE INDEX buy_cmd ON DAYTRADING.buy (user_id, transaction_num);

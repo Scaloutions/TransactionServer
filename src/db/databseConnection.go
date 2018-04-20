@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"errors"
 	"os"
+	//"api"
 )
 
 var (
@@ -26,6 +27,14 @@ type UserAccountDB struct {
 	UserId string
 	Balance        float64
 	Available      float64
+}
+
+type BuyObj struct {
+	UserId		string
+	Stock       string
+	StockAmount float64
+	MoneyAmount float64
+	TransactionNum int	
 }
 
 func InitializeDB() {
@@ -204,4 +213,66 @@ func GetUserStockAmount(userId string, stock string) (float64, error){
 	}
 
 	return stockAmount, nil
+}
+
+func CreateNewBuy(buyObj BuyObj) error {
+	glog.Info("DB:\tExecuting  CREATE BUY for user: ", buyObj.UserId)
+
+	stmt, err := DB.Prepare("INSERT INTO buy(user_id, stock, stock_amount, money_amount, transaction_num) VALUES(?,?,?,?,?)")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(buyObj.UserId, buyObj.Stock, buyObj.StockAmount, buyObj.MoneyAmount, buyObj.TransactionNum)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func GetBuy(user_id string) (BuyObj, error) {
+	buyObj := BuyObj{}
+
+	glog.Info("DB:\tExecuting SELECT BUY for", user_id)
+	err := DB.QueryRow("SELECT * FROM buy WHERE user_id = ? LIMIT 1", user_id).Scan(&buyObj.UserId, &buyObj.Stock, &buyObj.StockAmount, &buyObj.MoneyAmount, &buyObj.TransactionNum)
+	if err != nil {
+		glog.Error("Can not find BUY in buy table for: ", user_id)
+		return buyObj, errors.New("Can not find BUY in buy table.")
+	}
+	glog.Info("DB:\tRetrived BUY for ", user_id, " as: ", buyObj)
+
+	return buyObj, nil
+}
+
+func DeleteBuy(user_id string) error {
+	glog.Info("DB:\tExecuting  DELETE BUY for user: ", user_id)
+
+	stmt, err := DB.Prepare("DELETE FROM buy WHERE user_id=? ORDER BY transaction_num ASC LIMIT 1")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(user_id)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func CreateNewSell() {
+
+}
+
+func GetSell(){
+	
 }
