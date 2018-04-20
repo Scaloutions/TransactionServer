@@ -26,12 +26,6 @@ type SetBuy struct {
 	MoneyAmount float64
 }
 
-type SellObj struct {
-	Stock       string
-	StockAmount float64
-	MoneyAmount float64
-}
-
 type SetSell struct {
 	Stock       string
 	StockAmount float64
@@ -76,7 +70,8 @@ func GetAccount(userId string) Account {
 func (account *Account) hasStock(stock string, amount float64) bool {
 	//check if the user holds the amount of stock he/she is trying to sell
 	currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
-	account.StockPortfolio[stock] = currAmount
+	glog.Info("From DB: User ", account.AccountNumber, " has ", stock, " amount as : ", currAmount)
+	// account.StockPortfolio[stock] = currAmount
 
 	if err!=nil {
 		glog.Error(err, " ", account)
@@ -98,32 +93,33 @@ func (account *Account) getBalance() float64 {
 
 func (account *Account) holdMoney(amount float64) {
 	if amount > 0 {
-		account.Available -= amount
+		// account.Available -= amount
 		//update db
-		db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		db.UpdateAvailableAccountBalance(account.AccountNumber, amount*-1)
 	} else {
 		glog.Error("Cannot hold negative account for the account ", amount)
 	}
 }
 
 func (account *Account) addMoney(amount float64) {
-	account.Balance += amount
-	account.Available += amount
+	// account.Balance += amount
+	// account.Available += amount
 	glog.Info("Updating account balance in the DB for user: ", account.AccountNumber)
-	err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
-	err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+	err := db.AddMoneyToAccount(account.AccountNumber, amount)
+	// err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+	// err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
 		
-	if err1!=nil || err2!=nil {
-		glog.Error(err1, err2, " for account:", account)
+	if err!=nil {
+		glog.Error(err, " for account:", account)
 		return
 	}
 
 	glog.Info("This account "+ account.AccountNumber +" now has ", account.Balance, " available: ", account.Available)
 }
 
-func (account *Account) substractBalance(amount float64) {
-	account.Balance -= amount
-	err := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
+func (account *Account) updateBalance(amount float64) {
+	// account.Balance -= amount
+	err := db.UpdateAccountBalance(account.AccountNumber, amount)
 
 	if err!=nil {
 		glog.Error(err)
@@ -132,9 +128,9 @@ func (account *Account) substractBalance(amount float64) {
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
-		account.Available += amount
+		// account.Available += amount
 		//update db
-		err := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
+		err := db.UpdateAvailableAccountBalance(account.AccountNumber, amount)
 		if err!=nil {
 			glog.Error(err)
 		}
@@ -148,12 +144,24 @@ func (account *Account) unholdMoney(amount float64) {
 	i.e. the same way we're dealing with the account balance
 	to be able to display accurate stock numbers per account at any given time
 */
-func (account *Account) holdStock(stock string, amount float64) {
-	account.StockPortfolio[stock] -= amount
+func (account *Account) holdStock(stock string, amount float64) error {
+	// account.StockPortfolio[stock] -= amount
+	err := db.UpdateAvailableUserStock(account.AccountNumber, stock, amount*-1)
+	if err!=nil {
+		glog.Error("Failed to Hold STOCK for ", account)
+		return err
+	}
+	return nil
 }
 
-func (account *Account) unholdStock(stock string, amount float64) {
+func (account *Account) unholdStock(stock string, amount float64) error {
 	account.StockPortfolio[stock] += amount
+	err := db.UpdateAvailableUserStock(account.AccountNumber, stock, amount)
+	if err!=nil {
+		glog.Error("Failed to UnHold STOCK for ", account)
+		return err
+	}
+	return nil
 }
 
 // Start a trigger

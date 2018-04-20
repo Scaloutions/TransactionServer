@@ -37,6 +37,14 @@ type BuyObj struct {
 	TransactionNum int	
 }
 
+type SellObj struct {
+	UserId		string
+	Stock       string
+	StockAmount float64
+	MoneyAmount float64
+	TransactionNum int	
+}
+
 func InitializeDB() {
 	loadCredentials()
 	DB = databaseConnection()
@@ -140,9 +148,30 @@ func CreateNewAccount(userId string) {
 	}
 }
 
+func AddMoneyToAccount(userId string, val float64) error {
+	glog.Info("DB:\tAdding money for user account: ", userId, " with value ", val)
+	stmt, err := DB.Prepare("UPDATE accounts SET balance = balance + ?, available_balance = available_balance + ? where user_id =?")
+
+	if err != nil {
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot create an update query on accounts table")
+	}
+
+	_, err = stmt.Exec(val, val, userId)
+
+	if err != nil {
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot execute an update query on accounts table.")
+	}
+	glog.Info("DB:\t Money added to account ", userId)
+
+	return nil
+
+}
+
 func UpdateAccountBalance(userId string, val float64) error {
 	glog.Info("DB:\tUpdating balance for user: ", userId, " with value ", val)
-	stmt, err := DB.Prepare("UPDATE accounts SET balance=? where user_id =?")
+	stmt, err := DB.Prepare("UPDATE accounts SET balance = balance + ? where user_id =?")
 
 	if err != nil {
 		glog.Error(err, " ", userId)
@@ -160,8 +189,8 @@ func UpdateAccountBalance(userId string, val float64) error {
 }
 
 func UpdateAvailableAccountBalance(userId string, val float64) error {
-	glog.Info("DB:\tExecuting UPDATE for ", userId, " available balance: ", val)
-	stmt, err := DB.Prepare("UPDATE accounts SET available_balance=? where user_id =?")
+	glog.Info("DB:\tExecuting AVAILABLE BALANACE UPDATE for ", userId, " available balance: ", val)
+	stmt, err := DB.Prepare("UPDATE accounts SET available_balance = available_balance + ? where user_id =?")
 
 	if err != nil {
 		glog.Error(err, " ", userId)
@@ -179,19 +208,59 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 
 }
 
+func UpdateAvailableUserStock(user_id string, stock string, val float64) error {
+	glog.Info("DB:\tExecuting AVAILABLE STOCK UPDATE for ", user_id, " available balance: ", val)
+	stmt, err := DB.Prepare("UPDATE stock SET available_amount= available_amount + ? where user_id =? and symbol=?")
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot create an update query")
+	}
+
+	_, err = stmt.Exec(val, user_id, stock)
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot execute an update query")
+	}
+
+	return nil
+
+}
+
 /*
 	Updates or creates a new stock record for a user
 */
 func UpdateUserStock(userId string, stock string, amount float64) error {
-	glog.Info("DB:\tExecuting INSERT for ", userId, " stock: ", stock, " amount: ", amount)
-	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount= amount + ?")
+	glog.Info("DB:\tExecuting STOCK UPDATE for ", userId, " stock: ", stock, " amount: ", amount)
+	stmt, err := DB.Prepare("UPDATE stock SET amount= amount + ? where user_id =? and symbol=?")
+	// stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount= amount + ?")
 
 	if err != nil {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update stock query")
 	}
 
-	_, err = stmt.Exec(userId, stock, amount, amount)
+	_, err = stmt.Exec(amount, userId, stock)
+
+	if err != nil {
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot execute an update stock query")
+	}
+
+	return nil
+}
+
+func AddUserStock(userId string, stock string, amount float64) error {
+	glog.Info("DB:\tExecuting INSERT for ", userId, " stock: ", stock, " amount: ", amount)
+	stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount, available_amount) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE amount= amount + ?, available_amount = available_amount + ?")
+
+	if err != nil {
+		glog.Error(err, " ", userId)
+		return errors.New("Cannot create an update stock query")
+	}
+
+	_, err = stmt.Exec(userId, stock, amount, amount, amount, amount)
 
 	if err != nil {
 		glog.Error(err, " ", userId)
@@ -203,12 +272,13 @@ func UpdateUserStock(userId string, stock string, amount float64) error {
 
 func GetUserStockAmount(userId string, stock string) (float64, error){
 	var stockAmount float64 = 0.0
-	glog.Info("DB:\tExecuting SELECT amount on stock for ", userId, " and stock symbol: ", stock)
-	err := DB.QueryRow("SELECT amount FROM stock WHERE user_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
+	glog.Info("DB:\tExecuting SELECT available_amount on stock for ", userId, " and stock symbol: ", stock)
+	err := DB.QueryRow("SELECT available_amount FROM stock WHERE user_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
 	if err != nil {
 		// Do not return error since it only means that the user does not have that stock so 
 		// stockAmount is just zero because there is not entry in the db
 		glog.Error("Can not find user stock in the database: ", userId, " ", stock)
+		return stockAmount, err
 		// return stockAmount, errors.New("User does not exist.")
 	}
 
@@ -239,7 +309,7 @@ func GetBuy(user_id string) (BuyObj, error) {
 	buyObj := BuyObj{}
 
 	glog.Info("DB:\tExecuting SELECT BUY for", user_id)
-	err := DB.QueryRow("SELECT * FROM buy WHERE user_id = ? LIMIT 1", user_id).Scan(&buyObj.UserId, &buyObj.Stock, &buyObj.StockAmount, &buyObj.MoneyAmount, &buyObj.TransactionNum)
+	err := DB.QueryRow("SELECT * FROM buy WHERE user_id = ? ORDER BY transaction_num ASC LIMIT 1", user_id).Scan(&buyObj.UserId, &buyObj.Stock, &buyObj.StockAmount, &buyObj.MoneyAmount, &buyObj.TransactionNum)
 	if err != nil {
 		glog.Error("Can not find BUY in buy table for: ", user_id)
 		return buyObj, errors.New("Can not find BUY in buy table.")
@@ -269,10 +339,57 @@ func DeleteBuy(user_id string) error {
 	return nil
 }
 
-func CreateNewSell() {
+func CreateNewSell(sellObj SellObj) error {
+	glog.Info("DB:\tExecuting  CREATE SELL for user: ", sellObj.UserId)
 
+	stmt, err := DB.Prepare("INSERT INTO sell(user_id, stock, stock_amount, money_amount, transaction_num) VALUES(?,?,?,?,?)")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(sellObj.UserId, sellObj.Stock, sellObj.StockAmount, sellObj.MoneyAmount, sellObj.TransactionNum)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	return nil
 }
 
-func GetSell(){
+func GetSell(user_id string) (SellObj, error) {
+	sellObj := SellObj{}
+
+	glog.Info("DB:\tExecuting SELECT SELL for", user_id)
+	err := DB.QueryRow("SELECT * FROM sell WHERE user_id = ? ORDER BY transaction_num ASC LIMIT 1", user_id).Scan(&sellObj.UserId, &sellObj.Stock, &sellObj.StockAmount, &sellObj.MoneyAmount, &sellObj.TransactionNum)
+	if err != nil {
+		glog.Error("Can not find SELL in sell table for: ", user_id)
+		return sellObj, errors.New("Can not find SELL in sell table.")
+	}
+	glog.Info("DB:\tRetrived SELL for ", user_id, " as: ", sellObj)
+
+	return sellObj, nil
 	
+}
+
+func DeleteSell(user_id string) error {
+	glog.Info("DB:\tExecuting  DELETE SELL for user: ", user_id)
+
+	stmt, err := DB.Prepare("DELETE FROM sell WHERE user_id=? ORDER BY transaction_num ASC LIMIT 1")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(user_id)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	return nil
 }

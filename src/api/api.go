@@ -27,11 +27,11 @@ const (
 )
 
 
-type BuyObj struct {
-	Stock       string
-	StockAmount float64
-	MoneyAmount float64
-}
+// type BuyObj struct {
+	// Stock       string
+	// StockAmount float64
+	// MoneyAmount float64
+// }
 
 
 func Add(account *Account, amount float64, transactionNum int) error {
@@ -110,13 +110,13 @@ func buyHelper(
 		return errors.New("Cannot execute BUY: " + err)
 	} else {
 		// pull curr stock value for that user
-		currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
-		account.StockPortfolio[stock] = currAmount
+		// currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
+		// account.StockPortfolio[stock] = currAmount
 
-		if err!=nil {
-			glog.Error(err, " ", account)
-			return errors.New("Cannot execute BUY: " + err.Error())
-		}
+		// if err!=nil {
+			// glog.Error(err, " ", account)
+			// return errors.New("Cannot execute BUY: " + err.Error())
+		// }
 
 		transaction := db.BuyObj{
 			UserId:		 account.AccountNumber,
@@ -128,7 +128,7 @@ func buyHelper(
 		//add buy transcation to the stack
 		// account.BuyStack.Push(transaction)
 		//hold the money
-		err = db.CreateNewBuy(transaction)
+		err := db.CreateNewBuy(transaction)
 		if err!=nil {
 			//TODO: log error to audit server
 			glog.Error(err, " ", account)
@@ -163,15 +163,29 @@ func sellHelper(
 	stockNum float64) error {
 
 	if account.hasStock(stock, stockNum) {
-		transaction := SellObj {
+		transaction := db.SellObj {
+			UserId:		 account.AccountNumber,
 			Stock:       stock,
 			MoneyAmount: amount,
 			StockAmount: stockNum,
+			TransactionNum: transactionNum,
 		}
 		//this is fine becasue commit transaction has to be executed within 60sec
 		//which means that the qoute does not change
-		account.SellStack.Push(transaction)
-		account.holdStock(stock, stockNum)
+		// account.SellStack.Push(transaction)
+		err := account.holdStock(stock, stockNum)
+		if err !=nil {
+			return err
+		}
+
+		err = db.CreateNewSell(transaction)
+		/// ************!!!!!@$%#@
+		//@@@@@@@@ HOLD THE STOCKKKKK
+		if err!=nil {
+			//TODO: log error to audit server
+			glog.Error(err, " ", account)
+			return errors.New("Cannot execute CREATE SELL in the DB: " + err.Error())
+		}
 
 		log := getSystemEvent(transactionNum, SELL, account.AccountNumber, stock, amount)
 		go logEvent(log)
@@ -203,12 +217,12 @@ func CommitBuy(account *Account, transactionNum int) error {
 		//go casting
 		// i := account.BuyStack.Pop()
 		// transaction := i.(BuyObj)
-		account.substractBalance(transaction.MoneyAmount)
+		account.updateBalance(-1*transaction.MoneyAmount)
 		//add number of stocks to user
 		// account.StockPortfolio[transaction.Stock] += transaction.StockAmount
 		//update db record
 		db.DeleteBuy(account.AccountNumber)
-		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount)
+		err := db.AddUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount)
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)
@@ -259,12 +273,21 @@ func CancelBuy(account *Account, transactionNum int) error {
 }
 
 func CommitSell(account *Account, transactionNum int) error {
-	if account.SellStack.Size() > 0 {
-		i := account.SellStack.Pop()
-		transaction := i.(SellObj)
-		account.addMoney(transaction.MoneyAmount)
+	transaction, err :=  db.GetSell(account.AccountNumber)
+	// if account.SellStack.Size() > 0 {
+	if err==nil {
+		// i := account.SellStack.Pop()
+		// transaction := i.(SellObj)
 		//update db record
-		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, account.StockPortfolio[transaction.Stock])
+		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount*-1)
+
+		if err!=nil {
+			glog.Error(err, " for account:", account)
+			return errors.New("Cannot execute COMMIT SELL" + err.Error())
+		}
+
+		account.addMoney(transaction.MoneyAmount)
+		err = db.DeleteSell(account.AccountNumber)
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)
@@ -285,13 +308,21 @@ func CommitSell(account *Account, transactionNum int) error {
 }
 
 func CancelSell(account *Account, transactionNum int) error {
-	if account.SellStack.Size() > 0 {
-		i := account.SellStack.Pop()
-		transaction := i.(SellObj)
-		account.unholdStock(transaction.Stock, transaction.StockAmount)
+	sell, err :=  db.GetSell(account.AccountNumber)
+
+	// if account.SellStack.Size() > 0 {
+	if err == nil {
+		// i := account.SellStack.Pop()
+		// transaction := i.(SellObj)
+		err = account.unholdStock(sell.Stock, sell.StockAmount)
+		if err !=nil {
+			return err
+		}
+
+		db.DeleteSell(account.AccountNumber)
 		glog.Info("Executed CANCEL SELL")
 
-		log := getSystemEvent(transactionNum, CANCEL_SELL, account.AccountNumber, transaction.Stock, transaction.MoneyAmount)
+		log := getSystemEvent(transactionNum, CANCEL_SELL, account.AccountNumber, sell.Stock, sell.MoneyAmount)
 		go logEvent(log)
 		return nil
 	} else {

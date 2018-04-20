@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.stock (
   user_id        VARCHAR(32),
   symbol            VARCHAR(10),
   amount            FLOAT(18,8),
+  available_amount  FLOAT(18,8),
   PRIMARY KEY (user_id, symbol)
 );
 
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.sell (
   user_id         VARCHAR(32),
   stock           VARCHAR(10),
   stock_amount    FLOAT(18,8),
+  money_amount    FLOAT(18,8),
   transaction_num     INT
 );
 
