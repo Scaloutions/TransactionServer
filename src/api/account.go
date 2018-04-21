@@ -2,7 +2,6 @@ package api
 
 import (
 	"time"
-	"../utils"
 	"../db"
 
 	"github.com/golang/glog"
@@ -12,13 +11,6 @@ type Account struct {
 	AccountNumber  string
 	Balance        float64
 	Available      float64
-	SellStack      utils.Stack
-	BuyStack       utils.Stack
-	StockPortfolio map[string]float64
-	SetBuyMap      map[string]float64
-	BuyTriggers    map[string]float64
-	SetSellMap     map[string]float64
-	SellTriggers   map[string]float64
 }
 
 func InitializeAccount(value string) Account {
@@ -26,13 +18,6 @@ func InitializeAccount(value string) Account {
 		AccountNumber:  value,
 		Balance:        0.0,
 		Available:      0.0,
-		SellStack:      utils.Stack{},
-		BuyStack:       utils.Stack{},
-		StockPortfolio: make(map[string]float64),
-		SetBuyMap:      make(map[string]float64),
-		BuyTriggers:    make(map[string]float64),
-		SetSellMap:     make(map[string]float64),
-		SellTriggers:   make(map[string]float64),
 	}
 }
 
@@ -47,13 +32,6 @@ func GetAccount(userId string) Account {
 		AccountNumber:  dbAccount.UserId,
 		Balance:        dbAccount.Balance,
 		Available:      dbAccount.Available,
-		SellStack:      utils.Stack{},
-		BuyStack:       utils.Stack{},
-		StockPortfolio: make(map[string]float64),
-		SetBuyMap:      make(map[string]float64),
-		BuyTriggers:    make(map[string]float64),
-		SetSellMap:     make(map[string]float64),
-		SellTriggers:   make(map[string]float64),
 	}
 }
 
@@ -132,7 +110,7 @@ func (account *Account) holdStock(stock string, amount float64) error {
 }
 
 func (account *Account) unholdStock(stock string, amount float64) error {
-	account.StockPortfolio[stock] += amount
+	// account.StockPortfolio[stock] += amount
 	err := db.UpdateAvailableUserStock(account.AccountNumber, stock, amount)
 	if err!=nil {
 		glog.Error("Failed to UnHold STOCK for ", account)
