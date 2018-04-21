@@ -92,8 +92,31 @@ func buyHelper(
 	stock string,
 	stockNum float64,
 	transactionNum int) error {
+	transaction := db.BuyObj{
+		UserId:		 account.AccountNumber,
+		Stock:       stock,
+		MoneyAmount: amount,
+		StockAmount: stockNum,
+		TransactionNum: transactionNum,
+	}
 
-	//check balance
+	err := db.CreateNewBuy(transaction)
+	if err!=nil {
+		//TODO: log error to audit server
+		glog.Error(err, " ", account)
+		return errors.New("Cannot execute BUY in the DB: " + err.Error())
+	}
+
+	account.holdMoney(amount)
+
+	log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
+	go logEvent(log)
+	glog.Info("SUCCESS: Executed BUY for ", amount)
+	return nil
+
+}
+
+func Buy(account *Account, stock string, amount float64, transactionNum int) error {
 	if account.getBalance() < amount {
 		//TODO: improve logging
 		err := "Account does not have enough money to execute BUY command"
@@ -101,44 +124,7 @@ func buyHelper(
 		log := getErrorEvent(transactionNum, BUY, account.AccountNumber, stock, amount, err)
 		go logEvent(log)
 		return errors.New("Cannot execute BUY: " + err)
-	} else {
-		// pull curr stock value for that user
-		// currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
-		// account.StockPortfolio[stock] = currAmount
-
-		// if err!=nil {
-			// glog.Error(err, " ", account)
-			// return errors.New("Cannot execute BUY: " + err.Error())
-		// }
-
-		transaction := db.BuyObj{
-			UserId:		 account.AccountNumber,
-			Stock:       stock,
-			MoneyAmount: amount,
-			StockAmount: stockNum,
-			TransactionNum: transactionNum,
-		}
-		//add buy transcation to the stack
-		// account.BuyStack.Push(transaction)
-		//hold the money
-		err := db.CreateNewBuy(transaction)
-		if err!=nil {
-			//TODO: log error to audit server
-			glog.Error(err, " ", account)
-			return errors.New("Cannot execute BUY in the DB: " + err.Error())
-		}
-
-		account.holdMoney(amount)
-
-		log := getSystemEvent(transactionNum, BUY, account.AccountNumber, stock, amount)
-		go logEvent(log)
-		glog.Info("SUCCESS: Executed BUY for ", amount)
-		return nil
 	}
-
-}
-
-func Buy(account *Account, stock string, amount float64, transactionNum int) error {
 	//get quote and calculate number of stock
 	quote, err := GetQuote(stock, account.AccountNumber, transactionNum)
 	if err!= nil {
@@ -163,17 +149,13 @@ func sellHelper(
 			StockAmount: stockNum,
 			TransactionNum: transactionNum,
 		}
-		//this is fine becasue commit transaction has to be executed within 60sec
-		//which means that the qoute does not change
-		// account.SellStack.Push(transaction)
+
 		err := account.holdStock(stock, stockNum)
 		if err !=nil {
 			return err
 		}
 
 		err = db.CreateNewSell(transaction)
-		/// ************!!!!!@$%#@
-		//@@@@@@@@ HOLD THE STOCKKKKK
 		if err!=nil {
 			//TODO: log error to audit server
 			glog.Error(err, " ", account)
@@ -205,15 +187,8 @@ func Sell(account *Account, stock string, amount float64, transactionNum int) er
 
 func CommitBuy(account *Account, transactionNum int) error {
 	transaction, err := db.GetBuy(account.AccountNumber)
-	// if account.BuyStack.Size() > 0 {
 	if err==nil {
-		//go casting
-		// i := account.BuyStack.Pop()
-		// transaction := i.(BuyObj)
 		account.updateBalance(-1*transaction.MoneyAmount)
-		//add number of stocks to user
-		// account.StockPortfolio[transaction.Stock] += transaction.StockAmount
-		//update db record
 		db.DeleteBuy(account.AccountNumber)
 		err := db.AddUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount)
 
@@ -229,7 +204,6 @@ func CommitBuy(account *Account, transactionNum int) error {
 
 	} else {
 		err := "No BUY transactions previously set for account."
-		//TODO: figure out if we can simplify this logging with some missing parameters
 		log := getErrorEvent(transactionNum, COMMIT_BUY, account.AccountNumber, "", 0, err)
 		glog.Error("ERROR: No BUY transactions previously set for account: ", account.AccountNumber)
 		go logEvent(log)
@@ -239,11 +213,7 @@ func CommitBuy(account *Account, transactionNum int) error {
 
 func CancelBuy(account *Account, transactionNum int) error {
 	buy, err := db.GetBuy(account.AccountNumber)
-	// if account.BuyStack.Size() > 0 {
 	if err==nil {
-		// i := account.BuyStack.Pop()
-		// transaction := i.(BuyObj)
-		//add money back to Available Balance
 		err = db.DeleteBuy(account.AccountNumber)
 		account.unholdMoney(buy.MoneyAmount)
 		if err!=nil {
@@ -252,9 +222,8 @@ func CancelBuy(account *Account, transactionNum int) error {
 			return errors.New(msg)
 		}
 		glog.Info("Executed CANCEL BUY")
-
-		// log := getSystemEvent(transactionNum, CANCEL_BUY, account.AccountNumber, transaction.Stock, transaction.MoneyAmount)
-		// go logEvent(log)
+		log := getSystemEvent(transactionNum, CANCEL_BUY, account.AccountNumber, buy.Stock, buy.MoneyAmount)
+		go logEvent(log)
 		return nil
 	} else {
 		err := "There are no BUY transcations to cancel for account " + account.AccountNumber
@@ -267,12 +236,13 @@ func CancelBuy(account *Account, transactionNum int) error {
 
 func CommitSell(account *Account, transactionNum int) error {
 	transaction, err :=  db.GetSell(account.AccountNumber)
-	// if account.SellStack.Size() > 0 {
 	if err==nil {
-		// i := account.SellStack.Pop()
-		// transaction := i.(SellObj)
 		//update db record
 		err := db.UpdateUserStock(account.AccountNumber, transaction.Stock, transaction.StockAmount*-1)
+
+		//Log Event
+		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
+		go logEvent(log)
 
 		if err!=nil {
 			glog.Error(err, " for account:", account)
@@ -286,11 +256,9 @@ func CommitSell(account *Account, transactionNum int) error {
 			glog.Error(err, " for account:", account)
 			return errors.New("Cannot execute COMMIT SELL" + err.Error())
 		}
-
-		log := getTransactionEvent(transactionNum, COMMIT_SELL, account.AccountNumber, transaction.MoneyAmount)
 		glog.Info("Executed COMMIT SELL")
-		go logEvent(log)
 		return nil
+
 	} else {
 		err := "No SELL transactions previously set for account"
 		glog.Error(err, " ", account.AccountNumber)
@@ -303,10 +271,7 @@ func CommitSell(account *Account, transactionNum int) error {
 func CancelSell(account *Account, transactionNum int) error {
 	sell, err :=  db.GetSell(account.AccountNumber)
 
-	// if account.SellStack.Size() > 0 {
 	if err == nil {
-		// i := account.SellStack.Pop()
-		// transaction := i.(SellObj)
 		err = account.unholdStock(sell.Stock, sell.StockAmount)
 		if err !=nil {
 			return err
@@ -333,9 +298,8 @@ is less than or equal to the BUY_TRIGGER
 */
 func SetBuyAmount(account *Account, stock string, amount float64, transactionNum int) error {
 	//check if there is enough money in the account
-	//TODO:  CHECK DB
 	available := account.getBalance()
-	// if account.Available >= amount {
+
 	if available >= amount {
 		//hold money
 		account.holdMoney(amount)
@@ -344,7 +308,6 @@ func SetBuyAmount(account *Account, stock string, amount float64, transactionNum
 			glog.Error("DB ADD SET BUY failed for ", account)
 			return err
 		}
-		// account.SetBuyMap[stock] += amount
 
 		log := getSystemEvent(transactionNum, SET_BUY_AMOUNT, account.AccountNumber, stock, amount)
 		go logEvent(log)
@@ -367,23 +330,19 @@ func SetBuyAmount(account *Account, stock string, amount float64, transactionNum
 */
 func CancelSetBuy(account *Account, stock string, transactionNum int) error {
 	setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
-	// if val, ok := account.SetBuyMap[stock]; ok {
 	if err == nil {
 		//put money back
 		account.unholdMoney(setBuy.MoneyAmount)
+		//LOG
+		log := getSystemEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, stock, setBuy.MoneyAmount)
+		go logEvent(log)
 		//cancel SET BUYs
 		err = db.DeleteSetBuy(account.AccountNumber, stock)
-		// delete(account.SetBuyMap, stock)
-		//cancel the trigger
-		// delete(account.BuyTriggers, stock)
 		if err!=nil {
 			glog.Info("Error deleting SET BUY for ", account, " stock: ", stock)
 			return err
 		}
 
-		//TODO: check if we need to pass val here for logging
-		log := getSystemEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, stock, setBuy.MoneyAmount)
-		go logEvent(log)
 		glog.Info("Executed CANCEL SET BUY")
 		return nil
 	} else {
@@ -398,19 +357,13 @@ func CancelSetBuy(account *Account, stock string, transactionNum int) error {
 func SetBuyTrigger(account *Account, stock string, price float64, transactionNum int) error {
 	//check for set buy on that stock
 	setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
-	// if _, ok := account.SetBuyMap[stock]; ok {
 	if err==nil {
-		// if _, exists := account.BuyTriggers[stock]; exists {
-		//TODO: Upadte Trigger value
+		//TODO: REPLACE TRIGGERS <<<<
 		if setBuy.RunningTrigger {
 			glog.Info("Trigger is already running!")
-			// account.BuyTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up New SetBuy Trigger")
-			//prevent race condition here TODO: rewrite
-			// account.BuyTriggers[stock] = price
-			//TODO: check for error and backpropogate it
 			go account.startBuyTrigger(stock, price, transactionNum)
 		}
 
@@ -429,8 +382,6 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 
 func SetSellAmount(account *Account, stock string, amount float64, transactionNum int) error {
 	if account.hasStock(stock, amount) {
-	// if account.StockPortfolio[stock] > amount {
-		// account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
 		db.AddSetSell(account.AccountNumber, stock, amount)
@@ -451,17 +402,12 @@ func SetSellAmount(account *Account, stock string, amount float64, transactionNu
 func SetSellTrigger(account *Account, stock string, price float64, transactionNum int) error {
 	//check for set buy on that stock
 	setSell, err := db.GetSetSell(account.AccountNumber, stock)
-	// if _, ok := account.SetSellMap[stock]; ok {
 	if err==nil {
-		// if _, exists := account.SellTriggers[stock]; exists {
 		if setSell.RunningTrigger {
 			glog.Info("Sell Trigger is already running!")
-			// account.SellTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up SEll trigger")
-			// account.SellTriggers[stock] = price
-			//TODO: check for error and backpropogate it
 			go account.startSellTrigger(stock, price, transactionNum)
 		}
 		// assuming running trigger is not an error
@@ -481,14 +427,11 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 
 func CancelSetSell(account *Account, stock string, transactionNum int) error {
 	setSell, err := db.GetSetSell(account.AccountNumber, stock)
-	// if val, ok := account.SetSellMap[stock]; ok {
 	if err==nil {
 		//put stock back
 		account.holdStock(stock, setSell.StockAmount)
 		//cancel SET SELLs
 		err = db.DeleteSetBuy(account.AccountNumber, stock)
-		//cancel the trigger
-
 		log := getSystemEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, stock, setSell.StockAmount)
 		go logEvent(log)
 		if err!=nil {

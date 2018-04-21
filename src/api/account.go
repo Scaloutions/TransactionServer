@@ -21,16 +21,6 @@ type Account struct {
 	SellTriggers   map[string]float64
 }
 
-// type SetBuy struct {
-// 	Stock       string
-// 	MoneyAmount float64
-// }
-
-type SetSell struct {
-	Stock       string
-	StockAmount float64
-}
-
 func InitializeAccount(value string) Account {
 	return Account{
 		AccountNumber:  value,
@@ -71,13 +61,11 @@ func (account *Account) hasStock(stock string, amount float64) bool {
 	//check if the user holds the amount of stock he/she is trying to sell
 	currAmount, err := db.GetUserStockAmount(account.AccountNumber, stock)
 	glog.Info("From DB: User ", account.AccountNumber, " has ", stock, " amount as : ", currAmount)
-	// account.StockPortfolio[stock] = currAmount
 
 	if err!=nil {
 		glog.Error(err, " ", account)
 	}
 	return currAmount >= amount
-	// return account.StockPortfolio[stock] >= amount
 }
 
 // returns the amount that is available to the user (i.e not on hold for any transactions)
@@ -88,13 +76,10 @@ func (account *Account) getBalance() float64 {
 		glog.Error(err, " ", account)
 	}
 	return dbAccount.Available
-	// return account.Available
 }
 
 func (account *Account) holdMoney(amount float64) {
 	if amount > 0 {
-		// account.Available -= amount
-		//update db
 		db.UpdateAvailableAccountBalance(account.AccountNumber, amount*-1)
 	} else {
 		glog.Error("Cannot hold negative account for the account ", amount)
@@ -102,12 +87,8 @@ func (account *Account) holdMoney(amount float64) {
 }
 
 func (account *Account) addMoney(amount float64) {
-	// account.Balance += amount
-	// account.Available += amount
 	glog.Info("Updating account balance in the DB for user: ", account.AccountNumber)
 	err := db.AddMoneyToAccount(account.AccountNumber, amount)
-	// err1 := db.UpdateAccountBalance(account.AccountNumber, account.Balance)
-	// err2 := db.UpdateAvailableAccountBalance(account.AccountNumber, account.Available)
 		
 	if err!=nil {
 		glog.Error(err, " for account:", account)
@@ -118,7 +99,6 @@ func (account *Account) addMoney(amount float64) {
 }
 
 func (account *Account) updateBalance(amount float64) {
-	// account.Balance -= amount
 	err := db.UpdateAccountBalance(account.AccountNumber, amount)
 
 	if err!=nil {
@@ -128,8 +108,6 @@ func (account *Account) updateBalance(amount float64) {
 
 func (account *Account) unholdMoney(amount float64) {
 	if amount > 0 {
-		// account.Available += amount
-		//update db
 		err := db.UpdateAvailableAccountBalance(account.AccountNumber, amount)
 		if err!=nil {
 			glog.Error(err)
@@ -145,7 +123,6 @@ func (account *Account) unholdMoney(amount float64) {
 	to be able to display accurate stock numbers per account at any given time
 */
 func (account *Account) holdStock(stock string, amount float64) error {
-	// account.StockPortfolio[stock] -= amount
 	err := db.UpdateAvailableUserStock(account.AccountNumber, stock, amount*-1)
 	if err!=nil {
 		glog.Error("Failed to Hold STOCK for ", account)
@@ -195,23 +172,17 @@ func (account *Account) startBuyTrigger(stock string, limit float64, transaction
 			}
 		}
 
-		// setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
 		if err!=nil {
 			return err
 		}
 		glog.Info("Buying Stock as ", setBuy.MoneyAmount, "\\", price)
+
 		stockNum := setBuy.MoneyAmount / price
 		account.updateBalance(-1*setBuy.MoneyAmount)
 		err := db.AddUserStock(account.AccountNumber, stock, stockNum)
-		// buyHelper(account, stock, stockNum, transactionNum)
-		// CommitBuy(account, transactionNum)
-		//hacky:
-		//put money back
-		// account.Available = account.Balance
 		glog.Info("Just BOUGHT stocks for trigger #: ", stockNum)
-		// glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
-		// delete(account.SetBuyMap, stock)
 		err = db.DeleteSetBuy(account.AccountNumber, stock)
+
 		if err!=nil {
 			glog.Info("Error deleting SET BUY for ", account, " stock: ", stock)
 			return err
@@ -226,7 +197,6 @@ func (account *Account) startSellTrigger(stock string, min float64, transactionN
 	if err!= nil {
 		return err
 	}
-	// min := account.SellTriggers[stock]
 
 	setSell, err := db.GetSetSell(account.AccountNumber, stock)
 	if err!= nil {
@@ -254,19 +224,12 @@ func (account *Account) startSellTrigger(stock string, min float64, transactionN
 		db.UpdateUserStock(account.AccountNumber, stock, -1*setSell.StockAmount)
 		//update balance
 		db.AddMoneyToAccount(account.AccountNumber, revenue)
-		// stockNum := account.SetSellMap[stock]
-		// Sell(account, stock, stockNum, transactionNum)
-		// CommitSell(account, transactionNum)
-		//hacky:
-		//put stock back
-		// account.StockPortfolio[stock] += stockNum
 		glog.Info("Just SOLD stocks for trigger #: ", stock, " amount: ", revenue)
 		glog.Info("Accont: ", account)
 		err = db.DeleteSetSell(account.AccountNumber, stock)
 		if err!=nil {
 			return err
 		}
-		// delete(account.SetSellMap, stock)
 	}
 	return nil
 }

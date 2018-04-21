@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"errors"
 	"os"
-	//"api"
 )
 
 var (
@@ -125,7 +124,6 @@ func GetUser(userId string) (User, error) {
 		glog.Error("Can not find the user in the database: ", userId)
 		glog.Info("Error from authentication: ", err)
 		return user, errors.New("User does not exist.")
-		//TODO: is there a way to return nil here?
 	}
 
 	return user, nil

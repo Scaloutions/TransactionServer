@@ -30,16 +30,6 @@ type Quote struct {
 	CryptoKey string
 }
 
-/*func InitializeQSConn(){
-	conn, err := getConnection() 
-	QS_CONNECTION = conn
-
-	if err!=nil {
-		glog.Error("Cannot establish connection with the Quote Server ", err)
-	}
-}*/
-
-
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// Mock QuoteServer hit for local testing
@@ -64,16 +54,10 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	}
 
 	quote := Quote{}
-	// Get connection to the quote server
-	// conn, err := getConnection()
 
-	// if err!=nil {
-	// QS_CONNECTION
 	conn, err := getConnection()
-	// if QS_CONNECTION == nil {
 	if err!=nil {
 		return quote, err
-		// InitializeQSConn()
 	}
 
 	cstr := stock + "," + userid + "\n"
@@ -85,7 +69,6 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// //TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
-	// len, err := QS_CONNECTION.Read(buff)
 	len, err := conn.Read(buff)
 
 	if err != nil {
