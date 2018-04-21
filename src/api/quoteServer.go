@@ -102,9 +102,6 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 		Timestamp: timestamp,
 		CryptoKey: strings.TrimSpace(quoteArgs[4]),
 	}, nil
-
-
-
 }
 
 func getConnection() (net.Conn, error) {
