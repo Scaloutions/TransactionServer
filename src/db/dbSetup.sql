@@ -1,5 +1,20 @@
 CREATE DATABASE DAYTRADING;
 
+/* 
+  CLEANUP
+*/
+TRUNCATE TABLE users;
+TRUNCATE TABLE accounts;
+TRUNCATE TABLE stock;
+TRUNCATE TABLE sell;
+TRUNCATE TABLE buy;
+TRUNCATE TABLE buy_triggers;
+TRUNCATE TABLE sell_triggers;
+
+/*
+  CREATE TABLES
+*/
+
 CREATE TABLE IF NOT EXISTS DAYTRADING.users (
   user_id           VARCHAR(32) PRIMARY KEY,
   user_name         VARCHAR(20) NOT NULL,
@@ -26,24 +41,7 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.stock (
   PRIMARY KEY (user_id, symbol)
 );
 
-CREATE TABLE IF NOT EXISTS DAYTRADING.buy_triggers (
-  user_id         VARCHAR(32),
-  stock           VARCHAR(10),
-  stock_amount    FLOAT(18,8),
-  --transaction_num     INT(),
-  PRIMARY KEY (user_id, stock),
-);
-
 --CREATE INDEX buy_trigger ON DAYTRADING.buy_triggers (user_id, stock);
-
-CREATE TABLE IF NOT EXISTS DAYTRADING.sell_triggers (
-  user_id         VARCHAR(32),
-  stock           VARCHAR(10),
-  stock_amount    FLOAT(18,8),
-  --transaction_num     INT(),
-  PRIMARY KEY (user_id, stock),
-);
-
 --CREATE INDEX sell_trigger ON DAYTRADING.sell_triggers (user_id, stock);
 
 -- TODO: should we track this with a 60sec timestamp?

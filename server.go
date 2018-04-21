@@ -349,6 +349,7 @@ func main() {
 
 	// db connection
 	db.InitializeDB()
+	db.ClearDBTables()
 	api.InitializeAuditLogging()
 	api.InitializeRedisCache()
 

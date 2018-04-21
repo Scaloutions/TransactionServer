@@ -2,59 +2,60 @@ package db
 
 import (
 	"database/sql"
+	"errors"
+	"os"
+	"strconv"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
-	"strconv"
-	"errors"
-	"os"
 )
 
 var (
-	DB *sql.DB
-	DB_NAME string
+	DB                *sql.DB
+	DB_NAME           string
 	DB_AUTHENTICATION string
 	DB_SERVER_ADDRESS string
 )
 
 type User struct {
 	UserId string
-	Name string
+	Name   string
 }
 
 type UserAccountDB struct {
-	UserId string
-	Balance        float64
-	Available      float64
+	UserId    string
+	Balance   float64
+	Available float64
 }
 
 type BuyObj struct {
-	UserId		string
-	Stock       string
-	StockAmount float64
-	MoneyAmount float64
-	TransactionNum int	
+	UserId         string
+	Stock          string
+	StockAmount    float64
+	MoneyAmount    float64
+	TransactionNum int
 }
 
 type SellObj struct {
-	UserId		string
-	Stock       string
-	StockAmount float64
-	MoneyAmount float64
-	TransactionNum int	
+	UserId         string
+	Stock          string
+	StockAmount    float64
+	MoneyAmount    float64
+	TransactionNum int
 }
 
 type SetBuy struct {
-	UserId		string
-	Stock       string
-	MoneyAmount float64
+	UserId         string
+	Stock          string
+	MoneyAmount    float64
 	RunningTrigger bool
 }
 
 type SetSell struct {
-	UserId		string
-	Stock       string
-	StockAmount float64
+	UserId         string
+	Stock          string
+	StockAmount    float64
 	RunningTrigger bool
 }
 
@@ -65,10 +66,10 @@ func InitializeDB() {
 
 func loadCredentials() {
 	err := godotenv.Load()
- 	if err != nil {
- 	   glog.Error("Error loading .env file")
+	if err != nil {
+		glog.Error("Error loading .env file")
 	}
-	
+
 	DB_NAME = os.Getenv("DB_NAME")
 	DB_AUTHENTICATION = os.Getenv("DB_USER_NAME") + ":" + os.Getenv("DB_PASSWORD")
 
@@ -78,14 +79,14 @@ func loadCredentials() {
 	} else {
 		DB_SERVER_ADDRESS = os.Getenv("DB_SERVER_ADDRESS_PROD")
 	}
-	
+
 	glog.Info(DB_NAME, " ", DB_AUTHENTICATION)
 }
 
 func databaseConnection() (db *sql.DB) {
 	// make sure we're accessing mysql running in a docker container
 	// db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp(172.18.0.2:3306)/" + DB_NAME)
-	db, err := sql.Open("mysql", DB_AUTHENTICATION + "@tcp("+DB_SERVER_ADDRESS+")/" + DB_NAME)
+	db, err := sql.Open("mysql", DB_AUTHENTICATION+"@tcp("+DB_SERVER_ADDRESS+")/"+DB_NAME)
 
 	if err != nil {
 		glog.Error("Failed to establish connection with the Quote Server.")
@@ -101,7 +102,7 @@ func Close() {
 func CreateNewUser(userId string, name string, email string, address string) {
 	glog.Info("DB:\tExecuting INSERT user for:", userId, " ", name, " ", address, " ", email)
 	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
-	
+
 	if err != nil {
 		glog.Error(err)
 		return
@@ -116,7 +117,7 @@ func CreateNewUser(userId string, name string, email string, address string) {
 }
 
 func GetUser(userId string) (User, error) {
-	user := User { UserId: userId }
+	user := User{UserId: userId}
 
 	glog.Info("DB:\tExecuting SELECT username for:", userId)
 	err := DB.QueryRow("SELECT user_name FROM users WHERE user_id =?", userId).Scan(&user.Name)
@@ -146,7 +147,7 @@ func GetAccount(userId string) (UserAccountDB, error) {
 func CreateNewAccount(userId string) {
 	glog.Info("DB:\tExecuting INSERT account for:", userId)
 	stmt, err := DB.Prepare("INSERT accounts(user_id, balance, available_balance) VALUES(?,?,?)")
-	
+
 	if err != nil {
 		glog.Error(err)
 		return
@@ -175,7 +176,6 @@ func AddMoneyToAccount(userId string, val float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot execute an update query on accounts table.")
 	}
-	
 
 	return nil
 
@@ -282,12 +282,12 @@ func AddUserStock(userId string, stock string, amount float64) error {
 	return nil
 }
 
-func GetUserStockAmount(userId string, stock string) (float64, error){
+func GetUserStockAmount(userId string, stock string) (float64, error) {
 	var stockAmount float64 = 0.0
 	glog.Info("DB:\tExecuting SELECT available_amount on stock for ", userId, " and stock symbol: ", stock)
 	err := DB.QueryRow("SELECT available_amount FROM stock WHERE user_id = ? AND symbol=?", userId, stock).Scan(&stockAmount)
 	if err != nil {
-		// Do not return error since it only means that the user does not have that stock so 
+		// Do not return error since it only means that the user does not have that stock so
 		// stockAmount is just zero because there is not entry in the db
 		glog.Error("Can not find user stock in the database: ", userId, " ", stock)
 		return stockAmount, err
@@ -383,7 +383,7 @@ func GetSell(user_id string) (SellObj, error) {
 	glog.Info("DB:\tRetrived SELL for ", user_id, " as: ", sellObj)
 
 	return sellObj, nil
-	
+
 }
 
 func DeleteSell(user_id string) error {
@@ -462,11 +462,9 @@ func DeleteSetBuy(user_id string, stock string) error {
 	return nil
 }
 
-
 /*
 	Triggers SELL
 */
-
 
 func AddSetSell(user_id string, stock string, amount float64) error {
 	glog.Info("DB:\t Executing ADD SELL for user ", user_id, " stock ", stock, " and amount: ", amount)
@@ -518,4 +516,30 @@ func DeleteSetSell(user_id string, stock string) error {
 	glog.Info("DB:\tSuccessfully DELETED SET SELL for ", user_id)
 
 	return nil
+}
+
+func ClearDBTables() {
+	glog.Info("Clearing up the database..................................")
+	stmt, err := DB.Prepare("TRUNCATE TABLE users")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE accounts")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE stock")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE buy_triggers")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE sell_triggers")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE sell")
+	_, err = stmt.Exec()
+	stmt, err = DB.Prepare("TRUNCATE TABLE buy")
+	_, err = stmt.Exec()
+
+	if err != nil {
+		glog.Error(err)
+	}
+
+	if err != nil {
+		glog.Error(err)
+	}
 }
