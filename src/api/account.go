@@ -21,10 +21,10 @@ type Account struct {
 	SellTriggers   map[string]float64
 }
 
-type SetBuy struct {
-	Stock       string
-	MoneyAmount float64
-}
+// type SetBuy struct {
+// 	Stock       string
+// 	MoneyAmount float64
+// }
 
 type SetSell struct {
 	Stock       string
@@ -167,68 +167,106 @@ func (account *Account) unholdStock(stock string, amount float64) error {
 // Start a trigger
 // should pull quotes every 60 sec to check the price
 // then execute BUY/SELL
-func (account *Account) startBuyTrigger(stock string, transactionNum int) error {
+func (account *Account) startBuyTrigger(stock string, limit float64, transactionNum int) error {
 	price, err := GetQuote(stock, account.AccountNumber, transactionNum)
 	if err!= nil {
 		return err
 	}
-	limit := account.BuyTriggers[stock]
 
+	setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
+	if err!= nil {
+		return err
+	}
 	//if there is still trigger in the map
 	if limit > 0 {
 		glog.Info(">>>>>>>>>>>>>>>>>>>BUY TRIGGER CHECK: >>>>>> limit: ", limit, " current: ", price)
 		for price > limit {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
+			setBuy, err = db.GetSetBuy(account.AccountNumber, stock)
+			glog.Info("Triggers: Associated SET BUY: ", setBuy)
+			if err!=nil {
+				glog.Info("BUY TRIGGER CANCELLED NO SET BUY SET ANYMORE")
+				return nil
+			}
 			price, err = GetQuote(stock, account.AccountNumber, transactionNum)
 			if err!= nil {
 				return err
 			}
 		}
 
-		stockNum := account.SetBuyMap[stock]
-		Buy(account, stock, stockNum, transactionNum)
-		CommitBuy(account, transactionNum)
+		// setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
+		if err!=nil {
+			return err
+		}
+		glog.Info("Buying Stock as ", setBuy.MoneyAmount, "\\", price)
+		stockNum := setBuy.MoneyAmount / price
+		account.updateBalance(-1*setBuy.MoneyAmount)
+		err := db.AddUserStock(account.AccountNumber, stock, stockNum)
+		// buyHelper(account, stock, stockNum, transactionNum)
+		// CommitBuy(account, transactionNum)
 		//hacky:
 		//put money back
-		account.Available = account.Balance
+		// account.Available = account.Balance
 		glog.Info("Just BOUGHT stocks for trigger #: ", stockNum)
-		glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
-		delete(account.SetBuyMap, stock)
+		// glog.Info("Balance: ", account.Balance, " Available: ", account.Available)
+		// delete(account.SetBuyMap, stock)
+		err = db.DeleteSetBuy(account.AccountNumber, stock)
+		if err!=nil {
+			glog.Info("Error deleting SET BUY for ", account, " stock: ", stock)
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (account *Account) startSellTrigger(stock string, transactionNum int) error {
+func (account *Account) startSellTrigger(stock string, min float64, transactionNum int) error {
 	price, err := GetQuote(stock, account.AccountNumber, transactionNum)
 	if err!= nil {
 		return err
 	}
-	min := account.SellTriggers[stock]
+	// min := account.SellTriggers[stock]
 
+	setSell, err := db.GetSetSell(account.AccountNumber, stock)
+	if err!= nil {
+		return err
+	}
 	//if there is still trigger in the map
 	if min > 0 {
 		glog.Info(">>>>>>>>>>>>>>>>>>>SELL TRIGGER CHECK: >>>>>> limit: ", min, " current: ", price)
 		for price < min {
 			glog.Info("Price is still greater than the trigger limit")
 			time.Sleep(60 * time.Second)
+			setSell, err = db.GetSetSell(account.AccountNumber, stock)
+			if err!=nil {
+				glog.Info("SELL TRIGGER CANCELLED NO SET SELL SET ANYMORE")
+				return nil
+			}
 			price, err = GetQuote(stock, account.AccountNumber, transactionNum)
 			if err!= nil {
 				return err
 			}
 		}
 
-		stockNum := account.SetSellMap[stock]
-		Sell(account, stock, stockNum, transactionNum)
-		CommitSell(account, transactionNum)
+		revenue := price * setSell.StockAmount
+		//decrease stock val 
+		db.UpdateUserStock(account.AccountNumber, stock, -1*setSell.StockAmount)
+		//update balance
+		db.AddMoneyToAccount(account.AccountNumber, revenue)
+		// stockNum := account.SetSellMap[stock]
+		// Sell(account, stock, stockNum, transactionNum)
+		// CommitSell(account, transactionNum)
 		//hacky:
 		//put stock back
-		account.StockPortfolio[stock] += stockNum
-		glog.Info("Just SOLD stocks for trigger #: ", stockNum, stock)
+		// account.StockPortfolio[stock] += stockNum
+		glog.Info("Just SOLD stocks for trigger #: ", stock, " amount: ", revenue)
 		glog.Info("Accont: ", account)
-		glog.Info("Stock balance: ", account.StockPortfolio[stock])
-		delete(account.SetSellMap, stock)
+		err = db.DeleteSetSell(account.AccountNumber, stock)
+		if err!=nil {
+			return err
+		}
+		// delete(account.SetSellMap, stock)
 	}
 	return nil
 }

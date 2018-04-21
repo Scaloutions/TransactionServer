@@ -66,3 +66,19 @@ CREATE TABLE IF NOT EXISTS DAYTRADING.buy (
 );
 
 CREATE INDEX buy_cmd ON DAYTRADING.buy (user_id, transaction_num);
+
+CREATE TABLE IF NOT EXISTS DAYTRADING.buy_triggers (
+  user_id         VARCHAR(32),
+  stock           VARCHAR(10),
+  money_amount     FLOAT(18,8),
+  running_trigger BOOLEAN NOT NULL default 0,
+  PRIMARY KEY (user_id, stock)
+);
+  
+CREATE TABLE IF NOT EXISTS DAYTRADING.sell_triggers (
+  user_id         VARCHAR(32),
+  stock           VARCHAR(10),
+  stock_amount     FLOAT(18,8),
+  running_trigger BOOLEAN NOT NULL default 0,
+  PRIMARY KEY (user_id, stock)
+);

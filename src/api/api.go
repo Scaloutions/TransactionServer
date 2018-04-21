@@ -27,13 +27,6 @@ const (
 )
 
 
-// type BuyObj struct {
-	// Stock       string
-	// StockAmount float64
-	// MoneyAmount float64
-// }
-
-
 func Add(account *Account, amount float64, transactionNum int) error {
 	if amount > 0 {
 		account.addMoney(amount)
@@ -340,10 +333,18 @@ is less than or equal to the BUY_TRIGGER
 */
 func SetBuyAmount(account *Account, stock string, amount float64, transactionNum int) error {
 	//check if there is enough money in the account
-	if account.Available >= amount {
+	//TODO:  CHECK DB
+	available := account.getBalance()
+	// if account.Available >= amount {
+	if available >= amount {
 		//hold money
 		account.holdMoney(amount)
-		account.SetBuyMap[stock] += amount
+		err := db.AddSetBuy(account.AccountNumber, stock, amount)
+		if err!=nil {
+			glog.Error("DB ADD SET BUY failed for ", account)
+			return err
+		}
+		// account.SetBuyMap[stock] += amount
 
 		log := getSystemEvent(transactionNum, SET_BUY_AMOUNT, account.AccountNumber, stock, amount)
 		go logEvent(log)
@@ -365,16 +366,23 @@ func SetBuyAmount(account *Account, stock string, amount float64, transactionNum
    TODO: fix this.
 */
 func CancelSetBuy(account *Account, stock string, transactionNum int) error {
-	if val, ok := account.SetBuyMap[stock]; ok {
+	setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
+	// if val, ok := account.SetBuyMap[stock]; ok {
+	if err == nil {
 		//put money back
-		account.unholdMoney(val)
+		account.unholdMoney(setBuy.MoneyAmount)
 		//cancel SET BUYs
-		delete(account.SetBuyMap, stock)
+		err = db.DeleteSetBuy(account.AccountNumber, stock)
+		// delete(account.SetBuyMap, stock)
 		//cancel the trigger
-		delete(account.BuyTriggers, stock)
+		// delete(account.BuyTriggers, stock)
+		if err!=nil {
+			glog.Info("Error deleting SET BUY for ", account, " stock: ", stock)
+			return err
+		}
 
 		//TODO: check if we need to pass val here for logging
-		log := getSystemEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, stock, val)
+		log := getSystemEvent(transactionNum, CANCEL_SET_BUY, account.AccountNumber, stock, setBuy.MoneyAmount)
 		go logEvent(log)
 		glog.Info("Executed CANCEL SET BUY")
 		return nil
@@ -389,17 +397,21 @@ func CancelSetBuy(account *Account, stock string, transactionNum int) error {
 
 func SetBuyTrigger(account *Account, stock string, price float64, transactionNum int) error {
 	//check for set buy on that stock
-	if _, ok := account.SetBuyMap[stock]; ok {
-		if _, exists := account.BuyTriggers[stock]; exists {
+	setBuy, err := db.GetSetBuy(account.AccountNumber, stock)
+	// if _, ok := account.SetBuyMap[stock]; ok {
+	if err==nil {
+		// if _, exists := account.BuyTriggers[stock]; exists {
+		//TODO: Upadte Trigger value
+		if setBuy.RunningTrigger {
 			glog.Info("Trigger is already running!")
-			account.BuyTriggers[stock] = price
+			// account.BuyTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
-			glog.Info("Spinning up SetBuy Trigger")
+			glog.Info("Spinning up New SetBuy Trigger")
 			//prevent race condition here TODO: rewrite
-			account.BuyTriggers[stock] = price
+			// account.BuyTriggers[stock] = price
 			//TODO: check for error and backpropogate it
-			go account.startBuyTrigger(stock, transactionNum)
+			go account.startBuyTrigger(stock, price, transactionNum)
 		}
 
 		glog.Info("Set BUY trigger for ", stock, " at price ", price)
@@ -416,10 +428,12 @@ func SetBuyTrigger(account *Account, stock string, price float64, transactionNum
 }
 
 func SetSellAmount(account *Account, stock string, amount float64, transactionNum int) error {
-	if account.StockPortfolio[stock] > amount {
-		account.SetSellMap[stock] += amount
+	if account.hasStock(stock, amount) {
+	// if account.StockPortfolio[stock] > amount {
+		// account.SetSellMap[stock] += amount
 		//hold stock
 		account.holdStock(stock, amount)
+		db.AddSetSell(account.AccountNumber, stock, amount)
 
 		log := getSystemEvent(transactionNum, SET_SELL_AMOUNT, account.AccountNumber, stock, amount)
 		go logEvent(log)
@@ -436,16 +450,19 @@ func SetSellAmount(account *Account, stock string, amount float64, transactionNu
 
 func SetSellTrigger(account *Account, stock string, price float64, transactionNum int) error {
 	//check for set buy on that stock
-	if _, ok := account.SetSellMap[stock]; ok {
-		if _, exists := account.SellTriggers[stock]; exists {
+	setSell, err := db.GetSetSell(account.AccountNumber, stock)
+	// if _, ok := account.SetSellMap[stock]; ok {
+	if err==nil {
+		// if _, exists := account.SellTriggers[stock]; exists {
+		if setSell.RunningTrigger {
 			glog.Info("Sell Trigger is already running!")
-			account.SellTriggers[stock] = price
+			// account.SellTriggers[stock] = price
 		} else {
 			//spin up go routine trigger
 			glog.Info("Spinning up SEll trigger")
-			account.SellTriggers[stock] = price
+			// account.SellTriggers[stock] = price
 			//TODO: check for error and backpropogate it
-			go account.startSellTrigger(stock, transactionNum)
+			go account.startSellTrigger(stock, price, transactionNum)
 		}
 		// assuming running trigger is not an error
 		glog.Info("Set SELL trigger for ", stock, " at price ", price)
@@ -463,16 +480,20 @@ func SetSellTrigger(account *Account, stock string, price float64, transactionNu
 }
 
 func CancelSetSell(account *Account, stock string, transactionNum int) error {
-	if val, ok := account.SetSellMap[stock]; ok {
+	setSell, err := db.GetSetSell(account.AccountNumber, stock)
+	// if val, ok := account.SetSellMap[stock]; ok {
+	if err==nil {
 		//put stock back
-		account.unholdStock(stock, val)
+		account.holdStock(stock, setSell.StockAmount)
 		//cancel SET SELLs
-		delete(account.SetSellMap, stock)
+		err = db.DeleteSetBuy(account.AccountNumber, stock)
 		//cancel the trigger
-		delete(account.SellTriggers, stock)
 
-		log := getSystemEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, stock, val)
+		log := getSystemEvent(transactionNum, CANCEL_SET_SELL, account.AccountNumber, stock, setSell.StockAmount)
 		go logEvent(log)
+		if err!=nil {
+			return err
+		}
 		glog.Info("Executed CANCEL SET SELL")
 		return nil
 	} else {

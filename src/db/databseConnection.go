@@ -45,6 +45,20 @@ type SellObj struct {
 	TransactionNum int	
 }
 
+type SetBuy struct {
+	UserId		string
+	Stock       string
+	MoneyAmount float64
+	RunningTrigger bool
+}
+
+type SetSell struct {
+	UserId		string
+	Stock       string
+	StockAmount float64
+	RunningTrigger bool
+}
+
 func InitializeDB() {
 	loadCredentials()
 	DB = databaseConnection()
@@ -163,7 +177,7 @@ func AddMoneyToAccount(userId string, val float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot execute an update query on accounts table.")
 	}
-	glog.Info("DB:\t Money added to account ", userId)
+	
 
 	return nil
 
@@ -390,6 +404,120 @@ func DeleteSell(user_id string) error {
 		glog.Error(err)
 		return err
 	}
+
+	return nil
+}
+
+/*
+	Triggers BUY
+*/
+
+func AddSetBuy(user_id string, stock string, price float64) error {
+	glog.Info("DB:\t Executing ADD BUY for user ", user_id, " stock ", stock, " and price: ", price)
+
+	stmt, err := DB.Prepare("INSERT INTO buy_triggers(user_id, stock, money_amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE money_amount= ?")
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot create an update buy trigger query")
+	}
+
+	_, err = stmt.Exec(user_id, stock, price, price)
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot execute an update buy triggers query")
+	}
+
+	return nil
+}
+
+func GetSetBuy(user_id string, stock string) (SetBuy, error) {
+	setBuy := SetBuy{}
+	err := DB.QueryRow("SELECT user_id, stock, money_amount, running_trigger FROM buy_triggers WHERE user_id = ? AND stock = ?", user_id, stock).Scan(&setBuy.UserId, &setBuy.Stock, &setBuy.MoneyAmount, &setBuy.RunningTrigger)
+	if err != nil {
+		glog.Error("Can not find SET BUY object in buy_triggers table for: ", user_id, stock)
+		return setBuy, errors.New("No SET BUY set in buy_triggers table.")
+	}
+	glog.Info("DB:\tRetrived SET BUY for ", user_id, " as: ", setBuy)
+	return setBuy, nil
+}
+
+func DeleteSetBuy(user_id string, stock string) error {
+	glog.Info("DB:\tExecuting  DELETE SET BUY for user: ", user_id, " stock: ", stock)
+
+	stmt, err := DB.Prepare("DELETE FROM buy_triggers WHERE user_id=? AND stock = ?")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(user_id, stock)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	glog.Info("DB:\tSuccessfully DELETED SET BUY for ", user_id)
+
+	return nil
+}
+
+
+/*
+	Triggers SELL
+*/
+
+
+func AddSetSell(user_id string, stock string, amount float64) error {
+	glog.Info("DB:\t Executing ADD SELL for user ", user_id, " stock ", stock, " and amount: ", amount)
+
+	stmt, err := DB.Prepare("INSERT INTO sell_triggers(user_id, stock, stock_amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE stock_amount= ?")
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot create an update sell trigger query")
+	}
+
+	_, err = stmt.Exec(user_id, stock, amount, amount)
+
+	if err != nil {
+		glog.Error(err, " ", user_id)
+		return errors.New("Cannot execute an update sell triggers query")
+	}
+
+	return nil
+}
+
+func GetSetSell(user_id string, stock string) (SetSell, error) {
+	setSell := SetSell{}
+	err := DB.QueryRow("SELECT * FROM sell_triggers WHERE user_id = ? AND stock = ?", user_id, stock).Scan(&setSell.UserId, &setSell.Stock, &setSell.StockAmount, &setSell.RunningTrigger)
+	if err != nil {
+		glog.Error("Can not find SET SELL object in buy_triggers table for: ", user_id, stock)
+		return setSell, errors.New("No SET SELL set in buy_triggers table.")
+	}
+	glog.Info("DB:\tRetrived SET SELL for ", user_id, " as: ", setSell)
+	return setSell, nil
+}
+
+func DeleteSetSell(user_id string, stock string) error {
+	glog.Info("DB:\tExecuting  DELETE SET SELL for user: ", user_id, " stock: ", stock)
+
+	stmt, err := DB.Prepare("DELETE FROM sell_triggers WHERE user_id=? AND stock = ?")
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = stmt.Exec(user_id, stock)
+
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	glog.Info("DB:\tSuccessfully DELETED SET SELL for ", user_id)
 
 	return nil
 }
