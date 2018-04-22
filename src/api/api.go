@@ -81,10 +81,10 @@ func GetQuote(stock string, userId string, transactionNum int) (float64, error) 
 	// }
 
 	//LOG event as system
-	// log := getSystemEvent(transactionNum, QUOTE, userId, stock, quoteObj.Price)
-	// go logEvent(log)
-	log := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
-	glog.Info("LOGGING QUOTE ######## ", log)
+	log := getSystemEvent(transactionNum, QUOTE, userId, stock, quoteObj.Price)
+	go logEvent(log)
+	log2 := getQuoteServerEvent(transactionNum, quoteObj.Timestamp, quoteObj.UserId, quoteObj.Stock, quoteObj.Price, quoteObj.CryptoKey)
+	glog.Info("LOGGING QUOTE ######## ", log2)
 	go logEvent(log)
 	return quoteObj.Price, nil
 }
@@ -506,7 +506,7 @@ func CancelSetSell(account Account, stock string, transactionNum int) error {
 func Dumplog(transactionNum int, userId string) {
 
 	glog.Info("Processing Display DUMPLOG Request....")
-	log := getUserCmndEvent(transactionNum, DUMPLOG, "", "DMP", 0.0)
+	log := getUserCmndEvent(transactionNum, DUMPLOG, "", "", 0.0)
 	glog.Info("LOGGING ######## ", log)
 	go logEvent(log)
 	// send dumplog request
