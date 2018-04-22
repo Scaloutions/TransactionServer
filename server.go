@@ -35,7 +35,16 @@ type Request struct {
 }
 
 func authenticateUser(userId string) api.Account {
-	_, err := db.GetUser(userId)
+	glog.Info("\n\n Executing AUTHENTICATE for user: ", userId, "\n")
+	user, err := db.GetUser(userId)
+	// if userId == nil {
+	// 	glog.Error("NIL USER$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+	// 	panic("NNOOOOOOOO")
+	// }
+	if userId == "" {
+		glog.Error("EMPTY USER$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+		panic("NNOOOOOOOO")
+	}
 	/*
 		FOR THE PROJECT XML requirements
 		automatically create users for testing
@@ -45,9 +54,9 @@ func authenticateUser(userId string) api.Account {
 		db.CreateNewUser(userId, "", "", "")
 		db.CreateNewAccount(userId)
 	}
-	glog.Info("User ", userId, " is already in the DB!")
+	glog.Info("User ", user.UserId, " is already in the DB!")
 	account := api.GetAccount(userId)
-	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
+	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", user.UserId)
 
 	glog.Info("\nSUCCESS: Authentication Successful!")
 	return account
@@ -84,7 +93,7 @@ func getParams(c *gin.Context) Request {
 
 func authReq(c *gin.Context) {
 	req := getParams(c)
-	glog.Info("\n Executing AUTHENTICATE for user: ", req.UserId)
+	glog.Info("\n\n Executing AUTHENTICATE for user: ", req.UserId, "\n")
 	authenticateUser(req.UserId)
 
 	// TODO: add error checking here
@@ -350,6 +359,7 @@ func main() {
 	// db connection
 	db.InitializeDB()
 	db.ClearDBTables()
+	defer db.Close()
 	api.InitializeAuditLogging()
 	api.InitializeRedisCache()
 
@@ -377,6 +387,6 @@ func main() {
 	}
 
 	log.Fatal(router.Run(":9090"))
-	glog.Flush()
+	defer glog.Flush()
 
 }

@@ -1,17 +1,18 @@
 package api
 
 import (
+	"encoding/json"
+	"errors"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/glog"
-	"encoding/json"
-	"strconv"
-	"errors"
-	"time"
-	"os"
 )
 
 var (
-	Pool   *redis.Pool
+	Pool         *redis.Pool
 	CACHE_SERVER string
 )
 
@@ -30,8 +31,8 @@ func InitializeRedisCache() {
 }
 
 type RedisQuote struct {
-	Price     float64
-	Stock     string
+	Price float64
+	Stock string
 	// UserId    string
 	// Timestamp int64
 	CryptoKey string
@@ -39,9 +40,9 @@ type RedisQuote struct {
 
 func newRedisPool(server string) *redis.Pool {
 
-	return &redis.Pool {
+	return &redis.Pool{
 		MaxIdle:     80,
-		MaxActive:   10000,
+		MaxActive:   15000,
 		IdleTimeout: 30 * time.Second,
 
 		Dial: func() (redis.Conn, error) {
@@ -61,12 +62,11 @@ func SetToCache(qt Quote) error {
 	c := Pool.Get()
 	defer c.Close()
 
-	q := RedisQuote {
-		Price: qt.Price,
-		Stock: qt.Stock,
+	q := RedisQuote{
+		Price:     qt.Price,
+		Stock:     qt.Stock,
 		CryptoKey: qt.CryptoKey,
 	}
-
 
 	quote, err := json.Marshal(q)
 
@@ -89,7 +89,7 @@ func SetToCache(qt Quote) error {
 	return nil
 }
 
-func GetFromCache(stock string) (Quote, error){
+func GetFromCache(stock string) (Quote, error) {
 	c := Pool.Get()
 	defer c.Close()
 

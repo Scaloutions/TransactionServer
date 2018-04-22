@@ -73,11 +73,12 @@ func GetQuote(stock string, userId string, transactionNum int) (float64, error) 
 	}
 
 	// put it in CACHE
-	glog.Info("Putting new Stock Quote into Redis Cache ", quoteObj)
-	err = SetToCache(quoteObj)
-	if err != nil {
-		glog.Error("Error putting QUOTE into Redist cache ", quoteObj)
-	}
+	go saveQuote(quoteObj)
+	// glog.Info("Putting new Stock Quote into Redis Cache ", quoteObj)
+	// err = SetToCache(quoteObj)
+	// if err != nil {
+	// 	glog.Error("Error putting QUOTE into Redist cache ", quoteObj)
+	// }
 
 	//LOG event as system
 	// log := getSystemEvent(transactionNum, QUOTE, userId, stock, quoteObj.Price)
@@ -86,6 +87,14 @@ func GetQuote(stock string, userId string, transactionNum int) (float64, error) 
 	glog.Info("LOGGING QUOTE ######## ", log)
 	go logEvent(log)
 	return quoteObj.Price, nil
+}
+
+func saveQuote(quoteObj Quote) {
+	glog.Info("Putting new Stock Quote into Redis Cache ", quoteObj)
+	err := SetToCache(quoteObj)
+	if err != nil {
+		glog.Error("\n\tREDIS: Error putting QUOTE into Redist cache ", quoteObj)
+	}
 }
 
 func buyHelper(

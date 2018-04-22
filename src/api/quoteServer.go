@@ -1,15 +1,16 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"math/rand"
 	"net"
+	"os"
 	"strconv"
 	"strings"
-	"errors"
-	"math/rand"
-	"github.com/golang/glog"
-	"os"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -56,24 +57,25 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	quote := Quote{}
 
 	conn, err := getConnection()
-	if err!=nil {
+	if err != nil {
 		return quote, err
 	}
 
 	cstr := stock + "," + userid + "\n"
 	_, err = conn.Write([]byte(cstr))
 
-	if err!=nil {
+	if err != nil {
 		return quote, err
 	}
 
 	// //TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
 	len, err := conn.Read(buff)
+	defer conn.Close()
 
 	if err != nil {
 		glog.Error("Error reading data from the Quote Server")
-		return quote, errors.New("Error reading the Quote.")	
+		return quote, errors.New("Error reading the Quote.")
 	}
 
 	response := string(buff[:len])
@@ -85,15 +87,14 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	price, err := strconv.ParseFloat(quoteArgs[0], 64)
 	if err != nil {
 		glog.Error("Cannot parse QS stock price into float64 ", quoteArgs[0])
-	 	return quote, errors.New("Error parsing the Quote.")
+		return quote, errors.New("Error parsing the Quote.")
 	}
 
 	timestamp, err := strconv.ParseInt(quoteArgs[3], 10, 64)
 	if err != nil {
 		glog.Error("Cannot parse QS timestamp into int64 ", quoteArgs[3])
-	 	return quote, errors.New("Error parsing the Quote.")
+		return quote, errors.New("Error parsing the Quote.")
 	}
-	conn.Close()
 
 	return Quote{
 		Price:     price,
@@ -111,7 +112,7 @@ func getConnection() (net.Conn, error) {
 
 	if err != nil {
 		fmt.Print("Error connecting to the Quote Server: somthing went wrong :(")
-		return nil,  errors.New("Cannot establish connection with the Quote Server")
+		return nil, errors.New("Cannot establish connection with the Quote Server")
 	}
 	return conn, nil
 }

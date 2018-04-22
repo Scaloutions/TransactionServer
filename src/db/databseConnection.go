@@ -62,6 +62,9 @@ type SetSell struct {
 func InitializeDB() {
 	loadCredentials()
 	DB = databaseConnection()
+	DB.SetMaxIdleConns(900)
+	DB.SetMaxOpenConns(900)
+	glog.Info("DB initialized: ", DB.Stats())
 }
 
 func loadCredentials() {
@@ -96,12 +99,14 @@ func databaseConnection() (db *sql.DB) {
 }
 
 func Close() {
+	glog.Info("CLOSING DB CONNECTION.................")
 	DB.Close()
 }
 
 func CreateNewUser(userId string, name string, email string, address string) {
 	glog.Info("DB:\tExecuting INSERT user for:", userId, " ", name, " ", address, " ", email)
 	stmt, err := DB.Prepare("INSERT users(user_id, user_name, user_address, user_email) VALUES(?,?,?,?)")
+	defer stmt.Close()
 
 	if err != nil {
 		glog.Error(err)
@@ -117,10 +122,11 @@ func CreateNewUser(userId string, name string, email string, address string) {
 }
 
 func GetUser(userId string) (User, error) {
-	user := User{UserId: userId}
+	var user User
+	// user := User{UserId: userId}
 
 	glog.Info("DB:\tExecuting SELECT username for:", userId)
-	err := DB.QueryRow("SELECT user_name FROM users WHERE user_id =?", userId).Scan(&user.Name)
+	err := DB.QueryRow("SELECT user_id FROM users WHERE user_id =?", userId).Scan(&user.UserId)
 	if err != nil {
 		glog.Error("Can not find the user in the database: ", userId)
 		glog.Info("Error from authentication: ", err)
@@ -152,6 +158,7 @@ func CreateNewAccount(userId string) {
 		glog.Error(err)
 		return
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(userId, 0, 0)
 
@@ -169,6 +176,7 @@ func AddMoneyToAccount(userId string, val float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update query on accounts table")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(val, val, userId)
 
@@ -189,6 +197,7 @@ func UpdateAccountBalance(userId string, val float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(val, userId)
 
@@ -208,6 +217,7 @@ func UpdateAvailableAccountBalance(userId string, val float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(val, userId)
 
@@ -228,6 +238,7 @@ func UpdateAvailableUserStock(user_id string, stock string, val float64) error {
 		glog.Error(err, " ", user_id)
 		return errors.New("Cannot create an update query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(val, user_id, stock)
 
@@ -246,12 +257,12 @@ func UpdateAvailableUserStock(user_id string, stock string, val float64) error {
 func UpdateUserStock(userId string, stock string, amount float64) error {
 	glog.Info("DB:\tExecuting STOCK UPDATE for ", userId, " stock: ", stock, " amount: ", amount)
 	stmt, err := DB.Prepare("UPDATE stock SET amount= amount + ? where user_id =? and symbol=?")
-	// stmt, err := DB.Prepare("INSERT INTO stock(user_id, symbol, amount) VALUES(?,?,?) ON DUPLICATE KEY UPDATE amount= amount + ?")
 
 	if err != nil {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update stock query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(amount, userId, stock)
 
@@ -271,6 +282,7 @@ func AddUserStock(userId string, stock string, amount float64) error {
 		glog.Error(err, " ", userId)
 		return errors.New("Cannot create an update stock query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(userId, stock, amount, amount, amount, amount)
 
@@ -306,6 +318,7 @@ func CreateNewBuy(buyObj BuyObj) error {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(buyObj.UserId, buyObj.Stock, buyObj.StockAmount, buyObj.MoneyAmount, buyObj.TransactionNum)
 
@@ -340,6 +353,7 @@ func DeleteBuy(user_id string) error {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id)
 
@@ -355,11 +369,13 @@ func CreateNewSell(sellObj SellObj) error {
 	glog.Info("DB:\tExecuting  CREATE SELL for user: ", sellObj.UserId)
 
 	stmt, err := DB.Prepare("INSERT INTO sell(user_id, stock, stock_amount, money_amount, transaction_num) VALUES(?,?,?,?,?)")
+	defer stmt.Close()
 
 	if err != nil {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(sellObj.UserId, sellObj.Stock, sellObj.StockAmount, sellObj.MoneyAmount, sellObj.TransactionNum)
 
@@ -395,6 +411,7 @@ func DeleteSell(user_id string) error {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id)
 
@@ -419,6 +436,7 @@ func AddSetBuy(user_id string, stock string, price float64) error {
 		glog.Error(err, " ", user_id)
 		return errors.New("Cannot create an update buy trigger query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id, stock, price, price)
 
@@ -450,6 +468,7 @@ func DeleteSetBuy(user_id string, stock string) error {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id, stock)
 
@@ -475,6 +494,7 @@ func AddSetSell(user_id string, stock string, amount float64) error {
 		glog.Error(err, " ", user_id)
 		return errors.New("Cannot create an update sell trigger query")
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id, stock, amount, amount)
 
@@ -506,6 +526,7 @@ func DeleteSetSell(user_id string, stock string) error {
 		glog.Error(err)
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(user_id, stock)
 
@@ -534,6 +555,7 @@ func ClearDBTables() {
 	_, err = stmt.Exec()
 	stmt, err = DB.Prepare("TRUNCATE TABLE buy")
 	_, err = stmt.Exec()
+	defer stmt.Close()
 
 	if err != nil {
 		glog.Error(err)
