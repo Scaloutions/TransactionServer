@@ -1,4 +1,4 @@
-CREATE DATABASE DAYTRADING;
+CREATE DATABASE IF NOT EXISTS DAYTRADING;
 
 /* 
   CLEANUP
@@ -18,7 +18,6 @@ TRUNCATE TABLE sell_triggers;
 CREATE TABLE IF NOT EXISTS DAYTRADING.users (
   user_id           VARCHAR(32) PRIMARY KEY,
   user_name         VARCHAR(20),
-  -- account_number    VARCHAR(32) UNIQUE NOT NULL,
   user_address      VARCHAR(10),
   user_email        VARCHAR(30)
 );

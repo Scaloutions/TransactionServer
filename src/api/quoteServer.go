@@ -35,7 +35,6 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
 	// Mock QuoteServer hit for local testing
 	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
-	testMode = true
 	if testMode {
 		r := rand.New(rand.NewSource(getCurrentTs()))
 

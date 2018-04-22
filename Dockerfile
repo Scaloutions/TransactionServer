@@ -23,6 +23,6 @@ RUN go get "github.com/garyburd/redigo/redis"
 
 RUN go build -o server .
 
-CMD [ "/app/server", "-logtostderr=true" ]
+CMD [ "/app/server", "-stderrthreshold=ERROR", "-log_dir=./logs" ]
 
 EXPOSE 9090

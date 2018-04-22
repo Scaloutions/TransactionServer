@@ -565,3 +565,112 @@ func ClearDBTables() {
 		glog.Error(err)
 	}
 }
+
+func CreateTables() {
+	glog.Info("\n\tCreating DAYTRADING SCHEMA DB......")
+	stmt, err := DB.Prepare("CREATE DATABASE IF NOT EXISTS DAYTRADING")
+	checkErr(err)
+	_, err = stmt.Exec()
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.users (
+		user_id           VARCHAR(32) PRIMARY KEY,
+		user_name         VARCHAR(20),
+		user_address      VARCHAR(10),
+		user_email        VARCHAR(30)
+	)`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.accounts (
+		user_id        VARCHAR(32) PRIMARY KEY,
+		balance           FLOAT(18,8),
+		available_balance FLOAT(18,8)
+	  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.stock (
+		user_id        VARCHAR(32),
+		symbol            VARCHAR(10),
+		amount            FLOAT(18,8),
+		available_amount  FLOAT(18,8),
+		PRIMARY KEY (user_id, symbol)
+	  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.sell (
+			user_id         VARCHAR(32),
+			stock           VARCHAR(10),
+			stock_amount    FLOAT(18,8),
+			money_amount    FLOAT(18,8),
+			transaction_num     INT
+		  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.buy (
+			user_id         VARCHAR(32),
+			stock           VARCHAR(10),
+			stock_amount    FLOAT(18,8),
+			money_amount    FLOAT(18,8),
+			transaction_num     INT
+		  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE INDEX sell_cmd ON DAYTRADING.sell (user_id, transaction_num)
+		`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE INDEX buy_cmd ON DAYTRADING.buy (user_id, transaction_num)
+		`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.buy_triggers (
+			user_id         VARCHAR(32),
+			stock           VARCHAR(10),
+			money_amount     FLOAT(18,8),
+			running_trigger BOOLEAN NOT NULL default 0,
+			PRIMARY KEY (user_id, stock)
+		  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+
+	stmt, err = DB.Prepare(`
+		CREATE TABLE IF NOT EXISTS DAYTRADING.sell_triggers (
+			user_id         VARCHAR(32),
+			stock           VARCHAR(10),
+			stock_amount     FLOAT(18,8),
+			running_trigger BOOLEAN NOT NULL default 0,
+			PRIMARY KEY (user_id, stock)
+		  )`)
+	_, err = stmt.Exec()
+	checkErr(err)
+	defer stmt.Close()
+}
+
+func checkErr(err error) {
+	if err != nil {
+		glog.Error("\tDB:\tCannot create table: ", err)
+	}
+}

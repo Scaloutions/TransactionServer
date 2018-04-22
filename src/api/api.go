@@ -506,7 +506,7 @@ func CancelSetSell(account Account, stock string, transactionNum int) error {
 func Dumplog(transactionNum int, userId string) {
 
 	glog.Info("Processing Display DUMPLOG Request....")
-	log := getUserCmndEvent(transactionNum, DUMPLOG, userId, "NONE", 0.0)
+	log := getUserCmndEvent(transactionNum, DUMPLOG, "", "DMP", 0.0)
 	glog.Info("LOGGING ######## ", log)
 	go logEvent(log)
 	// send dumplog request

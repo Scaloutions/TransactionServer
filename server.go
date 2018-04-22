@@ -358,6 +358,7 @@ func main() {
 
 	// db connection
 	db.InitializeDB()
+	db.CreateTables()
 	db.ClearDBTables()
 	defer db.Close()
 	api.InitializeAuditLogging()
