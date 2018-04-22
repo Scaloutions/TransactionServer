@@ -510,7 +510,7 @@ func Dumplog(transactionNum int, userId string) {
 	glog.Info("LOGGING ######## ", log)
 	go logEvent(log)
 	// send dumplog request
-	go getDumplog()
+	// go getDumplog()
 }
 
 func DisplaySummary(transactionNum int,

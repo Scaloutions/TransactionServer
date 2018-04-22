@@ -41,7 +41,7 @@ type RedisQuote struct {
 func newRedisPool(server string) *redis.Pool {
 
 	return &redis.Pool{
-		MaxIdle:     80,
+		MaxIdle:     120,
 		MaxActive:   15000,
 		IdleTimeout: 30 * time.Second,
 
