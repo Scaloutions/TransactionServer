@@ -306,6 +306,11 @@ func cancelSetSellReq(c *gin.Context) {
 	}
 }
 
+func writeLogsToXML(c *gin.Context) {
+	glog.Info("DUMPING LOGS TO XML")
+	api.CloseXMLFile()
+}
+
 func setBuyTriggerReq(c *gin.Context) {
 	req := getParams(c)
 	account := authenticateAccount(req.UserId)
@@ -363,10 +368,12 @@ func main() {
 	defer db.Close()
 	api.InitializeAuditLogging()
 	api.InitializeRedisCache()
+	api.InitXml()
 
 	api := router.Group("/api")
 	{
 		api.GET("/test", echoString)
+		api.GET("/log", writeLogsToXML)
 		// api.GET("/get_quote", getQuoteReq)
 		api.POST("/quote", getQuoteReq)
 		api.POST("/authenticate", authReq)
