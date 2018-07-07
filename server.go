@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 
-	"./src/db"
 	"./src/api"
+	"./src/db"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 )
@@ -23,7 +23,7 @@ func echoString(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome to DayTrading Inc!")
 }
 
-var UserMap = make(map[string]*api.Account)
+// var UserMap = make(map[string]*api.Account)
 
 type Request struct {
 	UserId        string
@@ -34,36 +34,38 @@ type Request struct {
 	Stock         string
 }
 
-func authenticateUser(userId string) {
-	_, err := db.GetUser(userId)
+func authenticateUser(userId string) api.Account {
+	glog.Info("\n\n Executing AUTHENTICATE for user: ", userId, "\n")
+	user, err := db.GetUser(userId)
+	// if userId == nil {
+	// 	glog.Error("NIL USER$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+	// 	panic("NNOOOOOOOO")
+	// }
+	if userId == "" {
+		glog.Error("EMPTY USER$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+		panic("NNOOOOOOOO")
+	}
 	/*
 		FOR THE PROJECT XML requirements
 		automatically create users for testing
 	*/
-	if err!=nil {
-		glog.Info("Can't find user, creating new user and user account.......")
+	if err != nil {
+		glog.Info("Can't find user, creating NEW USER and user account.......")
 		db.CreateNewUser(userId, "", "", "")
 		db.CreateNewAccount(userId)
-	} 
-	glog.Info("User ", userId, " is already in the map!")
+	}
+	glog.Info("User ", user.UserId, " is already in the DB!")
 	account := api.GetAccount(userId)
-	UserMap[userId] = &account
-	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
+	glog.Info("\nAccount Balance: ", account.Balance, " Available: ", account.Available, "User: ", user.UserId)
 
 	glog.Info("\nSUCCESS: Authentication Successful!")
+	return account
 }
 
 // Gets user from the memory: assumes we authenticate user first
-func authenticateAccount(userId string) *api.Account {
+func authenticateAccount(userId string) api.Account {
 	glog.Info("Getting User account for userId: ", userId)
-	if account, ok := UserMap[userId]; ok {
-		//do something here
-		glog.Info("Getting user account from the map: ")
-		glog.Info("\n Account Balance: ", account.Balance, " Available: ", account.Available, "User: ", userId)
-	} else {
-		authenticateUser(userId)
-	}
-	return UserMap[userId]
+	return authenticateUser(userId)
 }
 
 /*
@@ -91,20 +93,20 @@ func getParams(c *gin.Context) Request {
 
 func authReq(c *gin.Context) {
 	req := getParams(c)
-	glog.Info("\n Executing AUTHENTICATE for user: ", req.UserId)
+	glog.Info("\n\n Executing AUTHENTICATE for user: ", req.UserId, "\n")
 	authenticateUser(req.UserId)
 
 	// TODO: add error checking here
 	c.JSON(200, gin.H{
 		"transaction_num": req.CommandNumber,
-		"user_id": req.UserId,
+		"user_id":         req.UserId,
 	})
 }
 
 func successfulResponse(c *gin.Context, tranNum int, userId string) {
 	c.JSON(200, gin.H{
 		"transaction_num": tranNum,
-		"user_id": userId,
+		"user_id":         userId,
 	})
 }
 
@@ -112,9 +114,9 @@ func errorResponse(c *gin.Context, tranNum int, userId string, command string, e
 	glog.Info("Responding with error: ", err)
 	c.JSON(500, gin.H{
 		"transaction_num": tranNum,
-		"command": command,
-		"user_id": userId,
-		"error": err.Error(),
+		"command":         command,
+		"user_id":         userId,
+		"error":           err.Error(),
 	})
 }
 
@@ -129,13 +131,13 @@ func getQuoteReq(c *gin.Context) {
 	glog.Info("\n Executing QUOTE: ", req)
 	quote, err := api.GetQuote(req.Stock, req.UserId, req.CommandNumber)
 
-	if err!=nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+	if err != nil {
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
 		c.JSON(200, gin.H{
 			"transaction_num": req.CommandNumber,
-			"user_id": req.UserId,
-			"quote": quote,
+			"user_id":         req.UserId,
+			"quote":           quote,
 		})
 	}
 }
@@ -143,16 +145,16 @@ func getQuoteReq(c *gin.Context) {
 func addReq(c *gin.Context) {
 	req := getParams(c)
 
-	var account *api.Account
-	account = authenticateAccount(req.UserId)
+	// var account api.Account
+	account := authenticateAccount(req.UserId)
 	glog.Info("\n Executing ADD: ", req)
 	glog.Info("\n Current user account: ", account)
 	err := api.Add(account, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -165,9 +167,9 @@ func buyReq(c *gin.Context) {
 	err := api.Buy(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -180,9 +182,9 @@ func sellReq(c *gin.Context) {
 	err := api.Sell(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -194,9 +196,9 @@ func commitSellReq(c *gin.Context) {
 	err := api.CommitSell(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -209,9 +211,9 @@ func commitBuyReq(c *gin.Context) {
 	err := api.CommitBuy(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -224,9 +226,9 @@ func cancelBuyReq(c *gin.Context) {
 	err := api.CancelBuy(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -239,9 +241,9 @@ func cancelSellReq(c *gin.Context) {
 	err := api.CancelSell(account, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -254,9 +256,9 @@ func setBuyAmountReq(c *gin.Context) {
 	err := api.SetBuyAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -269,9 +271,9 @@ func setSellAmountReq(c *gin.Context) {
 	err := api.SetSellAmount(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -283,9 +285,9 @@ func cancelSetBuyReq(c *gin.Context) {
 	err := api.CancelSetBuy(account, req.Stock, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -298,9 +300,9 @@ func cancelSetSellReq(c *gin.Context) {
 	err := api.CancelSetSell(account, req.Stock, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -313,9 +315,9 @@ func setBuyTriggerReq(c *gin.Context) {
 	err := api.SetBuyTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -328,9 +330,9 @@ func setSellTriggerReq(c *gin.Context) {
 	err := api.SetSellTrigger(account, req.Stock, req.PriceDollars, req.CommandNumber)
 
 	if err != nil {
-		errorResponse(c,req.CommandNumber, req.UserId, req.Command, err)
+		errorResponse(c, req.CommandNumber, req.UserId, req.Command, err)
 	} else {
-		successfulResponse(c,req.CommandNumber, req.UserId)
+		successfulResponse(c, req.CommandNumber, req.UserId)
 	}
 }
 
@@ -356,6 +358,11 @@ func main() {
 
 	// db connection
 	db.InitializeDB()
+	db.CreateTables()
+	db.ClearDBTables()
+	defer db.Close()
+	api.InitializeAuditLogging()
+	api.InitializeRedisCache()
 
 	api := router.Group("/api")
 	{
@@ -381,5 +388,6 @@ func main() {
 	}
 
 	log.Fatal(router.Run(":9090"))
+	defer glog.Flush()
 
 }

@@ -1,14 +1,15 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"math/rand"
 	"net"
+	"os"
 	"strconv"
 	"strings"
-	"errors"
-	"path/filepath"
-	"io/ioutil"
-	"encoding/json"
+	"time"
+
 	"github.com/golang/glog"
 )
 
@@ -30,63 +31,50 @@ type Quote struct {
 	CryptoKey string
 }
 
-/*func InitializeQSConn(){
-	conn, err := getConnection() 
-	QS_CONNECTION = conn
-
-	if err!=nil {
-		glog.Error("Cannot establish connection with the Quote Server ", err)
-	}
-}*/
-
-
 func getQuoteFromQS(userid string, stock string) (Quote, error) {
 
-	absPath, _ := filepath.Abs("./config.json")
-	var data []byte
-	data, _ = ioutil.ReadFile(absPath)
-	var configSettings Config
-	_ = json.Unmarshal(data, &configSettings)
-
 	// Mock QuoteServer hit for local testing
-	if configSettings.QuoteServer == false {
+	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	if testMode {
+		r := rand.New(rand.NewSource(getCurrentTs()))
+
+		sleepT := rand.Intn(4)
+		glog.Info("Sleeping for: ", sleepT)
+		time.Sleep(time.Duration(sleepT) * time.Second)
+		price := r.Float64()
+		price = float64(int(price*100)) / 100
+
 		return Quote{
-			Price:     1,
-			Stock:     "S",
-			UserId:    "Agent007",
-			Timestamp: 1516925116307,
+			Price:     price,
+			Stock:     stock,
+			UserId:    userid,
+			Timestamp: getCurrentTs(),
 			CryptoKey: "PXdxruf7H5p9Br19Si5hq",
 		}, nil
 	}
 
 	quote := Quote{}
-	// Get connection to the quote server
-	// conn, err := getConnection()
 
-	// if err!=nil {
-	// QS_CONNECTION
 	conn, err := getConnection()
-	// if QS_CONNECTION == nil {
-	if err!=nil {
+	if err != nil {
 		return quote, err
-		// InitializeQSConn()
 	}
 
 	cstr := stock + "," + userid + "\n"
 	_, err = conn.Write([]byte(cstr))
 
-	if err!=nil {
+	if err != nil {
 		return quote, err
 	}
 
 	// //TODO: does this have o be 1024 bytes
 	buff := make([]byte, 1024)
-	// len, err := QS_CONNECTION.Read(buff)
 	len, err := conn.Read(buff)
+	defer conn.Close()
 
 	if err != nil {
 		glog.Error("Error reading data from the Quote Server")
-		return quote, errors.New("Error reading the Quote.")	
+		return quote, errors.New("Error reading the Quote.")
 	}
 
 	response := string(buff[:len])
@@ -98,15 +86,14 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 	price, err := strconv.ParseFloat(quoteArgs[0], 64)
 	if err != nil {
 		glog.Error("Cannot parse QS stock price into float64 ", quoteArgs[0])
-	 	return quote, errors.New("Error parsing the Quote.")
+		return quote, errors.New("Error parsing the Quote.")
 	}
 
 	timestamp, err := strconv.ParseInt(quoteArgs[3], 10, 64)
 	if err != nil {
 		glog.Error("Cannot parse QS timestamp into int64 ", quoteArgs[3])
-	 	return quote, errors.New("Error parsing the Quote.")
+		return quote, errors.New("Error parsing the Quote.")
 	}
-	conn.Close()
 
 	return Quote{
 		Price:     price,
@@ -115,9 +102,6 @@ func getQuoteFromQS(userid string, stock string) (Quote, error) {
 		Timestamp: timestamp,
 		CryptoKey: strings.TrimSpace(quoteArgs[4]),
 	}, nil
-
-
-
 }
 
 func getConnection() (net.Conn, error) {
@@ -127,7 +111,7 @@ func getConnection() (net.Conn, error) {
 
 	if err != nil {
 		fmt.Print("Error connecting to the Quote Server: somthing went wrong :(")
-		return nil,  errors.New("Cannot establish connection with the Quote Server")
+		return nil, errors.New("Cannot establish connection with the Quote Server")
 	}
 	return conn, nil
 }

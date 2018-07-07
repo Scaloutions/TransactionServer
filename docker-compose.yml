@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-    db:
-      image: mysql:5.7
+    dbserver:
+      image:  mysql_scaloutions:5.7
       # try using this for db inialization
       # command: --init-file /data/application/init.sql
       volumes:
@@ -10,19 +10,31 @@ services:
       restart: always
       environment:
         MYSQL_ROOT_PASSWORD: root
+      ports:
+        - 3306
+    rediscache:
+      image: redis:scaloutions
+      ports:
+        - "6379:6379"
+      restart: always
+      environment:
+        - REDIS_EXTRA_FLAGS=--maxmemory 256mb, --maxmemory-policy volatile-lru
+        - ALLOW_EMPTY_PASSWORD=yes
     transactionserver:
-      build: .
+      # build: .
+      image:  transactionserver:scaloutions 
       restart: always
       ports: 
         - "9090:9090"
       depends_on:
-        - db
+        - dbserver
+        - rediscache
       links:
-        - db 
+        - dbserver 
+        - rediscache
       extra_hosts:
         quoteserve.seng: 192.168.1.135
         auditserver: 192.168.1.139
-        dbserver: 192.168.1.138
 
 volumes:
   dbdata:

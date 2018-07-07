@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"path/filepath"
+	"strconv"
 	"time"
+	"os"
 
 	"github.com/golang/glog"
 )
 
 const (
 	SERVER_NAME       = "TS0156"
-	AUDIT_SERVER      = "http://localhost:8082"
-	// AUDIT_SERVER      = "http://auditserver:8082"
 	API_URL           = "/api"
 	ACCOUNT_EVENT_URL = "/accounttransaction"
 	SYSTEM_EVENT_URL  = "/systemevent"
@@ -24,6 +22,19 @@ const (
 	USER_COMMAND_URL  = "/usercommand"
 	GET_DUMPLOG		  = "/api/log"
 )
+
+var (
+	AUDIT_SERVER string
+)
+
+func InitializeAuditLogging() {
+	testMode, _ := strconv.ParseBool(os.Getenv("DEV_ENVIRONMENT"))
+	if testMode {
+		AUDIT_SERVER  = os.Getenv("AUDIT_SERVER_DEV")
+	} else {
+		AUDIT_SERVER  = os.Getenv("AUDIT_SERVER_PROD")
+	}
+}
 
 func getFundsAsString(amount float64) string {
 	return fmt.Sprintf("%.2f", float64(amount))
@@ -135,13 +146,9 @@ func getUserCmndEvent(
 }
 
 func logEvent(log interface{}) {
-	absPath, _ := filepath.Abs("./config.json")
-	var data []byte
-	data, _ = ioutil.ReadFile(absPath)
-	var configSettings Config
-	_ = json.Unmarshal(data, &configSettings)
 
-	if configSettings.AuditServer == false {
+	sendLogs, _ := strconv.ParseBool(os.Getenv("LOG_EVENTS"))
+	if !sendLogs {
 		return
 	}
 	glog.Info("############## LOGGING REQUST: ", log)
